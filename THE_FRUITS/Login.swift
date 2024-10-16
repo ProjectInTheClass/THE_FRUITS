@@ -14,6 +14,8 @@ struct Login: View {
     @State private var stayLoggedIn: Bool = false // 로그인 상태 유지 체크박스
     @State private var showLoginBox: Bool = false // 로그인 박스 표시 여부
     
+    var userType:String
+    
     var body: some View {
         ZStack {
             Image("onBoardingImage")
@@ -56,7 +58,8 @@ struct Login: View {
 
                                 Spacer().frame(height: 20)
                                 Button(action: {
-                                    print("로그인 클릭")
+                                    //print("로그인 클릭")
+                                    print(userType)
                                 }) {
                                     Text("로그인")
                                         .font(.custom("Pretendard-SemiBold", size: 18))
@@ -81,5 +84,5 @@ struct Login: View {
 }
 
 #Preview {
-    Login()
+    Login(userType: "customer")
 }
