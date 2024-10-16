@@ -15,6 +15,8 @@ struct Login: View {
     @State private var showLoginBox: Bool = false // 로그인 박스 표시 여부
     @State private var joinButtonClicked:Bool=false
     
+    var userType:String
+    
     var body: some View {
         ZStack {
             Image("onBoardingImageOriginal")
@@ -26,12 +28,18 @@ struct Login: View {
                 Spacer() // 위쪽 여백 추가
                 // 애니메이션 박스
                 VStack {
+                    Text("TheFruits")
+                        .font(.custom("Magnolia Script", size: 63))
+                        .foregroundStyle(.white)
+                        .padding(.bottom,10)
                     RoundedRectangle(cornerRadius: 10)
                         .fill(Color.white.opacity(0.4))
                         .frame(width: 400, height: 300) // 박스 크기 설정
                         .shadow(radius: 10) // 그림자 추가
                         .overlay(
                             VStack {
+
+                                
                                 TextField("아이디 입력", text: $user_id)
                                     .padding(.leading, 10)
                                     .frame(width:300,height: 50)
@@ -43,27 +51,26 @@ struct Login: View {
                                     .frame(width:300,height: 50)
                                     .background(Color.white)
                                     .cornerRadius(10)
-
+                                
                                 HStack {
                                     Spacer()
                                     Button(action:{
                                         print("회원가입 버튼 클릭")
+                                        joinButtonClicked=true
+                                        print("joinButtonClicked: \(joinButtonClicked)")
                                     }){
                                         Text("회원가입")
                                     }
                                     .padding(.top,10)
-   
                                         .font(.custom("Pretendard-SemiBold", size: 14))
                                         .foregroundColor(.black) // 글자색을 검정색으로 설정
                                 }
                                 .frame(width: 250) //텍스트를 포함한 전체 너비 설정
             
-                                
-                                
-
                                 Spacer().frame(height: 20)
                                 Button(action: {
-                                    print("로그인 클릭")
+                                    //print("로그인 클릭")
+                                    print(userType)
                                 }) {
                                     Text("로그인")
                                         .font(.custom("Pretendard-SemiBold", size: 18))
@@ -88,5 +95,5 @@ struct Login: View {
 }
 
 #Preview {
-    Login()
+    Login(userType: "customer")
 }
