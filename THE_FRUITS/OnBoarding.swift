@@ -17,16 +17,19 @@ import SwiftUI
 struct OnBoarding: View {
     var body: some View {
         ZStack{
-            Image("onBoardingImage")
+            Image("onBoardingImageOriginal")
                 .resizable()
                 .aspectRatio(contentMode: .fill)
                 .edgesIgnoringSafeArea(.all)
             VStack{
                 Spacer() // 위쪽 여백 추가
                     .frame(height: 450) // 원하는 높이로 조정
-
+                Text("The Fruits")
+                    .font(.custom("Atlante var Text Regular",size:60))
+                    .foregroundStyle(.white)
                 Button( action:{
                     print("구매자로 시작하기")
+                    
                 })
                 {
                     Text("구매자로 시작하기")

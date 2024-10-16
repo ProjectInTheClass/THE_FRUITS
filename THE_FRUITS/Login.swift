@@ -13,20 +13,19 @@ struct Login: View {
     @State private var loginStatus: Bool = false
     @State private var stayLoggedIn: Bool = false // 로그인 상태 유지 체크박스
     @State private var showLoginBox: Bool = false // 로그인 박스 표시 여부
+    @State private var joinButtonClicked:Bool=false
     
     var body: some View {
         ZStack {
-            Image("onBoardingImage")
+            Image("onBoardingImageOriginal")
                 .resizable()
                 .aspectRatio(contentMode: .fill)
                 .edgesIgnoringSafeArea(.all)
 
             VStack {
                 Spacer() // 위쪽 여백 추가
-
                 // 애니메이션 박스
                 VStack {
-                    // 하얀색 박스
                     RoundedRectangle(cornerRadius: 10)
                         .fill(Color.white.opacity(0.4))
                         .frame(width: 400, height: 300) // 박스 크기 설정
@@ -46,13 +45,21 @@ struct Login: View {
                                     .cornerRadius(10)
 
                                 HStack {
-                                    Toggle(isOn: $stayLoggedIn) {
-                                        Text("로그인 상태 유지")
-                                            .font(.custom("Pretendard-SemiBold", size: 14))
-                                            .foregroundColor(.black) // 글자색을 검정색으로 설정
+                                    Spacer()
+                                    Button(action:{
+                                        print("회원가입 버튼 클릭")
+                                    }){
+                                        Text("회원가입")
                                     }
+                                    .padding(.top,10)
+   
+                                        .font(.custom("Pretendard-SemiBold", size: 14))
+                                        .foregroundColor(.black) // 글자색을 검정색으로 설정
                                 }
-                                .frame(width: 200) // 체크박스와 텍스트를 포함한 전체 너비 설정
+                                .frame(width: 250) //텍스트를 포함한 전체 너비 설정
+            
+                                
+                                
 
                                 Spacer().frame(height: 20)
                                 Button(action: {
