@@ -4,11 +4,7 @@
 <dict>
 	<key>UIAppFonts</key>
 	<array>
-		<string>Philosopher-Regular.ttf</string>
-		<string>Philosopher-Bold.ttf</string>
-		<string>Philosopher-BoldItalic.ttf</string>
-		<string>Philosopher-Italic.ttf</string>
-        <string>Magnolia Script.otf</string>
+		<string>Magnolia Script.otf</string>
 	</array>
 </dict>
 </plist>
