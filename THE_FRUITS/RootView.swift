@@ -37,7 +37,6 @@ struct RootView: View {
                 customTabButton(icon: "person.crop.circle", tabIndex: 2)
 
                 Spacer(minLength: 20)  // 바깥쪽 좌우에 간격 추가
-
             }
             .frame(height: 60)
             .cornerRadius(30)  // 모서리 둥글게 처리 (옵션)

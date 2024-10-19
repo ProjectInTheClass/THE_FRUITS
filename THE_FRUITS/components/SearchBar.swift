@@ -16,6 +16,11 @@ struct SearchBar: View {
                 .background(Color(UIColor.systemGray6))  // 서치바 배경색
                 .cornerRadius(20)
                 .foregroundColor(.gray)  // 텍스트 색상
+                .onSubmit {
+                    print("검색어 제출됨: \(searchText)")
+                    
+                    //: 제출하고 실행할 함수 넣을 자리
+                }
         }
         .frame(width: 330, height: 45)  // 서치바의 너비와 높이를 조절
         .padding(.horizontal)  // 양옆 여백 추가
