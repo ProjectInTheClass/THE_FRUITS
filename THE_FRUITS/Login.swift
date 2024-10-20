@@ -50,6 +50,7 @@ struct Login: View {
                                     .frame(width:300,height: 50)
                                     .background(Color.white)
                                     .cornerRadius(10)
+
                                 
                                 HStack {
                                     Spacer()
@@ -60,6 +61,7 @@ struct Login: View {
                                         print("joinButtonClicked: \(joinButtonClicked)")
                                     }
                                     .padding(.top,10)
+
                                 }
                                 .frame(width: 250) //텍스트를 포함한 전체 너비 설정
             
