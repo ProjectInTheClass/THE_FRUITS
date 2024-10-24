@@ -8,6 +8,11 @@
 import SwiftUI
 
 struct DeliveryAddress: View {
+    let title:String = "우리집"
+    let address:String = "서울 동대문구 천호대로 257(청계푸르지오시티) 0동 0000호"
+    let contactInfo:String = "김철수 | 010-0000-0000"
+
+    let onIconClick:()->Void
     
     var body: some View {
         HStack(alignment:.top,spacing: 12){
@@ -15,27 +20,31 @@ struct DeliveryAddress: View {
                 .foregroundColor(.black)
                 .padding(.top,5)
             VStack(alignment:.leading,spacing: 8){
-                Text("우리집")//db에서 받아올거임
+                Text(title)//db에서 받아올거임
                     .font(.custom("Pretendard-SemiBold", size: 16))
                     .foregroundColor(.black)
                 
-                Text("서울 동대문구 천호대로 257(청계푸르지오 시티)\n0동 0000호")//db에서 받아올거임
+                Text(address)//db에서 받아올거임
                     .font(.custom("Pretendard-Regular", size: 14))
                     .foregroundColor(.black)
-               
-                Text("김철수 | 010-0000-0000")//db에서 받아올거임
+                    .multilineTextAlignment(.leading) // 자연스러운 줄바꿈
+                
+                Text(contactInfo)//db에서 받아올거임
                     .font(.custom("Pretendard-Regular", size: 14))
                     .foregroundColor(.black)
             }
             
-            Spacer()
-            
-            Image(systemName: "paperplane.fill")
-                .foregroundColor(.black)
-                .padding(.top,5)
+            Button(action:{
+                onIconClick()
+            }){
+                Image(systemName: "paperplane.fill")
+                    .foregroundColor(.black)
+                    .padding(.top,5)
+            }
         }
         .padding()
-        .background(Color(UIColor.systemGray5))
+        //.frame(maxWidth: .infinity)
+        .background(Color(red: 169/255, green: 189/255, blue: 179/255)) // Custom background color
         .cornerRadius(12)
         .shadow(radius: 2)
         .padding(.horizontal)
@@ -43,5 +52,7 @@ struct DeliveryAddress: View {
 }
 
 #Preview {
-    DeliveryAddress()
+    DeliveryAddress(onIconClick:{
+        print("아이콘이 클리되었습니다!")
+    })
 }
