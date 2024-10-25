@@ -2,6 +2,9 @@ import SwiftUI
 
 struct ChangeAddress: View {
     @State private var newAddress: String = ""
+    @State private var showAlert = false // 모달창을 띄우기 위한 상태관리 변수
+    @State private var alertMessage:String=""
+    
     var body: some View {
         VStack {
             HStack {
@@ -63,22 +66,36 @@ struct ChangeAddress: View {
                     submitAddress()
                 }
             )
+            .alert(isPresented:$showAlert){
+                Alert(
+                    title:Text("알림"),
+                    message:Text(alertMessage),
+                    dismissButton: .default(Text("확인"),action:{
+                        print("Alert 닫힘")
+                        showAlert=false
+                    })
+                )
+            }
             
             Spacer()
         }
     }
+
     
     func submitAddress(){
         if newAddress.isEmpty {
             print("주소를 입력하세요")
+            alertMessage = "주소를 입력해주세요"
         }
         else{
-            print("\(newAddress)가 서버로 제출되었습니다")
+            alertMessage = "수정되었습니다."
+            //제출되면 '수정되었습니다' 모달창뜨고
+            //DeliverySetting 페이지로 가기(그럼 업데이트된 주소가 되어
+            //만약에 모달창에서 확인을 누르면 다시 DeliversySetting으로 가는 게 자연스럽지 않을까,,
         }
+        showAlert=true
     }
 }
-
-
 
 #Preview {
     ChangeAddress()
