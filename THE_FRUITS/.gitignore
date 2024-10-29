@@ -52,3 +52,5 @@ xcuserdata/
 fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots
+
+GoogleService-Info.plist
