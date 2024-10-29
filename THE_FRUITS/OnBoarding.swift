@@ -15,6 +15,8 @@
 import SwiftUI
 
 struct OnBoarding: View {
+    @EnvironmentObject var firestoreManager: FireStoreManager
+    
     var body: some View {
 
         NavigationView{
@@ -47,6 +49,9 @@ struct OnBoarding: View {
                             .background(Color(red: 233/255, green: 229/255, blue: 219/255)) // 두 번째 버튼 색상으로 변경
                             .cornerRadius(40)
                     }
+                    Text("firebase name: \(firestoreManager.name)")
+                    Text("firebase username: \(firestoreManager.username)")
+                    Text("firebase password: \(firestoreManager.password)")
 
         
         
@@ -63,5 +68,6 @@ struct OnBoarding: View {
 
 #Preview {
     OnBoarding()
+        .environmentObject(FireStoreManager())
 }
 
