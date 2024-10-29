@@ -38,6 +38,7 @@ struct DeliverySetting: View {
                 Spacer()
                     .navigationDestination(isPresented: $isNavigatingToChangeAddress){
                         ChangeAddress()
+                            .navigationBarBackButtonHidden(true) // '뒤로가기' 버튼을 숨김
                     }
             }
         }

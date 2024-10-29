@@ -1,15 +1,18 @@
 import SwiftUI
 
 struct ChangeAddress: View {
-    @State private var newAddress: String = ""
+    @State private var newAddress: String = ""//이게 DB로 업데이트되어야 함
     @State private var showAlert = false // 모달창을 띄우기 위한 상태관리 변수
     @State private var alertMessage:String=""
+    @Environment(\.dismiss) var dismiss // 현재 뷰를 닫고 이전 뷰로 돌아가기 위한 dismiss 환경 변수
     
     var body: some View {
         VStack {
             HStack {
                 Button(action: {
                     print("뒤로가기 버튼 클릭")
+                    dismiss()//이전페이지로 네이게이트
+                    print(dismiss)
                 }) {
                     Image(systemName: "chevron.left")
                         .foregroundColor(.black)
@@ -92,6 +95,7 @@ struct ChangeAddress: View {
             //제출되면 '수정되었습니다' 모달창뜨고
             //DeliverySetting 페이지로 가기(그럼 업데이트된 주소가 되어
             //만약에 모달창에서 확인을 누르면 다시 DeliversySetting으로 가는 게 자연스럽지 않을까,,
+            //new Address가 DeliverySetting으로 보내져야 한다.
         }
         showAlert=true
     }
