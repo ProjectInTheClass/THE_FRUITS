@@ -42,7 +42,9 @@ struct DeliveryAddress: View {
                     .padding(.top,5)
             }
         }
+        
         .padding()
+        .frame(width: UIScreen.main.bounds.width - 30, height: 150)
         //.frame(maxWidth: .infinity)
         .background(Color(red: 169/255, green: 189/255, blue: 179/255)) // Custom background color
         .cornerRadius(12)
