@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct RootView: View {
+struct CustomerRootView: View {
     @State private var selectedTab = 1  // 기본적으로 위시리스트가 선택된 상태로 시작
 
     var body: some View {
@@ -9,12 +9,11 @@ struct RootView: View {
 
             // 선택된 탭에 따라 다른 화면을 보여줌
             if selectedTab == 0 {//라우팅같은 기능?
-                Home()
+                CustomerHome()
             } else if selectedTab == 1 {
-                WishList()
-            } else {
-                MyPage()
+                CustomerWishList()
             }
+            
 
             Spacer()
             
@@ -63,7 +62,7 @@ struct RootView: View {
 }
 
 #Preview {
-    RootView()
+    CustomerRootView()
 }
 
 
