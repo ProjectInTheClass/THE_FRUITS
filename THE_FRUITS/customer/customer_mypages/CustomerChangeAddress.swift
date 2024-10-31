@@ -1,5 +1,7 @@
 import SwiftUI
 
+
+
 struct CustomerChangeAddress: View {
     @State private var newAddress: String = ""//이게 DB로 업데이트되어야 함
     @State private var showAlert = false // 모달창을 띄우기 위한 상태관리 변수
@@ -86,9 +88,8 @@ struct CustomerChangeAddress: View {
                 Spacer()
             }
         }
-    
 
-    
+
     func submitAddress(){
         if newAddress.isEmpty {
             print("주소를 입력하세요")
@@ -106,5 +107,6 @@ struct CustomerChangeAddress: View {
 }
 
 #Preview {
+
     CustomerChangeAddress()
 }

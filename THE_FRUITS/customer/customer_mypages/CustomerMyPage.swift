@@ -4,6 +4,12 @@
 //
 //  Created by 김진주 on 10/19/24.
 //
+//
+//  MyPage.swift
+//  THE_FRUITS
+//
+//  Created by 김진주 on 10/19/24.
+//
 
 import SwiftUI
 
@@ -104,3 +110,8 @@ struct CustomerMyPage: View {
 #Preview {
     CustomerMyPage()
 }
+
+
+
+
+
