@@ -1,17 +1,18 @@
 import SwiftUI
 
 struct Order_c: View {
-    @State private var selectedStatus: String = "입금 미완료"
+    @State private var selectedStatus: String = "" // 초기값을 빈 문자열로 설정
+    @State private var isFirstLoad: Bool = true // 첫 로드 여부를 확인하기 위한 변수
     let statuses = ["입금완료", "배송준비중", "배송중", "배송완료"]
     
     var body: some View {
-        HStack { // 상위 HStack으로 중앙 정렬을 위한 설정 추가
+        HStack {
             VStack(alignment: .leading, spacing: 16) {
                 HStack {
                     Text("주문번호: 232342-1")
                         .padding(8)
                         .background(Color("darkGreen"))
-                        .foregroundColor(.white)
+                        .foregroundColor(Color.white)
                         .cornerRadius(4)
                     Spacer()
                     Text("2024.10.03")
@@ -19,21 +20,26 @@ struct Order_c: View {
                 .padding(.horizontal)
                 
                 VStack(alignment: .leading, spacing: 9) {
-                    Text(selectedStatus)
+                    // 첫 로드 시 "입금 미완료"를 표시하고, 이후에는 selectedStatus 표시
+                    Text(isFirstLoad ? "입금 미완료" : selectedStatus)
                         .font(.headline)
+                    
                     HStack(spacing: 10) {
                         ForEach(statuses.indices, id: \.self) { index in
                             let status = statuses[index]
                             VStack {
-                                // 상태 버튼
-                                if index < statuses.count {
+                                if let selectedIndex = statuses.firstIndex(of: selectedStatus), selectedIndex != -1 {
                                     Rectangle()
                                         .frame(width: 70, height: 2.4)
-                                        .foregroundColor(index <= statuses.firstIndex(of: selectedStatus)! ? Color("darkGreen") : Color.gray.opacity(0.3))
-                                    
+                                        .foregroundColor(index <= selectedIndex ? Color("darkGreen") : Color.gray.opacity(0.3))
+                                } else {
+                                    Rectangle()
+                                        .frame(width: 70, height: 2.4)
+                                        .foregroundColor(Color.gray.opacity(0.3))
                                 }
                                 StatusButton(title: status, isSelected: selectedStatus == status) {
                                     selectedStatus = status
+                                    isFirstLoad = false // 버튼을 클릭하면 첫 로드 상태를 false로 변경
                                 }
                             }
                         }
@@ -41,7 +47,7 @@ struct Order_c: View {
                     .frame(width: UIScreen.main.bounds.width - 60, height: 50)
                 }
                 .padding()
-                .background(Color("lightGray").opacity(0.2))
+                .background(Color.gray.opacity(0.2))
                 .cornerRadius(8)
                 
                 // Other sections remain unchanged
@@ -143,7 +149,7 @@ struct StatusButton: View {
                     .padding(.vertical, 4)
                     .padding(.horizontal, 8)
                     .background(isSelected ? Color("darkGreen") : Color("beige"))
-                    .foregroundColor(isSelected ? .white : Color("darkGreen"))
+                    .foregroundColor(isSelected ? Color.white : Color("darkGreen"))
                     .cornerRadius(5)
             }
         }
