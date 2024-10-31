@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct WishList: View {
+struct CustomerWishList: View {
     var body: some View {
         NavigationView{
             VStack{
@@ -19,5 +19,5 @@ struct WishList: View {
 }
 
 #Preview {
-    WishList()
+    CustomerWishList()
 }

@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct Home: View {
+struct CustomerHome: View {
     
     @State private var searchText:String=""
     var body: some View {
@@ -44,5 +44,5 @@ struct Home: View {
 }
 
 #Preview {
-    Home()
+    CustomerHome()
 }
