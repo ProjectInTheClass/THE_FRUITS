@@ -23,7 +23,7 @@ struct RootView: View {
             .padding(.bottom,5)
 
             // 하단 커스텀 네비게이션 바
-            HStack(spacing:50) {
+            HStack(spacing:30) {
                 Spacer()
 
                 customTabButton(icon: "house", tabIndex: 0)
@@ -49,15 +49,15 @@ struct RootView: View {
             selectedTab = tabIndex
         }) {
             ZStack {
-                if selectedTab == tabIndex {
-                    Circle()
-                        .fill(Color(hex: "#1A321B"))
-                        .frame(width: 60, height: 60)
-                }
+                Circle()
+                    .fill(selectedTab == tabIndex ? Color(hex: "#1A321B") : .clear)
+                    .frame(width: 60, height: 60)
+                
                 Image(systemName: icon)
                     .foregroundColor(selectedTab == tabIndex ? .white : Color(hex: "#1A321B"))
                     .font(.system(size: 24))
             }
+            
         }
     }
 }

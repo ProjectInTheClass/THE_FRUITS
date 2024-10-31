@@ -42,6 +42,7 @@ struct DeliverySetting: View {
                     }
             }
         }
+        .navigationBarBackButtonHidden(true) // 뒤로가기 버튼 숨김 - 지은 추가
     }
 }
 
