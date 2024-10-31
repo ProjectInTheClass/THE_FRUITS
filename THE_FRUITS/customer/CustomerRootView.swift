@@ -12,6 +12,8 @@ struct CustomerRootView: View {
                 CustomerHome()
             } else if selectedTab == 1 {
                 CustomerWishList()
+            }else{
+                CustomerMyPage()
             }
             
 

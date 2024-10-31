@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct Order_c: View {
+struct SellerOrder: View {
     @State private var selectedStatus: String = "" // 초기값을 빈 문자열로 설정
     @State private var isFirstLoad: Bool = true // 첫 로드 여부를 확인하기 위한 변수
     let statuses = ["입금완료", "배송준비중", "배송중", "배송완료"]
@@ -18,7 +18,8 @@ struct Order_c: View {
                     Text("2024.10.03")
                 }
                 .padding(.horizontal)
-                
+
+            
                 VStack(alignment: .leading, spacing: 9) {
                     // 첫 로드 시 "입금 미완료"를 표시하고, 이후에는 selectedStatus 표시
                     Text(isFirstLoad ? "입금 미완료" : selectedStatus)
@@ -157,5 +158,5 @@ struct StatusButton: View {
 }
 
 #Preview {
-    Order_c()
+    SellerOrder()
 }
