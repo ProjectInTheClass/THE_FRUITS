@@ -37,7 +37,7 @@ struct SellerDeliverySetting: View {
                 
                 Spacer()
                     .navigationDestination(isPresented: $isNavigatingToChangeAddress){
-                        ChangeAddress()
+                        SellerChangeAddress()
                             .navigationBarBackButtonHidden(true) // '뒤로가기' 버튼을 숨김
                     }
             }
