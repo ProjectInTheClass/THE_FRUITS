@@ -32,7 +32,7 @@ struct SellerProfileSection: View {
                     Divider()
                     
                     VStack {
-                        ProfileButton(
+                        SellerProfileButton(
                             icon: "person.fill",
                             title: "내정보 설정",
                             action: {
@@ -40,10 +40,10 @@ struct SellerProfileSection: View {
                             }
                         )
                         
-                        DeliverySettingButton(
+                        SellerDeliverySettingButton(
                             icon: "person.fill",
                             title: "배송지 설정",
-                            destination: DeliverySetting()
+                            destination: SellerDeliverySetting()
                         )
                     }
                 }
