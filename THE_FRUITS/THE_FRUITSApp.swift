@@ -25,9 +25,9 @@ struct THE_FRUITSApp: App {
     var body: some Scene {
         WindowGroup {
             //ContentView()
-            /*OnBoarding()
-                .environmentObject(firestoreManager)*/
-            SellerRootView()
+            //OnBoarding()
+            CustomerRootView()
+                .environmentObject(firestoreManager)
             
         }
     }
