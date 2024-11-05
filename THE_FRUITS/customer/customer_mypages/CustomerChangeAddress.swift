@@ -10,35 +10,7 @@ struct CustomerChangeAddress: View {
     
     var body: some View {
             VStack {
-                //            HStack {
-                //                Button(action: {
-                //                    print("뒤로가기 버튼 클릭")
-                //                    dismiss()//이전페이지로 네이게이트
-                //                    print(dismiss)
-                //                }) {
-                //                    Image(systemName: "chevron.left")
-                //                        .foregroundColor(.black)
-                //                }
-                //                Spacer().frame(width: 10) // 아이콘과 텍스트 사이 간격
-                //                Text("주소변경")
-                //                    .font(.custom("Pretendard-SemiBold", size: 18))
-                //                    .foregroundColor(.black)
-                //                Spacer()
-                //            }
-                //            .padding(.top, 10)
-                //            .padding(.leading, 14) // 배송지 설정 좌우
-                //            .padding(.bottom, 10) // 배송지 설정 상하
-                //            .background(Color.white)
-                //            
-                //            Rectangle()
-                //                .frame(height: 2.5) // 높이를 2로 설정하여 Divider 굵기 조정
-                //                .foregroundColor(Color.gray) // 색상 변경 가능
-                //                .padding(.horizontal, 16)
-                //                .padding(.top, 10)
-                
-                
                 BackArrowButton(title: "주소 변경")
-                
                 // "주소" 텍스트를 왼쪽으로 정렬
                 Text("주소")
                     .padding(.top,10)
