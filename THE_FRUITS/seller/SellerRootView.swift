@@ -1,6 +1,13 @@
+//
+//  RootView.swift
+//  THE_FRUITS
+//
+//  Created by Bada Hong on 10/31/24.
+//
+
 import SwiftUI
 
-struct CustomerRootView: View {
+struct SellerRootView: View {
     @State private var selectedTab = 1  // 기본적으로 위시리스트가 선택된 상태로 시작
 
     var body: some View {
@@ -9,13 +16,12 @@ struct CustomerRootView: View {
 
             // 선택된 탭에 따라 다른 화면을 보여줌
             if selectedTab == 0 {//라우팅같은 기능?
-                CustomerHome()
+                SellerHome()
             } else if selectedTab == 1 {
-                CustomerWishList()
-            }else{
-                CustomerMyPage()
+                SellerOrder()
+            } else {
+                SellerMyPage()
             }
-            
 
             Spacer()
             
@@ -64,13 +70,13 @@ struct CustomerRootView: View {
 }
 
 #Preview {
-    CustomerRootView()
+    SellerRootView()
 }
 
 
 
 // Color 확장 추가 (Hex 코드를 처리하는 기능)
-extension Color {
+/*extension Color {
     init(hex: String) {
         let hexFormatted = hex.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
         var rgbValue: UInt64 = 0
@@ -83,3 +89,4 @@ extension Color {
         self.init(red: red, green: green, blue: blue)
     }
 }
+*/
