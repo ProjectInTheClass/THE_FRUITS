@@ -9,8 +9,10 @@ import SwiftUI
 
 struct SellerAddBrand: View{
     var body: some View{
-        NavigationView{
+//        NavigationView{
             VStack{
+                BackArrowButton(title: "")
+                Spacer()
                 Text("사업자 등록증이 있으신가요?")
                     .font(.title)
                     .bold()
@@ -18,7 +20,7 @@ struct SellerAddBrand: View{
                 
                 Spacer().frame(height: 30)
                 
-                NavigationLink(destination: SellerInsertBusinessNum()){
+                NavigationLink(destination: SellerInsertBusinessNum().navigationBarBackButtonHidden(true)){
                     RoundedRectangle(cornerRadius: 50)
                         .foregroundColor(.black)
                         .frame(width: 350, height: 60)
@@ -30,7 +32,7 @@ struct SellerAddBrand: View{
                 
                 Spacer().frame(height: 20)
                 
-                NavigationLink(destination: SellerTutorial()){
+                NavigationLink(destination: SellerTutorial().navigationBarBackButtonHidden(true)){
                     RoundedRectangle(cornerRadius: 50)
                         .stroke(Color.black, lineWidth: 1)
                         .frame(width: 350, height: 60)
@@ -39,17 +41,21 @@ struct SellerAddBrand: View{
                                 .foregroundColor(.black)
                         )
                 }
+                Spacer()
             }
         }
-    }
+ //   }
 }
 
 struct SellerInsertBusinessNum: View{
     @State private var businessNumber: String = ""
+    @State private var selectedTab = 0
     
     var body: some View{
-        NavigationView{
+        //NavigationView{
             VStack{
+                BackArrowButton(title: "")
+                Spacer()
                 Text("사업자 등록번호를 입력해주세요!")
                     .font(.system(size: 25))
                     .bold()
@@ -66,7 +72,7 @@ struct SellerInsertBusinessNum: View{
                         //.padding() // Padding around the TextField
                         .textFieldStyle(PlainTextFieldStyle())
                     
-                    NavigationLink(destination: SellerHome()) {
+                    NavigationLink(destination: SellerRootView(selectedTab: $selectedTab).navigationBarBackButtonHidden(true)) {
                         Image(systemName: "arrow.right") // Arrow icon
                             .font(.title2) // Adjust size as needed
                             .foregroundColor(.black) // Color of the icon
@@ -75,9 +81,10 @@ struct SellerInsertBusinessNum: View{
                     .buttonStyle(PlainButtonStyle())
                 }
                 .padding()
+                Spacer()
             }
             .padding()
-        }
+        //}
     }
 }
 
