@@ -57,7 +57,7 @@ struct SellerOrder: View {
                 .frame(maxWidth: .infinity, alignment: .center)
 
 
-                VStack(alignment: .leading,spacing:8) {
+                VStack(alignment: .leading,spacing:8) {//db에서 받을 떄는 배열로 받아서 반복 렌더링.
                         Text("주문상품")
                             .font(.headline)
                         Divider()
