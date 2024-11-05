@@ -8,45 +8,61 @@
 import SwiftUI
 
 struct SellerRootView: View {
-    @State private var selectedTab = 1  // 기본적으로 위시리스트가 선택된 상태로 시작
-
+    @Binding var selectedTab: Int  // 기본적으로 홈화면이 선택된 상태로 시작
+    @State private var isOnRootView = true
+    
     var body: some View {
-        VStack {
-            Spacer()  // 상단 화면을 채울 공간
-
-            // 선택된 탭에 따라 다른 화면을 보여줌
-            if selectedTab == 0 {//라우팅같은 기능?
-                SellerHome()
-            } else if selectedTab == 1 {
-                SellerOrder()
-            } else {
-                SellerMyPage()
+        NavigationStack{
+            VStack {
+                Spacer()  // 상단 화면을 채울 공간
+                
+                // 선택된 탭에 따라 다른 화면을 보여줌
+                Group {
+                    if selectedTab == 0 {
+                        SellerHome()
+                            .onAppear { isOnRootView = true }  // Reset when appearing
+                    } else if selectedTab == 1 {
+                        SellerOrder()
+                            .onAppear { isOnRootView = true }
+                    } else if selectedTab == 2 {
+                        SellerMyPage()
+                            .onAppear { isOnRootView = true }
+                    }
+                }
+                
+                Spacer()
+                
+                if isOnRootView {
+                    Divider()  // 경계선을 추가하는 SwiftUI의 기본 뷰
+                        .background(Color.gray)  // 경계선의 색상 설정
+                        .padding(.bottom,5)
+                    
+                    // 하단 커스텀 네비게이션 바
+                    HStack(spacing:30) {
+                        Spacer()
+                        
+                        customTabButton(icon: "house", tabIndex: 0)
+                        
+                        Spacer()
+                        
+                        customTabButton(icon: "heart", tabIndex: 1)
+                        
+                        Spacer()
+                        
+                        customTabButton(icon: "person.crop.circle", tabIndex: 2)
+                        
+                        Spacer(minLength: 20)  // 바깥쪽 좌우에 간격 추가
+                    }
+                    .frame(height: 60)
+                    .cornerRadius(30)  // 모서리 둥글게 처리 (옵션)
+                }
             }
-
-            Spacer()
-            
-            Divider()  // 경계선을 추가하는 SwiftUI의 기본 뷰
-            .background(Color.gray)  // 경계선의 색상 설정
-            .padding(.bottom,5)
-
-            // 하단 커스텀 네비게이션 바
-            HStack(spacing:30) {
-                Spacer()
-
-                customTabButton(icon: "house", tabIndex: 0)
-
-                Spacer()
-
-                customTabButton(icon: "heart", tabIndex: 1)
-
-                Spacer()
-
-                customTabButton(icon: "person.crop.circle", tabIndex: 2)
-
-                Spacer(minLength: 20)  // 바깥쪽 좌우에 간격 추가
+            .onAppear {
+                isOnRootView = true
             }
-            .frame(height: 60)
-            .cornerRadius(30)  // 모서리 둥글게 처리 (옵션)
+            .onDisappear {
+                isOnRootView = false
+            }
         }
     }
 
@@ -70,7 +86,8 @@ struct SellerRootView: View {
 }
 
 #Preview {
-    SellerRootView()
+    @Previewable @State var selectedTab = 0
+    SellerRootView(selectedTab: $selectedTab)
 }
 
 
