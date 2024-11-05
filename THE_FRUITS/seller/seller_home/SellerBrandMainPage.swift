@@ -11,27 +11,24 @@ struct SellerBrandMainPage: View{
     @State private var brand: Brand
     
     init(brand: Brand) {
-            _brand = State(initialValue: brand)
+        _brand = State(initialValue: brand)
     }
     
     var body: some View{
-        //NavigationView{
-            VStack{
-                BackArrowButton(title: "\(brand.name)")
-                Spacer()
-                Text("\(brand.name)")
-                    .font(.largeTitle)
-                    .padding()
-                
-                Image(brand.imageName)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 150, height: 150)
-                    .cornerRadius(10)
-                Spacer()
-            }
-        //}
-        //.navigationTitle(brand.name)
+        VStack{
+            BackArrowButton(title: "\(brand.name)")
+            Spacer()
+            Text("\(brand.name)")
+                .font(.largeTitle)
+                .padding()
+            
+            Image(brand.imageName)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 150, height: 150)
+                .cornerRadius(10)
+            Spacer()
+        }
     }
 }
 

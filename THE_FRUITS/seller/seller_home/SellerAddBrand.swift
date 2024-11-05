@@ -9,7 +9,6 @@ import SwiftUI
 
 struct SellerAddBrand: View{
     var body: some View{
-//        NavigationView{
             VStack{
                 BackArrowButton(title: "")
                 Spacer()
@@ -44,7 +43,6 @@ struct SellerAddBrand: View{
                 Spacer()
             }
         }
- //   }
 }
 
 struct SellerInsertBusinessNum: View{
@@ -52,7 +50,6 @@ struct SellerInsertBusinessNum: View{
     @State private var selectedTab = 0
     
     var body: some View{
-        //NavigationView{
             VStack{
                 BackArrowButton(title: "")
                 Spacer()
@@ -84,7 +81,6 @@ struct SellerInsertBusinessNum: View{
                 Spacer()
             }
             .padding()
-        //}
     }
 }
 
