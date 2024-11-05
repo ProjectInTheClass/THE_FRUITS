@@ -67,7 +67,6 @@ struct MenuSection: View {
             .frame(width: UIScreen.main.bounds.width - 30, height: 100)
             .overlay(
                 HStack {
-                   
                     Spacer()
                    NavigationButton(
                        icon: nil,
@@ -88,10 +87,6 @@ struct MenuSection: View {
             )
     }
 }
-
-
-
-
 
 struct CustomerMyPage: View {
     var body: some View {
