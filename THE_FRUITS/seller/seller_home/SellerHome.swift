@@ -31,7 +31,7 @@ struct SellerHome: View {
                 
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 20){
                     ForEach(brands, id: \.name){ brand in
-                        NavigationLink(destination: SellerBrandMainPage(brand: brand)){
+                        NavigationLink(destination: SellerBrandMainPage(brand: brand).navigationBarBackButtonHidden(true)){
                             VStack{
                                 Image(brand.imageName)
                                     .resizable()
@@ -59,7 +59,7 @@ struct SellerHome: View {
     }
     // Add button view
     private var addButton: some View {
-        NavigationLink(destination: SellerAddBrand()){
+        NavigationLink(destination: SellerAddBrand().navigationBarBackButtonHidden(true)){
             RoundedRectangle(cornerRadius: 10)
                 .stroke(Color.gray, lineWidth: 1)
                 .frame(width: 150, height: 150)
