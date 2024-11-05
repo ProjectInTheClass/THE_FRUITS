@@ -15,8 +15,10 @@ struct SellerBrandMainPage: View{
     }
     
     var body: some View{
-        NavigationView{
+        //NavigationView{
             VStack{
+                BackArrowButton(title: "\(brand.name)")
+                Spacer()
                 Text("\(brand.name)")
                     .font(.largeTitle)
                     .padding()
@@ -26,9 +28,10 @@ struct SellerBrandMainPage: View{
                     .scaledToFit()
                     .frame(width: 150, height: 150)
                     .cornerRadius(10)
+                Spacer()
             }
-        }
-        .navigationTitle(brand.name)
+        //}
+        //.navigationTitle(brand.name)
     }
 }
 

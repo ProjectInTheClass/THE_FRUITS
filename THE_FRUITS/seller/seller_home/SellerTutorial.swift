@@ -18,23 +18,28 @@ struct SellerTutorial: View{
     @State private var currentPage = 0
     
     var body: some View{
-        NavigationView{
+        //NavigationView{
             VStack{
-                Button(action: {
-                    // Open the Hometax application
-                    if let url = URL(string: "hometax://") {
-                        UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                Spacer()
+                HStack{
+                    BackArrowButton(title: "")
+                    Button(action: {
+                        // Open the Hometax application
+                        if let url = URL(string: "hometax://") {
+                            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                        }
+                    }) {
+                        Text("홈택스로 바로가기")
+                            .font(.headline)
+                            .padding() // Add some padding inside the button
+                            .frame(width: 200, height: 40) // Set a fixed size for the button
+                            .background(Color.lightGreen) // Background color
+                            .foregroundColor(.white) // Text color
+                            .cornerRadius(15) // Rounded corners
+                            .multilineTextAlignment(.center) // Center the text in the button
                     }
-                }) {
-                    Text("홈택스로 바로가기")
-                        .font(.headline)
-                        .padding() // Add some padding inside the button
-                        .frame(width: 200, height: 40) // Set a fixed size for the button
-                        .background(Color.lightGreen) // Background color
-                        .foregroundColor(.white) // Text color
-                        .cornerRadius(15) // Rounded corners
-                        .multilineTextAlignment(.center) // Center the text in the button
                 }
+                Spacer()
                     Text("사업자 번호 등록 가이드")
                         .font(.title2)
                         .bold()
@@ -63,7 +68,7 @@ struct SellerTutorial: View{
                 .padding(.top, 10) // Padding for the indicator
                 Spacer()
                 
-                NavigationLink(destination: SellerInsertBusinessNum()){
+                NavigationLink(destination: SellerInsertBusinessNum().navigationBarBackButtonHidden(true)){
                     HStack{
                         Spacer()
                         Text("사업자 번호 입력하기")
@@ -75,9 +80,10 @@ struct SellerTutorial: View{
                     }
                 }
                 .padding(.top, 20)
+                Spacer()
             }
             .padding()
-        }
+        //}
     }
 }
 
