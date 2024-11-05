@@ -33,11 +33,11 @@ struct BackArrowButton: View {
             .padding(.leading, 14)
             .padding(.bottom, 20)
             .background(Color.white)
-            
-            Rectangle()
-                .frame(height: 2) // Divider 높이 설정
-                .foregroundColor(Color.gray)
-                .padding(.horizontal, 16)
+//            
+//            Rectangle()
+//                .frame(height: 2) // Divider 높이 설정
+//                .foregroundColor(Color.gray)
+//                .padding(.horizontal, 16)
         }
     }
 }
