@@ -11,11 +11,11 @@ struct SellerBrandMainPage: View{
     @State private var brand: Brand
     
     init(brand: Brand) {
-            _brand = State(initialValue: brand)
+        _brand = State(initialValue: brand)
     }
     
     var body: some View{
-        //NavigationView{
+        NavigationView{ //to be deleted
             VStack{
                 BackArrowButton(title: "\(brand.name)")
                 Spacer()
@@ -30,8 +30,7 @@ struct SellerBrandMainPage: View{
                     .cornerRadius(10)
                 Spacer()
             }
-        //}
-        //.navigationTitle(brand.name)
+        }
     }
 }
 
