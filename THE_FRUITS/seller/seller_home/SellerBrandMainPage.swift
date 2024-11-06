@@ -15,19 +15,21 @@ struct SellerBrandMainPage: View{
     }
     
     var body: some View{
-        VStack{
-            BackArrowButton(title: "\(brand.name)")
-            Spacer()
-            Text("\(brand.name)")
-                .font(.largeTitle)
-                .padding()
-            
-            Image(brand.imageName)
-                .resizable()
-                .scaledToFit()
-                .frame(width: 150, height: 150)
-                .cornerRadius(10)
-            Spacer()
+        NavigationView{ //to be deleted
+            VStack{
+                BackArrowButton(title: "\(brand.name)")
+                Spacer()
+                Text("\(brand.name)")
+                    .font(.largeTitle)
+                    .padding()
+                
+                Image(brand.imageName)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 150, height: 150)
+                    .cornerRadius(10)
+                Spacer()
+            }
         }
     }
 }
