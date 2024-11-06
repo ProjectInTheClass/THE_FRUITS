@@ -14,7 +14,7 @@ struct NavigationButton<Destination: View>: View {
     
     
     var body: some View {
-            NavigationLink(destination: destination.navigationBarBackButtonHidden(true)) {
+            NavigationLink(destination: destination) {
                 HStack {
                     if let icon = icon { // icon이 nil이 아닐 경우에만 Image 표시
                         Image(systemName: icon)

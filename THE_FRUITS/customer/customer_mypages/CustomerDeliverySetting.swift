@@ -7,7 +7,7 @@ struct CustomerDeliverySetting: View {
     
     var body: some View {
             VStack{
-                BackArrowButton(title: "배송지 설정")
+                //BackArrowButton(title: "배송지 설정")
                 DeliveryAddress(onIconClick:{
                     isNavigatingToChangeAddress=true
                 })
@@ -17,7 +17,7 @@ struct CustomerDeliverySetting: View {
                 
                     .navigationDestination(isPresented: $isNavigatingToChangeAddress){
                         CustomerChangeAddress()
-                            .navigationBarBackButtonHidden(true) // '뒤로가기' 버튼을 숨김
+                            //.navigationBarBackButtonHidden(true) // '뒤로가기' 버튼을 숨김
                     }
             }
         }
