@@ -7,6 +7,14 @@
 
 import SwiftUI
 
+struct FruitItem: Identifiable {
+    var id: String
+    var name: String
+    var imageUrl: String
+    var tags: [String]
+    var likes: Int
+}
+
 struct CustomerHome: View {
     
     @State private var searchText:String=""

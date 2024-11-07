@@ -1,46 +1,54 @@
 import SwiftUI
 
 struct CustomerRootView: View {
-    @State private var selectedTab = 1  // 기본적으로 위시리스트가 선택된 상태로 시작
-
+    @State private var selectedTab = 1  // 기본적으로
+    @State private var isOnRootView=true
+    
     var body: some View {
-        VStack {
-            Spacer()  // 상단 화면을 채울 공간
-
-            // 선택된 탭에 따라 다른 화면을 보여줌
-            if selectedTab == 0 {//라우팅같은 기능?
-                CustomerHome()
-            } else if selectedTab == 1 {
-                CustomerWishList()
-            }else{
-                CustomerMyPage()
+        NavigationStack{
+            VStack{
+                Spacer()
+                
+                Group{
+                    if selectedTab==0{
+                        CustomerHome()
+                            .onAppear{isOnRootView=true}
+                    }else if selectedTab==1{
+                        CustomerWishList()
+                            .onAppear{isOnRootView=true}
+                    }else if selectedTab==2{
+                        CustomerMyPage()
+                            .onAppear{isOnRootView=true}
+                    }
+                }
             }
-            
-
             Spacer()
             
-            Divider()  // 경계선을 추가하는 SwiftUI의 기본 뷰
-            .background(Color.gray)  // 경계선의 색상 설정
-            .padding(.bottom,5)
-
-            // 하단 커스텀 네비게이션 바
-            HStack(spacing:30) {
-                Spacer()
-
-                customTabButton(icon: "house", tabIndex: 0)
-
-                Spacer()
-
-                customTabButton(icon: "heart", tabIndex: 1)
-
-                Spacer()
-
-                customTabButton(icon: "person.crop.circle", tabIndex: 2)
-
-                Spacer(minLength: 20)  // 바깥쪽 좌우에 간격 추가
+            if isOnRootView{
+                Divider()
+                    .background(Color.gray)
+                    .padding(.bottom,5)
+                
+                HStack(spacing: 30){
+                    Spacer()
+                    customTabButton(icon: "house", tabIndex: 0)
+                    
+                    Spacer()
+                    customTabButton(icon: "heart", tabIndex: 1)
+                    Spacer()
+                    customTabButton(icon: "person.crop.circle", tabIndex: 2)
+                    
+                    Spacer(minLength: 20)
+                }
+                .frame(height:60)
+                .cornerRadius(30)
             }
-            .frame(height: 60)
-            .cornerRadius(30)  // 모서리 둥글게 처리 (옵션)
+        }
+        .onAppear{
+            isOnRootView=true
+        }
+        .onDisappear{
+            isOnRootView=false
         }
     }
 
@@ -66,7 +74,6 @@ struct CustomerRootView: View {
 #Preview {
     CustomerRootView()
 }
-
 
 
 // Color 확장 추가 (Hex 코드를 처리하는 기능)
