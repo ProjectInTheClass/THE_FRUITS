@@ -22,7 +22,7 @@ struct SellerRootView: View {
                         SellerHome()
                             .onAppear { isOnRootView = true }  // Reset when appearing
                     } else if selectedTab == 1 {
-                        SellerOrder()
+                        SellerOrderDetail()
                             .onAppear { isOnRootView = true }
                     } else if selectedTab == 2 {
                         SellerMyPage()
