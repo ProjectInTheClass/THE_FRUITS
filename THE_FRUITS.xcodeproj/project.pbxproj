@@ -42,26 +42,9 @@
 		EF0D151B2CBBE1A2007CAABD /* THE_FRUITSUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = THE_FRUITSUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		EF9C82B62CD08E78002A8422 /* Exceptions for "THE_FRUITS" folder in "THE_FRUITS" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"fonts/Magnolia Script.otf",
-				"fonts/Philosopher-Bold.ttf",
-				"fonts/Philosopher-BoldItalic.ttf",
-				"fonts/Philosopher-Italic.ttf",
-				"fonts/Philosopher-Regular.ttf",
-			);
-			target = EF0D15002CBBE1A1007CAABD /* THE_FRUITS */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		EF0D15032CBBE1A1007CAABD /* THE_FRUITS */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				EF9C82B62CD08E78002A8422 /* Exceptions for "THE_FRUITS" folder in "THE_FRUITS" target */,
-			);
 			path = THE_FRUITS;
 			sourceTree = "<group>";
 		};

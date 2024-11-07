@@ -13,7 +13,7 @@ struct CustomerOrderList: View {
         VStack {
             Text("주문내역")
         }
-        Spacer()
+        
     }
     
 }

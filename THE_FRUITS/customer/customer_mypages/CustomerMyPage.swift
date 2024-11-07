@@ -42,7 +42,7 @@ struct ProfileSection: View {
                         NavigationButton(
                         icon: "person.fill",
                         title: "내정보 설정",
-                        destination: CustomerDeliverySetting()
+                        destination: CustomerInfoSetting()
                         )
                         .padding(.top, 10)
                         

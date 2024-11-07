@@ -33,6 +33,7 @@ struct BackArrowButton: View {
             .padding(.leading, 14)
             .padding(.bottom, 20)
             .background(Color.white)
+
         }
     }
 }

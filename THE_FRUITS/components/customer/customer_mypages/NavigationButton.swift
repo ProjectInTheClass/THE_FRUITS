@@ -12,9 +12,9 @@ struct NavigationButton<Destination: View>: View {
     let title: String
     let destination: Destination
     
+    
     var body: some View {
-        NavigationStack{
-            NavigationLink(destination: destination.navigationBarBackButtonHidden(true)) {
+            NavigationLink(destination: destination) {
                 HStack {
                     if let icon = icon { // icon이 nil이 아닐 경우에만 Image 표시
                         Image(systemName: icon)
@@ -28,6 +28,5 @@ struct NavigationButton<Destination: View>: View {
                     .font(.custom("Pretendard-SemiBold", size: 18))
             }
             .buttonStyle(PlainButtonStyle()) // 기본 버튼 스타일 제거
-        }
     }
 }

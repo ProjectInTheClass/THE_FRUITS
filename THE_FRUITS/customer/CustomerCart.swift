@@ -9,9 +9,10 @@ import SwiftUI
 
 struct CustomerCart: View {
     var body: some View {
-        BackArrowButton(title: "장바구니")
+        
         Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
-        Spacer()
+        NavigationButton(icon: nil, title :"test", destination: CustomerChangeAddress())
+                
     }
 }
 
