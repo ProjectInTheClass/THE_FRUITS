@@ -12,7 +12,6 @@ struct CustomerDeliverySetting: View {
                     isNavigatingToChangeAddress=true
                 })
                 .padding(.top,10)
-                
                 Spacer()
                 
                     .navigationDestination(isPresented: $isNavigatingToChangeAddress){

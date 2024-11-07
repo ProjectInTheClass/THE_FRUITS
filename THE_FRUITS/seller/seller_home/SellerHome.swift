@@ -55,7 +55,6 @@ struct SellerHome: View {
 
                 Spacer()//위로 슉 올리기
         }
-            //.navigationTitle("내 브랜드")
     }
     // Add button view
     private var addButton: some View {

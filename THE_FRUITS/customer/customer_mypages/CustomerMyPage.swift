@@ -42,7 +42,7 @@ struct ProfileSection: View {
                         NavigationButton(
                         icon: "person.fill",
                         title: "내정보 설정",
-                        destination: CustomerDeliverySetting()
+                        destination: CustomerInfoSetting()
                         )
                         .padding(.top, 10)
                         
@@ -67,7 +67,6 @@ struct MenuSection: View {
             .frame(width: UIScreen.main.bounds.width - 30, height: 100)
             .overlay(
                 HStack {
-                   
                     Spacer()
                    NavigationButton(
                        icon: nil,
@@ -88,10 +87,6 @@ struct MenuSection: View {
             )
     }
 }
-
-
-
-
 
 struct CustomerMyPage: View {
     var body: some View {
