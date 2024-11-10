@@ -18,6 +18,17 @@ struct FruitItem: Identifiable {
 struct CustomerHome: View {
     
     @State private var searchText:String=""
+    private var fruits = [
+            FruitItem(id: "1", name: "온브릭스", imageUrl: "https://example.com/image1.jpg", tags: ["애플망고", "수박", "샤인머스캣"], likes: 27),
+            FruitItem(id: "2", name: "수플린", imageUrl: "https://example.com/image2.jpg", tags: ["사과", "애플망고", "샤인머스캣"], likes: 30),
+            FruitItem(id: "3", name: "수플린", imageUrl: "https://example.com/image2.jpg", tags: ["사과", "애플망고", "샤인머스캣"], likes: 30),
+            FruitItem(id: "4", name: "수플린", imageUrl: "https://example.com/image2.jpg", tags: ["사과", "애플망고", "샤인머스캣"], likes: 30),
+            FruitItem(id: "5", name: "수플린", imageUrl: "https://example.com/image2.jpg", tags: ["사과", "애플망고", "샤인머스캣"], likes: 30),
+            FruitItem(id: "6", name: "과일창고", imageUrl: "https://example.com/image2.jpg", tags: ["사과", "애플망고", "샤인머스캣"], likes: 30),
+            FruitItem(id: "7", name: "수플린", imageUrl: "https://example.com/image2.jpg", tags: ["사과", "애플망고", "샤인머스캣"], likes: 30),
+            FruitItem(id: "8", name: "수플린", imageUrl: "https://example.com/image2.jpg", tags: ["사과", "애플망고", "샤인머스캣"], likes: 30)
+        ]
+
     var body: some View {
         NavigationView{
             VStack{
@@ -44,6 +55,14 @@ struct CustomerHome: View {
                 .padding(.leading,12)
 
                 Spacer()//위로 슉 올리기
+                
+                ScrollView{
+                    LazyVGrid(columns: [GridItem(.flexible()),GridItem(.flexible())], spacing:16) {
+                        ForEach(fruits){
+                            fruit in FruitCardView(brand:fruit)
+                        }
+                    }
+                }
             }
  
 
