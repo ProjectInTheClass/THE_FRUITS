@@ -40,9 +40,11 @@ struct FruitCardView: View {
                 Spacer()
             }
             // 상점 이름//클릭하면 해당 상점으로 이동해야 함
-            Text("[\(brand.name)]")
-                .font(.headline)
-                .foregroundColor(Color.gray)
+            NavigationLink(destination : BrandHome(storeName:brand.name)){
+                Text("[\(brand.name)]")
+                    .font(.headline)
+                    .foregroundColor(Color.gray)
+            }
    
 
             // 태그
