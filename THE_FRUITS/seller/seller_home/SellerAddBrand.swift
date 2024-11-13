@@ -9,40 +9,38 @@ import SwiftUI
 
 struct SellerAddBrand: View{
     var body: some View{
-        NavigationView{ //to be deleted
-            VStack{
-                BackArrowButton(title: "")
-                Spacer()
-                Text("사업자 등록증이 있으신가요?")
-                    .font(.title)
-                    .bold()
-                    .padding()
-                
-                Spacer().frame(height: 30)
-                
-                NavigationLink(destination: SellerInsertBusinessNum().navigationBarBackButtonHidden(true)){
-                    RoundedRectangle(cornerRadius: 50)
-                        .foregroundColor(.black)
-                        .frame(width: 350, height: 60)
-                        .overlay(
-                            Text("예")
-                                .foregroundColor(.white)
-                        )
-                }
-                
-                Spacer().frame(height: 20)
-                
-                NavigationLink(destination: SellerTutorial().navigationBarBackButtonHidden(true)){
-                    RoundedRectangle(cornerRadius: 50)
-                        .stroke(Color.black, lineWidth: 1)
-                        .frame(width: 350, height: 60)
-                        .overlay(
-                            Text("아니오")
-                                .foregroundColor(.black)
-                        )
-                }
-                Spacer()
+        VStack{
+            BackArrowButton(title: "")
+            Spacer()
+            Text("사업자 등록증이 있으신가요?")
+                .font(.title)
+                .bold()
+                .padding()
+            
+            Spacer().frame(height: 30)
+            
+            NavigationLink(destination: SellerInsertBusinessNum().navigationBarBackButtonHidden(true)){
+                RoundedRectangle(cornerRadius: 50)
+                    .foregroundColor(.black)
+                    .frame(width: 350, height: 60)
+                    .overlay(
+                        Text("예")
+                            .foregroundColor(.white)
+                    )
             }
+            
+            Spacer().frame(height: 20)
+            
+            NavigationLink(destination: SellerTutorial().navigationBarBackButtonHidden(true)){
+                RoundedRectangle(cornerRadius: 50)
+                    .stroke(Color.black, lineWidth: 1)
+                    .frame(width: 350, height: 60)
+                    .overlay(
+                        Text("아니오")
+                            .foregroundColor(.black)
+                    )
+            }
+            Spacer()
         }
     }
 }
