@@ -92,6 +92,6 @@ let orderData = [
 ]
 
 #Preview {
-    let sampleBrand = Brand(name: "onbrix", imageName: "onbrix")
+    let sampleBrand = Brand(name: "onbrix", logo: "onbrix")
     SellerOrderList(brand: sampleBrand)
 }

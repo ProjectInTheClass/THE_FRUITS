@@ -22,7 +22,7 @@ struct SellerBrandMainPage: View{
                 .font(.largeTitle)
                 .padding()
             
-            Image(brand.imageName)
+            Image(brand.logo)
                 .resizable()
                 .scaledToFit()
                 .frame(width: 150, height: 150)
@@ -33,6 +33,6 @@ struct SellerBrandMainPage: View{
 }
 
 #Preview {
-    let sampleBrand = Brand(name: "onbrix", imageName: "onbrix")
+    let sampleBrand = Brand(name: "onbrix", logo: "onbrix")
     SellerBrandMainPage(brand: sampleBrand)
 }
