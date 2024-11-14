@@ -23,7 +23,7 @@ struct Login: View {
     @State private var navigationPath = NavigationPath() // path depending on seller or customer
     @State private var destination: Destination? = nil
     
-    @EnvironmentObject var firestoreManager: FireStoreManager // to connect with firebase
+    @EnvironmentObject var firestoreManager: FireStoreManager // StateObject 대신 EnvironmentObject를 써서 로그인 후에도 해당 유저에 대한 데이터가 저장되도록 한다
     
     var userType:String
         
@@ -82,6 +82,8 @@ struct Login: View {
                                         print("로그인 클릭")
                                         print("user type: ", userType)
                                     }*/
+                                    
+                                    // 로그인 클릭 시 userType에 따라 화면 전환
                                     NavigationLink(destination: destinationView, tag: .seller, selection: $destination) { EmptyView() }
                                                         NavigationLink(destination: destinationView, tag: .customer, selection: $destination) { EmptyView() }
 
@@ -111,7 +113,7 @@ struct Login: View {
         }
     }
     @ViewBuilder
-    private var destinationView: some View {
+    private var destinationView: some View { // 유저에 따라 맞는 화면 전환
         if destination == .seller {
             SellerRootView(selectedTab: $selectedTab).navigationBarBackButtonHidden(true)
         } else if destination == .customer {
@@ -119,7 +121,7 @@ struct Login: View {
         }
     }
     
-    func signInUser() {
+    func signInUser() { // user credentials check
         Auth.auth().signIn(withEmail: user_id, password: password) { authResult, error in
             if let error = error {
                 print("Error logging in: \(error.localizedDescription)")
@@ -127,6 +129,11 @@ struct Login: View {
                 print("User logged in: \(user.uid)")
                 firestoreManager.fetchUserData(userType: userType, userId: user.uid)
                 
+                // if seller, store the sellerid to fetch data about the corresponding seller in other screens
+                if userType == "seller"{
+                    firestoreManager.sellerid = user.uid
+                }
+
                 destination = userType == "seller" ? .seller : .customer
                 loginStatus = true
             }

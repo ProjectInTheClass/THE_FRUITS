@@ -15,6 +15,7 @@ struct SellerAddProduct: View{
     @State private var productType: String = ""
     
     @State private var selectedTab = 0
+    @State private var sellerid: String = ""
     
     var body: some View{
         ScrollView {
