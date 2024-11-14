@@ -1,35 +1,50 @@
-//
-//  BrandHome.swift
-//  THE_FRUITS
-//
-//  Created by 김진주 on 11/12/24.
-//
-
 import SwiftUI
 
-struct ProductItem: Identifiable {
+class ProductItem: Identifiable, ObservableObject {
     let id: String
     let name: String
     let price: Int
     let imageUrl: String
+    @Published var f_count: Int  // 수량을 관리할 상태 변수
+    
+    init(id: String, name: String, price: Int, imageUrl: String, f_count: Int = 0) {
+        self.id = id
+        self.name = name
+        self.price = price
+        self.imageUrl = imageUrl
+        self.f_count = f_count
+    }
+}
+//클래스로 관리
+class ObservableProducts: ObservableObject {
+    @Published var items: [ProductItem]
+    init() {
+        self.items = [
+            ProductItem(id: "1", name: "프리미엄 고당도 애플망고", price: 7500, imageUrl: "https://example.com/mango.jpg"),
+            ProductItem(id: "2", name: "골드 키위", price: 5500, imageUrl: "https://example.com/kiwi.jpg")
+        ]
+    }
 }
 
 
 struct BrandHome: View {
-    let storeName:String
-    let storeDesc:String="Whatever Your Pick!"
-    let storeLikes:Int=27
-    let products : [ProductItem] = [ProductItem(id:"1",name:"프리미엄 고당도 애플망고",price:7500,imageUrl: "https://example.com/mango.jpg"),
-        ProductItem(id:"2",name:"골드 키위",price:5500,imageUrl: "https://example.com/kiwi.jpg")]
+    let storeName: String
+    let storeDesc: String = "Whatever Your Pick!"
+    let storeLikes: Int = 27
+    @StateObject private var products = ObservableProducts()
     let backgroundUrl: String = "https://example.com/background.jpg"
     let logoUrl: String = "https://example.com/store-logo.jpg"
-    @State private var searchFruit:String=""
-    
+    @State private var searchFruit: String = ""
+    @State private var isCartPresented = false // 장바구니 드롭업 뷰 상태
+
     var body: some View {
-        VStack(alignment: .leading){
+        VStack(alignment: .leading) {
             SearchBar(searchText: $searchFruit)
+                .padding(.top,30)
             Spacer()
-            ZStack(alignment: .bottomLeading){
+            
+            // Background image and store details section
+            ZStack(alignment: .bottomLeading) {
                 // 상위 배경 이미지
                 AsyncImage(url: URL(string: backgroundUrl)) { image in
                     image
@@ -42,90 +57,163 @@ struct BrandHome: View {
                         .frame(height: 200)
                 }
                 
-                AsyncImage(url:URL(string:logoUrl)){
-                    image in image
-                        .resizable()
-                        .aspectRatio(contentMode: .fit)
-                        .frame(width:80,height: 80)
-                        .padding(12)
-                        .background(Color.white.opacity(0.8))
-                        .cornerRadius(8)
-                        .padding(.bottom,-45)
-                }placeholder: {
-                    Color.gray.opacity(0.2)
-                        .frame(width: 80,height:80)
-                        .cornerRadius(8)
-                        .padding(.bottom, -45)
-                }
-            }
-            
-            .padding(.bottom,40)
-                VStack(alignment: .leading, spacing: 4){
-                    Text(storeName)
-                        .font(.title)
-                        .fontWeight(.bold)
-                    Text(storeDesc)
-                        .font(.subheadline)
-                        .foregroundStyle(.gray)
-                    HStack(spacing:8){
-                        Image(systemName: "heart.fill")
-                            .foregroundStyle(.red)
-                        Text("\(storeLikes) Likes")
-                            .font(.subheadline)
-                            .foregroundStyle(.gray)
+                // Store logo and details
+                HStack(alignment: .bottom) {
+                    AsyncImage(url: URL(string: logoUrl)) { image in
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 90, height: 90)
+                            .background(Color.white.opacity(0.8))
+                            .cornerRadius(8)
+                            .padding(.bottom, 1)
+                    } placeholder: {
+                        Color.gray.opacity(0.2)
+                            .frame(width: 90, height: 90)
+                            .cornerRadius(8)
+                            .padding(.bottom, 1)
                     }
                     
-                }
-            
-            .padding(.bottom,16)
-            
-            Divider()
-                .padding(.vertical,8)
-            
-            
-            Text("상품 목록")
-                .font(.headline)
-                .padding(.bottom,8)
-            
-            ScrollView{
-                VStack(spacing:16){
-                    //상품 목록 렌더링
-                    ForEach(products){ product in
-                        HStack{
-                            AsyncImage(url:URL(string:product.imageUrl)){ image in image
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: 100,height:100)
-                                    .cornerRadius(8)
-                            } placeholder:{
-                                Color.gray.opacity(0.2)
-                                    .frame(width: 60, height: 80)
-                                    .cornerRadius(8)
+                    HStack {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(storeName)
+                                .font(.title)
+                                .fontWeight(.bold)
+                            Text(storeDesc)
+                                .font(.custom("Pretendard-SemiBold", size: 16))
+                                .foregroundColor(Color("darkGreen"))
+                        }
+                        .padding(.bottom, -70)
+                        Spacer()
+                        
+                        VStack {
+                            CustomButton(title: "가게정보", background: .yellow, foregroundColor: .black, width: 70, height: 30, size: 14, cornerRadius: 15) {
+                                print("가게 정보 버튼이 눌렸습니다.")
                             }
-                            
-                            VStack(alignment: .leading){
-                                Text(product.name)
-                                    .font(.headline)
-                                Text("\(product.price)원")
+                            HStack(spacing: 8) {
+                                Image(systemName: "heart.fill")
+                                    .foregroundColor(.red)
+                                Text("\(storeLikes)")
                                     .font(.subheadline)
                                     .foregroundColor(.gray)
-                                
                             }
-                            Spacer()
                         }
-                        .padding(.vertical,8)
+                        .padding(.top, 60)
+                        .padding(.leading, 8)
+                    }
+                    .padding(.leading, 8)
+                }
+                .padding(.leading, -14)
+                .padding(.horizontal, 12)
+                .padding(.bottom, -60)
+            }
+            .padding(.bottom, 53)
+            
+            Divider()
+                .frame(height: 2)
+                .padding(.vertical, 8)
+            
+            ScrollView {
+                VStack(spacing: 16) {
+                    ForEach(products.items) { product in
+                        ProductRow(product: product)
                     }
                 }
             }
             
+            
+            // 담은 옵션 보기 드롭업 버튼
+            Button(action: {
+                isCartPresented = true
+            }) {
+                Text("담은 옵션 보기")
+                    .font(.custom("Pretendard-SemiBold", size: 16))
+                    .frame(maxWidth: .infinity,alignment: .leading)
+                    .frame(height:20)
+                    .background(Color("lightGreen"))
+                    .foregroundColor(.black)
+                    .cornerRadius(5)
+            }
+            //Spacer()
+        
+            .padding(.bottom,-10)
+            
+            Divider()
+                .frame(height: 1)
+                .background(Color.gray.opacity(0.4)) // 선 색상 조정
+            
+            HStack {
+                Button(action: {
+                    //addToCart()
+                }) {
+                    Text("장바구니 추가")
+                        .font(.headline)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color("darkGreen"))
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                }
+
+                Button(action: {
+                    //purchaseNow()
+                }) {
+                    Text("바로 구매하기")
+                        .font(.headline)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color("beige"))
+                        .foregroundColor(Color("darkGreen"))
+                        .cornerRadius(10)
+                }
+            }
+            .padding()
+            .sheet(isPresented: $isCartPresented) {
+                CartListView()
+            }
         }
-        //Text("\(storeName)")
         .padding()
         .navigationTitle(storeName)
         .navigationBarTitleDisplayMode(.inline)
     }
 }
 
+struct ProductRow: View {
+    @ObservedObject var product: ProductItem
+    
+    var body: some View {
+        ZStack {
+            CustomStepper(f_count: $product.f_count)
+                .padding(.leading, -172)
+                .padding(.top, 100)
+            
+            HStack {
+                AsyncImage(url: URL(string: product.imageUrl)) { image in
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                        .frame(width: 170, height: 170)
+                        .cornerRadius(8)
+                } placeholder: {
+                    Color.gray.opacity(0.2)
+                        .frame(width: 170, height: 170)
+                        .cornerRadius(8)
+                }
+                
+                VStack(alignment: .leading) {
+                    Text(product.name)
+                        .font(.headline)
+                    Text("\(product.price)원")
+                        .font(.subheadline)
+                        .foregroundColor(.black)
+                }
+                Spacer()
+            }
+            .padding(.vertical, 8)
+        }
+    }
+}
+
 #Preview {
-    BrandHome(storeName:"온브릭스")
+    BrandHome(storeName: "온브릭스")
 }
