@@ -117,7 +117,7 @@ struct Login: View {
         if destination == .seller {
             SellerRootView(selectedTab: $selectedTab).navigationBarBackButtonHidden(true)
         } else if destination == .customer {
-            CustomerRootView().navigationBarBackButtonHidden(true)
+            CustomerRootView(selectedTab: $selectedTab).navigationBarBackButtonHidden(true)
         }
     }
     
