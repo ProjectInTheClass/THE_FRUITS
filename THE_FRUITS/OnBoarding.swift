@@ -15,11 +15,11 @@
 import SwiftUI
 
 struct OnBoarding: View {
-    @EnvironmentObject var firestoreManager: FireStoreManager
+    @EnvironmentObject var firestoreManager: FireStoreManager // EnvironmentObject를 써서 같은 유저에 대해 데이터가 저장되고 공유되도록 한다
     
     var body: some View {
 
-        NavigationView{
+        NavigationStack{
             ZStack{
                 Image("onBoardingImageOriginal")
                     .resizable()
@@ -49,21 +49,11 @@ struct OnBoarding: View {
                             .background(Color(red: 233/255, green: 229/255, blue: 219/255)) // 두 번째 버튼 색상으로 변경
                             .cornerRadius(40)
                     }
-                    Text("firebase name: \(firestoreManager.name)")
-                    Text("firebase username: \(firestoreManager.username)")
-                    Text("firebase password: \(firestoreManager.password)")
-
-        
-        
                 }
-      
-            
+
             }
         }
-
-      
     }
-    
 }
 
 #Preview {
