@@ -7,18 +7,22 @@
 
 import SwiftUI
 
-struct Brand{
+struct Brand{ // should be defined in other file
     let name: String
-    let imageName: String
+    let logo: String
 }
 
 struct SellerHome: View {
-    @State private var sellerid = "troY2ZvhHxGfrSDCIggI"
+    @EnvironmentObject var firestoreManager: FireStoreManager // can fetch data about the sellerid stored in FirebaseManager shared with other screens
+    //@State private var sellerid = "troY2ZvhHxGfrSDCIggI"
     
-    let brands = [
-        Brand(name: "onbrix", imageName: "onbrix"),
-        Brand(name: "Orange", imageName: "orange")
+    
+    let brand = [ // to be deleted
+        Brand(name: "onbrix", logo: "onbrix"),
+        Brand(name: "Orange", logo: "orange")
     ]
+    
+    @State private var brands: [Brand] = [] // to be deleted
     
     var body: some View {
         NavigationView{
@@ -30,10 +34,10 @@ struct SellerHome: View {
                 Spacer().frame(height: 50)
                 
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 20){
-                    ForEach(brands, id: \.name){ brand in
+                    ForEach(firestoreManager.brands, id: \.name){ brand in
                         NavigationLink(destination: SellerBrandMainPage(brand: brand).navigationBarBackButtonHidden(true)){
                             VStack{
-                                Image(brand.imageName)
+                                Image(brand.logo)
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width:150, height: 150)
@@ -52,6 +56,9 @@ struct SellerHome: View {
                 Spacer()
             }
                 .padding(.leading,12)
+                .onAppear{
+                    firestoreManager.fetchBrands()
+                }
 
                 Spacer()//위로 슉 올리기
         }

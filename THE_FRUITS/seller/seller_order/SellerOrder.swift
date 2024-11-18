@@ -11,8 +11,8 @@ struct SellerOrder: View{
     @State private var sellerid = "troY2ZvhHxGfrSDCIggI"
     
     let brands = [
-        Brand(name: "onbrix", imageName: "onbrix"),
-        Brand(name: "Orange", imageName: "orange")
+        Brand(name: "onbrix", logo: "onbrix"),
+        Brand(name: "Orange", logo: "orange")
     ]
     
     var body: some View {
@@ -28,7 +28,7 @@ struct SellerOrder: View{
                     ForEach(brands, id: \.name){ brand in
                         NavigationLink(destination: SellerBrandMainPage(brand: brand).navigationBarBackButtonHidden(true)){
                             VStack{
-                                Image(brand.imageName)
+                                Image(brand.logo)
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width:150, height: 150)
