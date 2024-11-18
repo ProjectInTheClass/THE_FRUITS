@@ -1,53 +1,57 @@
-//
-//  Stepper.swift
-//  THE_FRUITS
-//
-//  Created by 김진주 on 10/22/24.
-//
-
 import SwiftUI
 
 struct CustomStepper: View {
-    @Binding var f_count : Int
+    @Binding var f_count: Int
+    var width: CGFloat
+    var height: CGFloat
+    //@Binding var initialValue: Int
 
     var body: some View {
-        HStack{
-            Button(action:{
-                if f_count>0{
-                    f_count-=1
+        HStack(spacing: 0) { // 간격을 완전히 없앰
+            // Minus Button
+            Button(action: {
+                if f_count > 0 {
+                    f_count -= 1
                     print("Minus button tapped, f_count: \(f_count)")
                 }
-            }){
+            }) {
                 Image(systemName: "minus")
-                    .frame(width:44,height:44)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: height * 0.3, height: height * 0.3) // 버튼 크기 조정
                     .foregroundColor(.black)
-                
             }
+
+            // Count Text
             Text("\(f_count)")
-                .frame(width:50,alignment: .center)
-                .font(.system(size:20,weight:.regular))
-            
-            Button(action:{
-                    f_count+=1
+                .frame(width: width, height: height)
+                .font(.system(size: height * 0.5, weight: .regular)) // 높이에 비례한 폰트 크기
+                .multilineTextAlignment(.center)
+
+            // Plus Button
+            Button(action: {
+                f_count += 1
                 print("Plus button tapped, f_count: \(f_count)")
-            }){
+            }) {
                 Image(systemName: "plus")
-                    .frame(width:44,height:44)
-                    .foregroundStyle(.black)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: height * 0.3, height: height * 0.3) // 버튼 크기 조정
+                    .foregroundColor(.black)
             }
         }
-        .frame(width:115,height:8)
-        .padding()
-        .overlay(
-            RoundedRectangle(cornerRadius: 25)
-                .stroke(Color.black,lineWidth: 2)
+        .padding(8)
+        .frame(width: width + height * 2, height: height) // 텍스트와 버튼을 포함하는 크기 설정
+        .background(
+            RoundedRectangle(cornerRadius: height / 2)
+                .stroke(Color.black, lineWidth: 2)
         )
         .accessibilityElement(children: .combine)
     }
 }
 
 #Preview {
-    StatefulPreviewWrapper(0) { CustomStepper(f_count: $0) }
+    StatefulPreviewWrapper(0) { CustomStepper(f_count: $0, width: 80, height: 40) }
 }
 
 // StatefulPreviewWrapper: 상태를 관리할 수 있는 래퍼 구조체

@@ -1,9 +1,9 @@
 import SwiftUI
 
 class ProductItem: Identifiable, ObservableObject {
-    let id: String
-    let name: String
-    let price: Int
+    var id: String
+    var name: String
+    var price: Int
     let imageUrl: String
     @Published var f_count: Int  // 수량을 관리할 상태 변수
     
@@ -31,7 +31,7 @@ struct BrandHome: View {
     let storeName: String
     let storeDesc: String = "Whatever Your Pick!"
     let storeLikes: Int = 27
-    @StateObject private var products = ObservableProducts()
+    @StateObject private var products = ObservableProducts()//전역 상태 관리
     let backgroundUrl: String = "https://example.com/background.jpg"
     let logoUrl: String = "https://example.com/store-logo.jpg"
     @State private var searchFruit: String = ""
@@ -170,22 +170,22 @@ struct BrandHome: View {
             .padding()
             .sheet(isPresented: $isCartPresented) {
                 CartListView()
+                    .environmentObject(products)
             }
         }
         .padding()
         .navigationTitle(storeName)
         .navigationBarTitleDisplayMode(.inline)
+        
     }
+        
 }
 
 struct ProductRow: View {
     @ObservedObject var product: ProductItem
     
     var body: some View {
-        ZStack {
-            CustomStepper(f_count: $product.f_count)
-                .padding(.leading, -172)
-                .padding(.top, 100)
+//        ZStack {
             
             HStack {
                 AsyncImage(url: URL(string: product.imageUrl)) { image in
@@ -203,14 +203,18 @@ struct ProductRow: View {
                 VStack(alignment: .leading) {
                     Text(product.name)
                         .font(.headline)
+
                     Text("\(product.price)원")
                         .font(.subheadline)
                         .foregroundColor(.black)
+                    CustomStepper(f_count: $product.f_count,width:120,height:20)
+                        .padding(.leading, -173)
+                        .padding(.top, 80)
                 }
                 Spacer()
             }
             .padding(.vertical, 8)
-        }
+       // }
     }
 }
 
