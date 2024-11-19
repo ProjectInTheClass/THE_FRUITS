@@ -26,7 +26,7 @@ struct Login: View {
     @EnvironmentObject var firestoreManager: FireStoreManager // StateObject 대신 EnvironmentObject를 써서 로그인 후에도 해당 유저에 대한 데이터가 저장되도록 한다
     
     var userType:String
-        
+    
     var body: some View {
         NavigationStack{
             ZStack {
@@ -122,23 +122,32 @@ struct Login: View {
     }
     
     func signInUser() {
-        print("usertype,\(userType)")// user credentials check
+        // user credentials check
         Auth.auth().signIn(withEmail: user_id, password: password) { authResult, error in
             if let error = error {
-                print("Error logging in: \(error.localizedDescription)")
+                //print("Error logging in: \(error.localizedDescription)")
             } else if let user = authResult?.user {
                 print("User logged in: \(user.uid)")
-                firestoreManager.fetchUserData(userType: userType, userId: user.uid)
-                // if seller, store the sellerid to fetch data about the corresponding seller in other screens
-                if userType == "seller"{
-                    firestoreManager.sellerid = user.uid
-                    destination = .seller
+                firestoreManager.validateLogin(userType: userType, userId: user.uid) { isValid in
+                    if isValid {
+                        firestoreManager.fetchUserData(userType: userType, userId: user.uid)
+                        // if seller, store the sellerid to fetch data about the corresponding seller in other screens
+                        if userType == "seller"{
+                            firestoreManager.sellerid = user.uid
+                            destination = .seller
+                        }
+                        else if userType == "customer"{
+                            firestoreManager.customerid = user.uid
+                            destination = .customer
+                        }
+                        loginStatus = true
+                    }
+                    else {
+                        print("Login failed. Invalid \(userType). Logging out.")
+                        try? Auth.auth().signOut()
+                    }
+                    
                 }
-                else if userType == "customer"{
-                    firestoreManager.customerid = user.uid
-                    destination = .customer
-                }
-                loginStatus = true
             }
         }
     }

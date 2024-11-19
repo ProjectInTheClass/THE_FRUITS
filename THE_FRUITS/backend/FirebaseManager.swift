@@ -62,6 +62,28 @@ class FireStoreManager: ObservableObject {
         }
     }
     
+    func validateLogin(userType: String, userId: String, completion: @escaping (Bool) -> Void) {
+        let collection = userType == "customer" ? "customer" : "seller"
+        let db = Firestore.firestore()
+        
+        // Firestore에서 해당 uid가 존재하는지 확인
+        db.collection(collection).document(userId).getDocument { (document, error) in
+            if let error = error {
+                print("Error validating login: \(error.localizedDescription)")
+                completion(false)
+            } else if let document = document, document.exists {
+                // uid가 해당 컬렉션에 존재
+                print("\(userType) with uid \(userId) is valid.")
+                completion(true)
+            } else {
+                // uid가 해당 컬렉션에 없음
+                //print("Error: \(userType) with uid \(userId) does not exist in the \(collection) collection.")
+                completion(false)
+            }
+        }
+    }
+
+    
     func fetchBrands() { // to fetch brands owned by user with sellerid
         guard !sellerid.isEmpty else {
             print("Seller ID is empty. Cannot fetch brands.")
