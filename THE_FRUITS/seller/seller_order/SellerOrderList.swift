@@ -50,21 +50,28 @@ struct SellerOrderList: View{
                     .frame(height: 1) // Adjust thickness if needed
                 
                 ForEach(orderData) { order in
-                    HStack (spacing: 16){
-                        Text(order.number)
-                            .foregroundColor(order.status == "입금 미완료" ? .red : .primary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        
-                        Text(order.name)
-                            .foregroundColor(order.status == "입금 미완료" ? .red : .primary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        
-                        Text(order.status)
-                            .foregroundColor(order.status == "입금 미완료" ? .red : .primary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                    NavigationLink(
+                        destination: SellerOrderDetail(
+                            orderNumber: order.number,
+                            customerName: order.name
+                        )
+                    ) {
+                        HStack (spacing: 16){
+                            Text(order.number)
+                                .foregroundColor(order.status == "입금 미완료" ? .red : .primary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            Text(order.name)
+                                .foregroundColor(order.status == "입금 미완료" ? .red : .primary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            
+                            Text(order.status)
+                                .foregroundColor(order.status == "입금 미완료" ? .red : .primary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .padding(.vertical, 10)
+                        .padding(.horizontal, 10)
                     }
-                    .padding(.vertical, 10)
-                    .padding(.horizontal, 10)
                 }
             }
             .background(Color(red: 0.925, green: 0.925, blue: 0.925)) // #ECECEC

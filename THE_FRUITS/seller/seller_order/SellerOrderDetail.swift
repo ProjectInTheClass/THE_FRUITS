@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct SellerOrderDetail: View {
+    let orderNumber: String
+    let customerName: String
     @State private var selectedStatus: String = "" // 초기값을 빈 문자열로 설정
     @State private var isFirstLoad: Bool = true // 첫 로드 여부를 확인하기 위한 변수
     @State private var showModal :Bool=false
@@ -246,5 +248,5 @@ struct DeliveryInputModal: View{
 }
 
 #Preview {
-    SellerOrderDetail()
+    SellerOrderDetail(orderNumber: "1", customerName: "홍바다")
 }
