@@ -30,18 +30,20 @@ class ObservableProducts: ObservableObject {
 struct BrandHome: View {
     let storeName: String
     let storeDesc: String = "Whatever Your Pick!"
-    let storeLikes: Int = 27
+    @Binding var storeLikes: Int //
     @StateObject private var products = ObservableProducts()//전역 상태 관리
     let backgroundUrl: String = "https://example.com/background.jpg"
     let logoUrl: String = "https://example.com/store-logo.jpg"
     @State private var searchFruit: String = ""
     @State private var isCartPresented = false // 장바구니 드롭업 뷰 상태
+    @State private var isModalPresented = false // 모달창 상태
+    @State var tmp_storeLikes = 27 // State 변수 정의
 
     var body: some View {
         VStack(alignment: .leading) {
-            SearchBar(searchText: $searchFruit)
-                .padding(.top,30)
-            Spacer()
+//            SearchBar(searchText: $searchFruit)
+//                .padding(.top,30)
+//            Spacer()
             
             // Background image and store details section
             ZStack(alignment: .bottomLeading) {
@@ -144,7 +146,7 @@ struct BrandHome: View {
             
             HStack {
                 Button(action: {
-                    //addToCart()
+                    isModalPresented = true // 모달창 표시
                 }) {
                     Text("장바구니 추가")
                         .font(.headline)
@@ -172,6 +174,9 @@ struct BrandHome: View {
                 CartListView()
                     .environmentObject(products)
             }
+            .alert("장바구니에 담겼습니다.", isPresented: $isModalPresented, actions: {
+                Button("확인", role: .cancel) { isModalPresented = false }
+            })
         }
         .padding()
         .navigationTitle(storeName)
@@ -203,7 +208,6 @@ struct ProductRow: View {
                 VStack(alignment: .leading) {
                     Text(product.name)
                         .font(.headline)
-
                     Text("\(product.price)원")
                         .font(.subheadline)
                         .foregroundColor(.black)
@@ -217,7 +221,7 @@ struct ProductRow: View {
        // }
     }
 }
-
-#Preview {
-    BrandHome(storeName: "온브릭스")
-}
+//
+//#Preview {
+//    BrandHome(storeName: "온브릭스",storeLikes: $storeLikes)
+//}

@@ -40,7 +40,7 @@ struct FruitCardView: View {
                 Spacer()
             }
             // 상점 이름//클릭하면 해당 상점으로 이동해야 함
-            NavigationLink(destination : BrandHome(storeName:brand.name)){
+            NavigationLink(destination : BrandHome(storeName:brand.name,storeLikes: $currentLikes)){
                 Text("[\(brand.name)]")
                     .font(.headline)
                     .foregroundColor(Color.gray)
