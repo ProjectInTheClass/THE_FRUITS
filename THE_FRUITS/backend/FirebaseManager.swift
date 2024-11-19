@@ -16,6 +16,7 @@ class FireStoreManager: ObservableObject {
     @Published var password: String = ""
     @Published var brands: [Brand] = []
     
+    
     /*init() {
         fetchData()
     }*/

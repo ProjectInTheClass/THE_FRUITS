@@ -56,8 +56,9 @@ struct OnBoarding: View {
     }
 }
 
+
+
 #Preview {
     OnBoarding()
         .environmentObject(FireStoreManager())
 }
-
