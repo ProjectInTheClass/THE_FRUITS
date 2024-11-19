@@ -22,7 +22,7 @@ struct SellerRootView: View {
                         SellerHome()
                             .onAppear { isOnRootView = true }  // Reset when appearing
                     } else if selectedTab == 1 {
-                        SellerOrderDetail()
+                        SellerOrder()
                             .onAppear { isOnRootView = true }
                     } else if selectedTab == 2 {
                         SellerMyPage()
@@ -45,7 +45,7 @@ struct SellerRootView: View {
                         
                         Spacer()
                         
-                        customTabButton(icon: "heart", tabIndex: 1)
+                        customTabButton(icon: "clipboard", tabIndex: 1)
                         
                         Spacer()
                         

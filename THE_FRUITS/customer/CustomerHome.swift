@@ -18,12 +18,23 @@ struct FruitItem: Identifiable {
 struct CustomerHome: View {
     
     @State private var searchText:String=""
+    private var fruits = [
+            FruitItem(id: "1", name: "온브릭스", imageUrl: "https://example.com/image1.jpg", tags: ["애플망고", "수박", "샤인머스캣"], likes: 27),
+            FruitItem(id: "2", name: "수플린", imageUrl: "https://example.com/image2.jpg", tags: ["사과", "애플망고", "샤인머스캣"], likes: 30),
+            FruitItem(id: "3", name: "과일창고", imageUrl: "https://example.com/image2.jpg", tags: ["사과", "애플망고", "샤인머스캣"], likes: 30),
+            FruitItem(id: "4", name: "프루트샵", imageUrl: "https://example.com/image2.jpg", tags: ["사과", "애플망고", "샤인머스캣"], likes: 30),
+            FruitItem(id: "5", name: "프룻프룻", imageUrl: "https://example.com/image2.jpg", tags: ["사과", "애플망고", "샤인머스캣"], likes: 30),
+            FruitItem(id: "6", name: "대청과일", imageUrl: "https://example.com/image2.jpg", tags: ["사과", "애플망고", "샤인머스캣"], likes: 30),
+            FruitItem(id: "7", name: "수플린", imageUrl: "https://example.com/image2.jpg", tags: ["사과", "애플망고", "샤인머스캣"], likes: 30),
+            FruitItem(id: "8", name: "수플린", imageUrl: "https://example.com/image2.jpg", tags: ["사과", "애플망고", "샤인머스캣"], likes: 30)
+        ]
+
     var body: some View {
         NavigationView{
             VStack{
                 SearchBar(searchText: $searchText)
                     .padding(.top,45)
-                    .padding(.bottom,3)
+                    .padding(.bottom,6)
                 
                 HStack(){
                     CustomButton(title: "최신등록순",
@@ -42,8 +53,18 @@ struct CustomerHome: View {
                     Spacer()
                 }
                 .padding(.leading,12)
+                .padding(.bottom, 10) // 버튼과 그리드 사이 간격 추가
 
                 Spacer()//위로 슉 올리기
+                
+                ScrollView{
+                    LazyVGrid(columns: [GridItem(.flexible()),GridItem(.flexible())], spacing:14) {
+                        ForEach(fruits){
+                            fruit in FruitCardView(brand:fruit)
+                        }
+                    }
+                    .padding(.horizontal, 4)
+                }
             }
  
 

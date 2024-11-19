@@ -1,25 +1,24 @@
-//
 //  MyPage.swift
 //  THE_FRUITS
 //
-//  Created by 김진주 on 10/19/24.
+//  Created by Bada Hong on 11/19/24.
 //
 
 import SwiftUI
 
 struct SellerProfileSection: View {
     let name: String = "김철수"
-    
     var body: some View {
         RoundedRectangle(cornerRadius: 20)
             .fill(Color("beige"))
-            .frame(width: UIScreen.main.bounds.width - 40, height: 180)
+            .frame(width: UIScreen.main.bounds.width - 30, height: 180)
             .overlay(
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
-                        Image(systemName: "applelogo")
+                        Image("appleLogo")
                             .resizable()
-                            .frame(width: 33, height: 40)
+                            .frame(width: 50, height: 50)
+                            .clipShape(Circle())
                         
                         Text(name)
                             .font(.custom("Pretendard-SemiBold", size: 18))
@@ -32,79 +31,50 @@ struct SellerProfileSection: View {
                     Divider()
                     
                     VStack {
-                        SellerProfileButton(
-                            icon: "person.fill",
-                            title: "내정보 설정",
-                            action: {
-                                print("내정보 설정 버튼 클릭됨")
-                            }
-                        )
                         
-                        SellerDeliverySettingButton(
-                            icon: "person.fill",
-                            title: "배송지 설정",
-                            destination: SellerDeliverySetting()
+                        NavigationButton(
+                        icon: "person.fill",
+                        title: "내정보 설정",
+                        destination: SellerInfoSetting()
                         )
+                        .padding(.top, 10)
+                        .padding(.bottom, 10)
+                        
                     }
                 }
             )
     }
 }
 
-struct SellerProfileButton: View {
-    let icon: String
-    let title: String
-    let action: () -> Void
-    
+struct SellerMenuSection: View {
     var body: some View {
-        Button(action: action) {
-            HStack {
-                Image(systemName: icon)
-                    .resizable()
-                    .frame(width: 20, height: 23)
-                Text(title)
-                    .font(.custom("Pretendard-SemiBold", size: 18))
-                    .padding(.leading, 10)
-                Spacer()
-            }
-            .padding(.leading, 25)
-            .padding(.top, 5)
-        }
-        .buttonStyle(PlainButtonStyle()) // 기본 버튼 스타일 제거
-    }
-}
-
-struct SellerDeliverySettingButton<Destination: View>: View {
-    let icon: String
-    let title: String
-    let destination: Destination
-    
-    var body: some View {
-        NavigationLink(destination: destination) {
-            HStack {
-                Image(systemName: icon)
-                    .resizable()
-                    .frame(width: 20, height: 23)
-                Text(title)
-                    .font(.custom("Pretendard-SemiBold", size: 18))
-                    .padding(.leading, 10)
-                Spacer()
-            }
-            .padding(.leading, 25)
-            .padding(.top, 5)
-        }
-        .buttonStyle(PlainButtonStyle()) // 기본 버튼 스타일 제거
+        RoundedRectangle(cornerRadius: 20)
+            .fill(Color("beige"))
+            .frame(width: UIScreen.main.bounds.width - 30, height: 70)
+            .overlay(
+                HStack {
+                    Spacer()
+                   NavigationButton(
+                       icon: nil,
+                       title: "주문내역", // 글자 길이에 따라 영역을 차지하는 넓이가 달라짐 -> 수정필요?
+                       destination: SellerOrder()
+                   )
+                    Spacer()
+               }
+            )
     }
 }
 
 struct SellerMyPage: View {
     var body: some View {
-        NavigationView {
-            VStack {
-                ProfileSection()
+        NavigationStack {
+            VStack() {
+                SellerProfileSection()
+                    .padding(.top, 40)
+                    .padding(.bottom, 15)
+                SellerMenuSection()
                 Spacer()
             }
-            .navigationTitle("마이페이지")
         }
     }
 }
@@ -112,3 +82,8 @@ struct SellerMyPage: View {
 #Preview {
     SellerMyPage()
 }
+
+
+
+
+

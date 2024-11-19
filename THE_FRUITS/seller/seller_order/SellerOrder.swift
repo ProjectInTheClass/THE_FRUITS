@@ -26,7 +26,7 @@ struct SellerOrder: View{
                 
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 20){
                     ForEach(brands, id: \.name){ brand in
-                        NavigationLink(destination: SellerBrandMainPage(brand: brand).navigationBarBackButtonHidden(true)){
+                        NavigationLink(destination: SellerOrderList(brand: brand)){
                             VStack{
                                 Image(brand.logo)
                                     .resizable()
