@@ -78,26 +78,26 @@ struct Login: View {
                                     Spacer().frame(height: 20)
                                     
                                     /*CustomButton(title: "로그인",background:Color(red: 26/255, green: 50/255, blue: 27/255), foregroundColor:.white,width:300,height:60,size:14, cornerRadius:10){
-                                        signInUser()
-                                        print("로그인 클릭")
-                                        print("user type: ", userType)
-                                    }*/
+                                     signInUser()
+                                     print("로그인 클릭")
+                                     print("user type: ", userType)
+                                     }*/
                                     
                                     // 로그인 클릭 시 userType에 따라 화면 전환
                                     NavigationLink(destination: destinationView, tag: .seller, selection: $destination) { EmptyView() }
-                                                        NavigationLink(destination: destinationView, tag: .customer, selection: $destination) { EmptyView() }
-
-                                                        Button(action: {
-                                                            signInUser()
-                                                        }) {
-                                                            Text("로그인")
-                                                                .frame(maxWidth: .infinity)
-                                                                .padding()
-                                                                .background(Color(.darkGreen))
-                                                                .foregroundColor(.white)
-                                                                .cornerRadius(10)
-                                                        }
-                                                        .frame(width: 300, height: 60)
+                                    NavigationLink(destination: destinationView, tag: .customer, selection: $destination) { EmptyView() }
+                                    
+                                    Button(action: {
+                                        signInUser()
+                                    }) {
+                                        Text("로그인")
+                                            .frame(maxWidth: .infinity)
+                                            .padding()
+                                            .background(Color(.darkGreen))
+                                            .foregroundColor(.white)
+                                            .cornerRadius(10)
+                                    }
+                                    .frame(width: 300, height: 60)
                                 }
                                     .padding() // 내부 여백 추가
                             )
@@ -121,20 +121,23 @@ struct Login: View {
         }
     }
     
-    func signInUser() { // user credentials check
+    func signInUser() {
+        print("usertype,\(userType)")// user credentials check
         Auth.auth().signIn(withEmail: user_id, password: password) { authResult, error in
             if let error = error {
                 print("Error logging in: \(error.localizedDescription)")
             } else if let user = authResult?.user {
                 print("User logged in: \(user.uid)")
                 firestoreManager.fetchUserData(userType: userType, userId: user.uid)
-                
                 // if seller, store the sellerid to fetch data about the corresponding seller in other screens
                 if userType == "seller"{
                     firestoreManager.sellerid = user.uid
+                    destination = .seller
                 }
-
-                destination = userType == "seller" ? .seller : .customer
+                else if userType == "customer"{
+                    firestoreManager.customerid = user.uid
+                    destination = .customer
+                }
                 loginStatus = true
             }
         }

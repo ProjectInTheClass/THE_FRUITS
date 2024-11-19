@@ -15,7 +15,7 @@ class FireStoreManager: ObservableObject {
     @Published var username: String = ""
     @Published var password: String = ""
     @Published var brands: [Brand] = []
-    
+    @Published var customerid: String = ""
     
     /*init() {
         fetchData()
@@ -48,6 +48,10 @@ class FireStoreManager: ObservableObject {
                 if userType == "seller" { // store sellerid if it is seller
                     self.sellerid = data?["sellerid"] as? String ?? ""
                     print("sellerid in fetch: ", self.sellerid)
+                }
+                else if userType == "customer"{
+                    self.customerid = data?["customerid"] as? String ?? ""
+                    print("customerid in fetch: ", self.customerid)
                 }
                 self.name = data?["name"] as? String ?? ""
                 self.username = data?["username"] as? String ?? ""
