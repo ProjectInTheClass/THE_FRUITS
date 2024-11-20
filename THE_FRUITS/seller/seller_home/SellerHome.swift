@@ -16,6 +16,10 @@ struct SellerHome: View {
     @EnvironmentObject var firestoreManager: FireStoreManager // can fetch data about the sellerid stored in FirebaseManager shared with other screens
     //@State private var sellerid = "troY2ZvhHxGfrSDCIggI"
     
+    @State private var sampleProducts = [
+        ProductItem(id: "1", name: "프리미엄 고당도 애플망고", price: 7500, imageUrl: "https://example.com/mango.jpg"),
+        ProductItem(id: "2", name: "골드 키위", price: 5500, imageUrl: "https://example.com/kiwi.jpg")
+    ]
     
     let brand = [ // to be deleted
         Brand(name: "onbrix", logo: "onbrix"),
@@ -35,7 +39,7 @@ struct SellerHome: View {
                 
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 20){
                     ForEach(firestoreManager.brands, id: \.name){ brand in
-                        NavigationLink(destination: SellerBrandMainPage(brand: brand).navigationBarBackButtonHidden(true)){
+                        NavigationLink(destination: SellerBrandMainPage(brand: brand, products: $sampleProducts)){
                             VStack{
                                 Image(brand.logo)
                                     .resizable()
@@ -55,12 +59,12 @@ struct SellerHome: View {
                 
                 Spacer()
             }
-                .padding(.leading,12)
-                .onAppear{
-                    firestoreManager.fetchBrands()
-                }
-
-                Spacer()//위로 슉 올리기
+            .padding(.leading,12)
+            .onAppear{
+                firestoreManager.fetchBrands()
+            }
+            
+            Spacer()//위로 슉 올리기
         }
     }
     // Add button view
@@ -80,4 +84,5 @@ struct SellerHome: View {
 
 #Preview {
     SellerHome()
+        .environmentObject(FireStoreManager())
 }
