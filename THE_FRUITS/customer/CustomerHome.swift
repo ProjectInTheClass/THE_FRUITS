@@ -16,7 +16,6 @@ struct FruitItem: Identifiable {
 }
 
 struct CustomerHome: View {
-    
     @State private var searchText:String=""
     private var fruits = [
             FruitItem(id: "1", name: "온브릭스", imageUrl: "https://example.com/image1.jpg", tags: ["애플망고", "수박", "샤인머스캣"], likes: 27),

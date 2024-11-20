@@ -13,9 +13,11 @@ class FireStoreManager: ObservableObject {
     @Published var sellerid: String = ""
     @Published var name: String = ""
     @Published var username: String = ""
+    @Published var userId: String = ""
     @Published var password: String = ""
     @Published var brands: [Brand] = []
-    
+    @Published var cartId:String=""
+    @Published var brandname:String=""//을 전역변수로
     /*init() {
         fetchData()
     }*/
@@ -88,6 +90,48 @@ class FireStoreManager: ObservableObject {
                 }
             }
     }
+    
+    
+    func fetchProductsForBrand(products: ObservableProducts) {//브랜드별 상품 목록 가지고 오기
+        guard !sellerid.isEmpty else {
+            print("Seller ID is empty. Cannot fetch products.")
+            return
+        }
+
+        let db = Firestore.firestore()
+        db.collection("products")
+            .whereField("brandId", isEqualTo: sellerid) // 브랜드 ID로 필터링
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("Error fetching products: \(error)")
+                    return
+                }
+
+                guard let documents = snapshot?.documents else {
+                    print("No products found for the brand")
+                    return
+                }
+
+                let fetchedProducts = documents.compactMap { doc -> ProductItem? in
+                    let data = doc.data()
+                    guard
+                        let id = data["id"] as? String,
+                        let name = data["name"] as? String,
+                        let price = data["price"] as? Int,
+                        let imageUrl = data["imageUrl"] as? String
+                    else {
+                        return nil
+                    }
+                    return ProductItem(id: id, name: name, price: price, imageUrl: imageUrl)
+                }
+
+                DispatchQueue.main.async {
+                    products.items = fetchedProducts // UI 업데이트를 위해 메인 스레드에서 실행
+                }
+            }
+    }
+
+    
 }
 
 
