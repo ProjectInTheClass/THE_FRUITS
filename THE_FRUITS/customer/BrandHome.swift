@@ -18,9 +18,9 @@ class ProductItem: Identifiable, ObservableObject {
 }
 //클래스로 관리
 class ObservableProducts: ObservableObject {
-    @Published var items: [ProductItem]
+    @Published var items: [ProductItem]=[]
     //사실은 브랜드에 맞는 products json을 페치받아와야 함
-    init() {
+    /*init() {
         self.items = [
             ProductItem(id: "1", name: "프리미엄 고당도 애플망고", price: 7500, imageUrl: "https://example.com/mango.jpg"),
             ProductItem(id: "2", name: "골드 키위", price: 5500, imageUrl: "https://example.com/kiwi.jpg"),
@@ -29,15 +29,16 @@ class ObservableProducts: ObservableObject {
             ProductItem(id: "5", name: "하우스 겨울딸기", price: 8500, imageUrl: "https://example.com/kiwi.jpg"),
             ProductItem(id: "6", name: "골드 키위", price: 5500, imageUrl: "https://example.com/kiwi.jpg"),
         ]
-    }
+    }*/
 }
 struct BrandHome: View {
-    let storeName: String
+    let storeName: String//FruitCardView에서 프롭으로 받음.
     let storeDesc: String = "Whatever Your Pick!"
     @Binding var storeLikes: Int //
     @StateObject private var products = ObservableProducts()//전역 상태 관리
     let backgroundUrl: String = "https://example.com/background.jpg"
     let logoUrl: String = "https://example.com/store-logo.jpg"
+    
     @State private var searchFruit: String = ""
     @State private var isCartPresented = false // 장바구니 드롭업 뷰 상태
     @State private var isModalPresented = false // 모달창 상태
@@ -120,7 +121,7 @@ struct BrandHome: View {
             ScrollView {
                 VStack(spacing: 16) {
                     ForEach(products.items) { product in
-                        ProductRow(product: product)
+                        ProductRow(product: product)//가져온 데이터 렌더링
                     }
                 }
             }
@@ -149,7 +150,7 @@ struct BrandHome: View {
             HStack {
                 Button(action: {
                     //1이상 고른 과일을 {"num":f_count,"productid":db에 담긴 productid}
-                    saveProductsToDB(products: products, firestoreManager: FireStoreManager())
+                    //saveProductsToDB(products: products, firestoreManager: FireStoreManager())
                     
                     isModalPresented = true // 모달창 표시
                 }) {
@@ -197,8 +198,27 @@ struct BrandHome: View {
                 }
             }
         }
+        .onAppear{
+            loadProducts()
+        }
         
     }
+    
+    func loadProducts() {
+        firestoreManager.fetchProductIdsForBrand(storeName: storeName) { productIds in
+            print("Fetched Product IDs: \(productIds)") // 디버그 출력
+
+            firestoreManager.fetchProducts(for: productIds) { fetchedProducts in
+                print("Fetched Products: \(fetchedProducts)") // 디버그 출력
+
+                DispatchQueue.main.async {
+                    self.products.items = fetchedProducts
+                    print("Items updated: \(self.products.items)") // 업데이트 확인
+                }
+            }
+        }
+    }
+    
         
 }
 
@@ -239,7 +259,7 @@ struct ProductRow: View {
     }
 }
 
-func prepareProductsForDB(products:ObservableProducts)->[ [String:Any]]{
+/*func prepareProductsForDB(products:ObservableProducts)->[ [String:Any]]{
     return products.items.map{ product in
         [
         "productid":product.id,
@@ -275,7 +295,7 @@ func saveProductsToDB(products:ObservableProducts,firestoreManager:FireStoreMana
         }
     }
     
-}
+}*/
 //
 //#Preview {
 //    BrandHome(storeName: "온브릭스",storeLikes: $storeLikes)

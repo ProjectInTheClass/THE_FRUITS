@@ -19,25 +19,25 @@ class FireStoreManager: ObservableObject {
     @Published var cartId:String=""
     @Published var brandname:String=""//을 전역변수로
     /*init() {
-        fetchData()
-    }*/
+     fetchData()
+     }*/
     func fetchData() { // firebase test with specific user
-            let db = Firestore.firestore()
-            let docRef = db.collection("seller").document("troY2ZvhHxGfrSDCIggI")
-            docRef.getDocument { (document, error) in
-                guard error == nil else {
-                    print("error", error ?? "")
-                    return
-                }
-                if let document = document, document.exists {
-                    let data = document.data()
-                    if let data = data {
-                        self.name = data["name"] as? String ?? ""
-                        self.username = data["username"] as? String ?? ""
-                        self.password = data["password"] as? String ?? ""
-                    }
+        let db = Firestore.firestore()
+        let docRef = db.collection("seller").document("troY2ZvhHxGfrSDCIggI")
+        docRef.getDocument { (document, error) in
+            guard error == nil else {
+                print("error", error ?? "")
+                return
+            }
+            if let document = document, document.exists {
+                let data = document.data()
+                if let data = data {
+                    self.name = data["name"] as? String ?? ""
+                    self.username = data["username"] as? String ?? ""
+                    self.password = data["password"] as? String ?? ""
                 }
             }
+        }
     }
     
     func fetchUserData(userType: String, userId: String) {
@@ -90,48 +90,89 @@ class FireStoreManager: ObservableObject {
                 }
             }
     }
-    
-    
-    func fetchProductsForBrand(products: ObservableProducts) {//브랜드별 상품 목록 가지고 오기
-        guard !sellerid.isEmpty else {
-            print("Seller ID is empty. Cannot fetch products.")
-            return
-        }
-
+    /* storeName으로 브랜드테이블에 접근*/
+    func fetchProductIdsForBrand(storeName: String, completion: @escaping ([String]) -> Void) {
         let db = Firestore.firestore()
-        db.collection("products")
-            .whereField("brandId", isEqualTo: sellerid) // 브랜드 ID로 필터링
+        db.collection("brand")
+            .whereField("name", isEqualTo: storeName)
             .getDocuments { snapshot, error in
                 if let error = error {
-                    print("Error fetching products: \(error)")
+                    print("Error fetching brand: \(error.localizedDescription)")
+                    completion([])
                     return
                 }
-
-                guard let documents = snapshot?.documents else {
-                    print("No products found for the brand")
+                
+                guard let documents = snapshot?.documents, !documents.isEmpty else {
+                    print("No brand found with storeName: \(storeName)")
+                    completion([])
                     return
                 }
-
-                let fetchedProducts = documents.compactMap { doc -> ProductItem? in
-                    let data = doc.data()
-                    guard
-                        let id = data["id"] as? String,
-                        let name = data["name"] as? String,
-                        let price = data["price"] as? Int,
-                        let imageUrl = data["imageUrl"] as? String
-                    else {
-                        return nil
+                
+                let document = documents[0]
+                print("Fetched brand document: \(document.data())")
+                
+                if let productids = document.data()["productid"] as? [Any] {
+                    // `compactMap`을 사용하여 DocumentReference와 String 처리
+                    let ids = productids.compactMap { item -> String? in
+                        if let ref = item as? DocumentReference {
+                            return ref.documentID
+                        } else if let id = item as? String {
+                            return id
+                        } else {
+                            return nil
+                        }
                     }
-                    return ProductItem(id: id, name: name, price: price, imageUrl: imageUrl)
-                }
-
-                DispatchQueue.main.async {
-                    products.items = fetchedProducts // UI 업데이트를 위해 메인 스레드에서 실행
+                    completion(ids)
+                } else {
+                    print("No productid array found in brand document")
+                    completion([])
                 }
             }
     }
-
     
+    
+    
+    func fetchProducts(for productids: [String], completion: @escaping ([ProductItem]) -> Void) {
+        let db = Firestore.firestore()
+        var fetchedProducts: [ProductItem] = []
+        let dispatchGroup = DispatchGroup() // 동기 처리를 위해 DispatchGroup 사용
+        
+        for productid in productids {
+            dispatchGroup.enter()
+            db.collection("product").document(productid).getDocument { document, error in
+                if let error = error {
+                    print("Error fetching product \(productid): \(error.localizedDescription)")
+                } else if let document = document, document.exists {
+                    print("Fetched product document for ID \(productid): \(document.data() ?? [:])")
+                    if let data = document.data(), let price = data["price"] as? Int {
+                        print("Price: \(price)")
+                    } else {
+                        print("Price not found or invalid")
+                    }
+                    
+                    if let data = document.data() {
+                        let id = data["productid"] as? String ?? "Unknown"
+                        let name = data["info"] as? String ?? "No Info"
+                        let price = data["price"] as? Int ?? 0
+                        let imageUrl = data["imageUrl"] as? String ?? ""
+                        print("Creating ProductItem with id: \(id), name: \(name), price: \(price), imageUrl: \(imageUrl)")
+                        let product = ProductItem(id: id, name: name, price: price, imageUrl: imageUrl)
+                        fetchedProducts.append(product)
+                    } else {
+                        print("No data found for document \(productid)")
+                    }
+                    dispatchGroup.leave()
+                }
+            }
+            
+            dispatchGroup.notify(queue: .main) {
+                print("Final fetched products: \(fetchedProducts)")
+                completion(fetchedProducts) // 모든 데이터가 준비되면 콜백 호출
+            }
+        }
+        
+        
+        
+    }
 }
-
-
+    
