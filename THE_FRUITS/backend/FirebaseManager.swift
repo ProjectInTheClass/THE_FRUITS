@@ -9,6 +9,7 @@ import SwiftUI
 import FirebaseCore
 import FirebaseFirestore
 
+
 class FireStoreManager: ObservableObject {
     @Published var sellerid: String = ""
     @Published var name: String = ""
@@ -16,6 +17,12 @@ class FireStoreManager: ObservableObject {
     @Published var password: String = ""
     @Published var brands: [Brand] = []
     @Published var customerid: String = ""
+    @Published var customer: CustomerModel?
+    @Published var cart: CartModel?
+    @Published var orderprod: [OrderProdModel] = []
+    
+    let db = Firestore.firestore()
+    
     
     /*init() {
         fetchData()
@@ -51,7 +58,8 @@ class FireStoreManager: ObservableObject {
                 }
                 else if userType == "customer"{
                     self.customerid = data?["customerid"] as? String ?? ""
-                    print("customerid in fetch: ", self.customerid)
+//                    print("customerid in fetch: ", self.customerid)
+                    self.fetchCustomerData()
                 }
                 self.name = data?["name"] as? String ?? ""
                 self.username = data?["username"] as? String ?? ""
@@ -62,6 +70,8 @@ class FireStoreManager: ObservableObject {
         }
     }
     
+    
+    //로그인 확인
     func validateLogin(userType: String, userId: String, completion: @escaping (Bool) -> Void) {
         let collection = userType == "customer" ? "customer" : "seller"
         let db = Firestore.firestore()
@@ -77,7 +87,7 @@ class FireStoreManager: ObservableObject {
                 completion(true)
             } else {
                 // uid가 해당 컬렉션에 없음
-                //print("Error: \(userType) with uid \(userId) does not exist in the \(collection) collection.")
+                print("Error: \(userType) with uid \(userId) does not exist in the \(collection) collection.")
                 completion(false)
             }
         }
@@ -115,6 +125,87 @@ class FireStoreManager: ObservableObject {
                 }
             }
     }
+    
+    
+    // fetch customer data
+    func fetchCustomerData() {
+        let db = Firestore.firestore()
+        //let customerId = userId
+        db.collection("customer").document(self.customerid).getDocument{ (document, error) in
+//            if let error = error {
+//                print("Error fetching customer data document")
+//                return
+//            }
+           if let document = document, document.exists {
+               do {
+                   let customer = try document.data(as: CustomerModel.self)
+                   self.customer = customer
+                    //print("Customer Data: \(customer)")
+               } catch {
+                   //print("Error decoding document into CustomerModel: \(error.localizedDescription)")
+                   print("error decoding document into CustomerModel")
+               }
+           } else {
+               print("Document does not exist")
+           }
+        }
+    }
+    
+    func fetchCart(userId: String) async {
+        do{
+            let cartDocuments = try await db.collection("customer").document(userId).collection("cart").getDocuments()
+            
+            guard let document = cartDocuments.documents.first else {
+                print("No cart documents found")
+                return
+            }
+            let cart = try document.data(as: CartModel.self)
+            self.cart = cart
+                        
+        } catch {
+            print("fetch cart error")
+            
+        }
+    }
+    
+    func fetchOrderProd() async -> [OrderProdModel]? {
+        guard let orderprodids = cart?.orderprodid else {
+            
+            print("No orderprodids found in cart")
+            return nil
+        }
+    
+        var fetchedOrderProd: [OrderProdModel] = []
+        
+        do {
+            for orderprodid in orderprodids {
+                
+                let document = try await db.collection("orderprod").document(orderprodid).getDocument()
+                
+                
+                // 데이터가 있는 경우 OrderProdModel로 디코딩
+                if let data = document.data() {
+                    print("here")
+                    let orderProd = try Firestore.Decoder().decode(OrderProdModel.self, from: data)
+                    fetchedOrderProd.append(orderProd)
+                } else {
+                    print("No data found for orderprodid \(orderprodid)")
+                }
+            }
+            // @Published 배열에 저장
+            DispatchQueue.main.async {
+                self.orderprod = fetchedOrderProd
+            }
+            return fetchedOrderProd
+        } catch {
+            print("Error fetching orderprod data: \(error)")
+            return nil
+        }
+    }
+    
+
+    
+    
 }
 
 

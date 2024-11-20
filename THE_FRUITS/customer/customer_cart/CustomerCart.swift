@@ -9,9 +9,6 @@ import SwiftUI
 
 struct PriceSection: View {
     
-    @EnvironmentObject var firestoreManager: FireStoreManager
-    
-    
     var orderAmount: Int = 16000
     var deliveryFee: Int = 3000
     
@@ -70,12 +67,66 @@ struct PriceSection: View {
     }
 }
 
+struct fetchData: View {
+    @EnvironmentObject var firestoreManager: FireStoreManager
+    @State private var cart: CartModel?
+    @State private var orderprods : [OrderProdModel] = []
+
+    var body: some View {
+        VStack(spacing: 20) {
+            // Customer 정보 표시
+            if let customer = firestoreManager.customer {
+                if customer.username.isEmpty {
+                    Text("User data is loading...")
+                } else {
+                    Text("User Name: \(customer.name)")
+                }
+            } else {
+                Text("Loading user data...")
+            }
+            // Cart 정보 표시
+            if let cart = firestoreManager.cart {
+                Text("Cart Brand ID: \(cart.brandid)")
+            } else {
+                Text("Loading cart data...")
+            }
+            
+            // Orderprod 정보 출력
+            if !orderprods.isEmpty {
+                ForEach(orderprods, id: \.orderprodid) { orderprod in
+                    ForEach(orderprod.products, id: \.productid) { product in
+                        Text("Product ID: \(product.productid), Num: \(product.num)")
+                    }
+                }
+            } else {
+                Text("Loading order products...")
+            }
+        }
+        .task {
+            // Customer ID를 기반으로 Cart 데이터를 로드
+            if let customer = firestoreManager.customer {
+                //cart = await firestoreManager.fetchCart(userId: customer.customerid)
+                await firestoreManager.fetchCart(userId: customer.customerid)
+                // Orderprod 데이터를 가져옵니다
+                if let fetchedOrderProds = await firestoreManager.fetchOrderProd() {
+                    orderprods = fetchedOrderProds // 상태 업데이트
+                }
+                
+            }
+            
+        }
+    }
+}
+
+
 
 struct CustomerCart: View {
     var body: some View {
         NavigationStack {
             PriceSection()
                 .padding(.bottom,20)
+            fetchData()
+            //CartData()
             CustomButton(
                 title: "주문하기",
                 background: Color("darkGreen"),
@@ -89,6 +140,7 @@ struct CustomerCart: View {
                     }
                 )
             
+            
             }
         }
     }
@@ -98,4 +150,5 @@ struct CustomerCart: View {
 
 #Preview {
     CustomerCart()
+        .environmentObject(FireStoreManager())
 }

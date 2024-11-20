@@ -125,7 +125,7 @@ struct Login: View {
         // user credentials check
         Auth.auth().signIn(withEmail: user_id, password: password) { authResult, error in
             if let error = error {
-                //print("Error logging in: \(error.localizedDescription)")
+                print("Error logging in: \(error.localizedDescription)")
             } else if let user = authResult?.user {
                 print("User logged in: \(user.uid)")
                 firestoreManager.validateLogin(userType: userType, userId: user.uid) { isValid in
