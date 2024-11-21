@@ -92,8 +92,13 @@ struct BrandHome: View {
                         Spacer()
                         
                         VStack {
-                            CustomButton(title: "가게정보", background: .yellow, foregroundColor: .black, width: 70, height: 30, size: 14, cornerRadius: 15) {
-                                print("가게 정보 버튼이 눌렸습니다.")
+                            NavigationLink(destination: BrandDetail(storeName: storeName)) {
+                                Text("가게정보")
+                                    .font(.custom("Pretendard-SemiBold", size: 14))
+                                    .frame(width: 70, height: 30)
+                                    .foregroundColor(.black)
+                                    .background(Color.yellow)
+                                    .cornerRadius(15)
                             }
                             HStack(spacing: 8) {
                                 Image(systemName: "heart.fill")
