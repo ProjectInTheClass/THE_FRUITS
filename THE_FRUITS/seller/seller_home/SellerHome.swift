@@ -26,7 +26,7 @@ struct SellerHome: View {
         Brand(name: "Orange", logo: "orange")
     ]
     
-    @State private var brands: [Brand] = [] // to be deleted
+    @State private var brands: [Brand] = []
     
     var body: some View {
         NavigationView{
@@ -38,14 +38,19 @@ struct SellerHome: View {
                 Spacer().frame(height: 50)
                 
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 20){
-                    ForEach(firestoreManager.brands, id: \.name){ brand in
-                        NavigationLink(destination: SellerBrandMainPage(brand: brand, products: $sampleProducts)){
+                    ForEach(firestoreManager.brands, id: \.name){ brand in                        NavigationLink(destination: SellerBrandMainPage(brand: brand, products: $sampleProducts)){
                             VStack{
-                                Image(brand.logo)
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width:150, height: 150)
-                                    .cornerRadius(10)
+                                AsyncImage(url: URL(string: brand.logo)) { image in
+                                    image
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 150, height: 150)
+                                        .cornerRadius(10)
+                                } placeholder: {
+                                    Color.gray
+                                        .frame(width: 150, height: 150)
+                                        .cornerRadius(10)
+                                }
                                 
                                 Text(brand.name)
                                     .font(.caption)
@@ -55,6 +60,10 @@ struct SellerHome: View {
                     }
                     
                     addButton
+                }
+                
+                .onAppear {
+                    firestoreManager.fetchBrands()
                 }
                 
                 Spacer()
@@ -67,6 +76,7 @@ struct SellerHome: View {
             Spacer()//위로 슉 올리기
         }
     }
+    
     // Add button view
     private var addButton: some View {
         NavigationLink(destination: SellerAddBrand().navigationBarBackButtonHidden(true)){
