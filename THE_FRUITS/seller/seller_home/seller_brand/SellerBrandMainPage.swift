@@ -11,6 +11,10 @@ struct SellerBrandMainPage: View{
     @State private var brand: Brand
     @Binding private var products: [ProductItem]
     
+    
+    @State private var showDeleteConfirmation = false
+    @State private var selectedProduct: ProductItem? = nil
+    
     let backgroundUrl: String = "https://example.com/background.jpg"
     let storeDesc: String = "Whatever Your Pick!"
     
@@ -131,32 +135,7 @@ struct SellerBrandMainPage: View{
                     VStack(alignment: .leading, spacing: 16) {
                         ForEach($products, id: \.id) { $product in
                             VStack {
-                                HStack {
-                                    Spacer()
-                                    
-                                    NavigationLink(destination: SellerEditProduct()) {
-                                        Image(systemName: "pencil.circle")
-                                            .resizable()
-                                            .frame(width: 24, height: 24)
-                                            .foregroundColor(.black)
-                                    }
-                                    .padding(.leading)
-                                    
-                                    Button(action: {
-                                        // Delete action
-                                        if let index = products.firstIndex(where: { $0.id == product.id }) {
-                                            products.remove(at: index)
-                                        }
-                                    }) {
-                                        Image(systemName: "trash.circle")
-                                            .resizable()
-                                            .frame(width: 24, height: 24)
-                                            .foregroundColor(.black)
-                                    }
-                                    .padding(.trailing)
-                                }
-                                
-                                HStack {
+                                HStack(alignment: .top) {
                                     // Product Image
                                     AsyncImage(url: URL(string: product.imageUrl)) { image in
                                         image
@@ -171,21 +150,64 @@ struct SellerBrandMainPage: View{
                                     }
                                     Spacer()
                                     
-                                    // Product Title and Price
-                                    VStack(alignment: .leading, spacing: 8) {
-                                        Text(product.name)
-                                            .font(.headline)
+                                    VStack{
+                                        HStack{
+                                            Spacer()
+                                            NavigationLink(destination: SellerEditProduct()) {
+                                                Image(systemName: "pencil")
+                                                    .resizable()
+                                                    .frame(width: 24, height: 24)
+                                                    .foregroundColor(.black)
+                                            }
+                                            .padding(.leading)
+                                            
+                                            Divider()
+                                                .padding(.trailing)
+                                                .frame(width: 1, height: 30)
+                                                .background(.black)
+                                            
+                                            Button(action: {
+                                                selectedProduct = product
+                                                showDeleteConfirmation = true
+                                            }) {
+                                                Image(systemName: "trash")
+                                                    .resizable()
+                                                    .frame(width: 24, height: 24)
+                                                    .foregroundColor(.black)
+                                            }
+                                        }
+                                        .padding(.trailing)
                                         
-                                        Text("\(product.price)원")
-                                            .font(.subheadline)
-                                            .foregroundColor(.gray)
+                                        
+                                        HStack {
+                                            
+                                            
+                                            // Product Title and Price
+                                            VStack(alignment: .leading, spacing: 8) {
+                                                Text(product.name)
+                                                    .font(.headline)
+                                                
+                                                Text("\(product.price)원")
+                                                    .font(.subheadline)
+                                                    .foregroundColor(.gray)
+                                            }
+                                            Spacer()
+                                        }
+                                        .padding()
+                                        .background(Color.white)
                                     }
-                                    Spacer()
+                                    .padding(.horizontal)
                                 }
-                                .padding()
-                                .background(Color.white)
                             }
-                            .padding(.horizontal)
+                        }
+                        .alert("해당 과일을 삭제하시겠습니까?", isPresented: $showDeleteConfirmation) {
+                            Button("예", role: .destructive) {
+                                if let productToDelete = selectedProduct,
+                                   let index = products.firstIndex(where: { $0.id == productToDelete.id }) {
+                                    products.remove(at: index)
+                                }
+                            }
+                            Button("아니오", role: .cancel) {}
                         }
                         
                         NavigationLink(destination: SellerAddProduct()){
