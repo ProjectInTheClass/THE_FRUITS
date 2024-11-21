@@ -2,12 +2,11 @@
 //  SellerManager.swift
 //  THE_FRUITS
 //
-//  Created by 박지은 on 11/21/24.
 //
 
 import Firebase
 
-extension FireStoreManager {
+extension FireStoreManager{
     func fetchBrands() { // to fetch brands owned by user with sellerid
         guard !sellerid.isEmpty else {
             print("Seller ID is empty. Cannot fetch brands.")

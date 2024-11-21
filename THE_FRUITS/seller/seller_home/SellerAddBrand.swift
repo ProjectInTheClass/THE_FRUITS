@@ -9,38 +9,40 @@ import SwiftUI
 
 struct SellerAddBrand: View{
     var body: some View{
-        VStack{
-            BackArrowButton(title: "")
-            Spacer()
-            Text("사업자 등록증이 있으신가요?")
-                .font(.title)
-                .bold()
-                .padding()
-            
-            Spacer().frame(height: 30)
-            
-            NavigationLink(destination: SellerInsertBusinessNum().navigationBarBackButtonHidden(true)){
-                RoundedRectangle(cornerRadius: 50)
-                    .foregroundColor(.black)
-                    .frame(width: 350, height: 60)
-                    .overlay(
-                        Text("예")
-                            .foregroundColor(.white)
-                    )
+        NavigationView{
+            VStack{
+                BackArrowButton(title: "")
+                Spacer()
+                Text("사업자 등록증이 있으신가요?")
+                    .font(.title)
+                    .bold()
+                    .padding()
+                
+                Spacer().frame(height: 30)
+                
+                NavigationLink(destination: SellerInsertBusinessNum().navigationBarBackButtonHidden(true)){
+                    RoundedRectangle(cornerRadius: 50)
+                        .foregroundColor(.black)
+                        .frame(width: 350, height: 60)
+                        .overlay(
+                            Text("예")
+                                .foregroundColor(.white)
+                        )
+                }
+                
+                Spacer().frame(height: 20)
+                
+                NavigationLink(destination: SellerTutorial().navigationBarBackButtonHidden(true)){
+                    RoundedRectangle(cornerRadius: 50)
+                        .stroke(Color.black, lineWidth: 1)
+                        .frame(width: 350, height: 60)
+                        .overlay(
+                            Text("아니오")
+                                .foregroundColor(.black)
+                        )
+                }
+                Spacer()
             }
-            
-            Spacer().frame(height: 20)
-            
-            NavigationLink(destination: SellerTutorial().navigationBarBackButtonHidden(true)){
-                RoundedRectangle(cornerRadius: 50)
-                    .stroke(Color.black, lineWidth: 1)
-                    .frame(width: 350, height: 60)
-                    .overlay(
-                        Text("아니오")
-                            .foregroundColor(.black)
-                    )
-            }
-            Spacer()
         }
     }
 }
@@ -48,7 +50,7 @@ struct SellerAddBrand: View{
 struct SellerInsertBusinessNum: View{
     @State private var businessNumber: String = ""
     @State private var selectedTab = 0
-    
+        
     var body: some View{
             VStack{
                 BackArrowButton(title: "")
@@ -102,6 +104,10 @@ struct SellerBrandInfo: View{
     
     @State private var selectedTab = 0
     @State private var isBankListPresented = false // bottom sheet for bank
+    
+    // for modal sheet
+    @State private var isModalPresented = false
+    @State private var shouldNavigate = false
     
     var body: some View{
         ScrollView {
@@ -191,7 +197,9 @@ struct SellerBrandInfo: View{
                 
                 Spacer()
                 
-                NavigationLink(destination: SellerRootView(selectedTab: $selectedTab).navigationBarBackButtonHidden(true)) {
+                Button(action: {
+                    isModalPresented = true // 모달창 표시
+                }) {
                     Text("등록하기")
                         .frame(maxWidth: .infinity)
                         .padding()
@@ -199,6 +207,22 @@ struct SellerBrandInfo: View{
                         .foregroundColor(.white)
                         .cornerRadius(10)
                 }
+                .alert("등록되었습니다.", isPresented: $isModalPresented, actions: {
+                    Button("확인", role: .cancel) { isModalPresented = false; shouldNavigate = true }
+                })
+                
+                /*Text("등록하기")
+                 .frame(maxWidth: .infinity)
+                 .padding()
+                 .background(Color("darkGreen"))
+                 .foregroundColor(.white)
+                 .cornerRadius(10)*/
+                
+                NavigationLink(
+                    destination: SellerRootView(selectedTab: $selectedTab).navigationBarBackButtonHidden(true),
+                    isActive: $shouldNavigate,
+                    label: { EmptyView() }
+                )
             }
             .padding()
         }
@@ -283,4 +307,5 @@ struct InputField: View {
 
 #Preview {
     SellerAddBrand()
+        .environmentObject(FireStoreManager())
 }

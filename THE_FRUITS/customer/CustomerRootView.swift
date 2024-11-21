@@ -1,7 +1,9 @@
 import SwiftUI
 
 struct CustomerRootView: View {
+
     @Binding var selectedTab : Int 
+
     @State private var isOnRootView=true
     
     var body: some View {
