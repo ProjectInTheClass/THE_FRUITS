@@ -32,7 +32,6 @@ struct BrandModel: Codable {
     let return_policy: String
 }
 
-
 struct OrderModel: Codable{
     let orderid: String
     let orderdate: String
