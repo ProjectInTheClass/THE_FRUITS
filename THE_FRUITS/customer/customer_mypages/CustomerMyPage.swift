@@ -124,6 +124,7 @@ struct CustomerMyPage: View {
     var body: some View {
         NavigationStack {
             VStack() {
+                BrandButton()
                 ProfileSection()
                     .padding(.top, 40)
                     .padding(.bottom, 15)
