@@ -20,7 +20,7 @@ struct ProfileSection: View {
             .fill(Color("beige"))
             .frame(width: UIScreen.main.bounds.width - 30, height: 180)
             .overlay(
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading) {
                     HStack {
                         Image("appleLogo")
                             .resizable()
@@ -35,10 +35,10 @@ struct ProfileSection: View {
                     }
                     .padding(.leading, 20)
                     .padding(.bottom, 10)
+                    
                     Divider()
                     
-                    VStack {
-                        
+                    VStack() {
                         NavigationButton(
                         icon: "person.fill",
                         title: "내정보 설정",
@@ -67,24 +67,56 @@ struct MenuSection: View {
             .frame(width: UIScreen.main.bounds.width - 30, height: 100)
             .overlay(
                 HStack {
-                    Spacer()
+                    
                    NavigationButton(
                        icon: nil,
                        title: "주문내역", // 글자 길이에 따라 영역을 차지하는 넓이가 달라짐 -> 수정필요?
                        destination: CustomerOrderList()
                    )
-                    Spacer()
+                   .frame(maxWidth: .infinity,alignment: .center)
+                    
                    Divider()
                        .frame(height: 50) // Divider 높이 조정
-                    Spacer()
+                    
                    NavigationButton(
                        icon: nil,
                        title: "장바구니",
                        destination: CustomerCart()
                    )
-                    Spacer()
+                   .frame(maxWidth: .infinity,alignment: .center)
+                    
                }
             )
+    }
+}
+
+struct ServiceSection : View {
+    var body: some View {
+        RoundedRectangle(cornerRadius: 20)
+            .fill(Color("beige"))
+            .frame(width: UIScreen.main.bounds.width - 30, height: 120)
+            .overlay(
+                VStack(){
+                   NavigationButton(
+                       icon:"headphones",
+                       title: "자주 묻는 질문",
+                       destination: CustomerFAQ()
+                   )
+                   .frame(maxWidth: .infinity,alignment: .leading)
+                   .padding(.top,10)
+                   .padding(.bottom, 10)
+                   NavigationButton(
+                       icon: "info.circle",
+                       title: "약관 및 정책",
+                       destination: CustomerLegalNotice()
+                   )
+                   .frame(maxWidth: .infinity,alignment: .leading)
+                   .padding(.top,10)
+                   .padding(.bottom, 10)
+               }
+                
+            
+        )
     }
 }
 
@@ -96,6 +128,8 @@ struct CustomerMyPage: View {
                     .padding(.top, 40)
                     .padding(.bottom, 15)
                 MenuSection()
+                    .padding(.bottom, 15)
+                ServiceSection()
                 Spacer()
             }
         }
@@ -104,6 +138,7 @@ struct CustomerMyPage: View {
 
 #Preview {
     CustomerMyPage()
+        .environmentObject(FireStoreManager())
 }
 
 

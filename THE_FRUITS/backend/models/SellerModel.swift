@@ -32,6 +32,28 @@ struct BrandModel: Codable {
     let return_policy: String
 }
 
+
+struct OrderModel: Codable{
+    let orderid: String
+    let orderdate: String
+    let brandid: Int
+    let products: [String]
+    let totalprice: Int
+    let delcost: Int
+    let account: String
+    let bank: String
+    let sellername: String
+    let customername: String
+    let customerphone: String
+    let recaddress: String
+    let recname: String
+    let recphone: String
+    let state: Int
+    let delnum: String
+    let delname: String
+}
+
+
 struct SellerModel: Codable{
     let sellerid: String
     let username: String
@@ -40,3 +62,4 @@ struct SellerModel: Codable{
     let phone: String
     let brands: [String]
 }
+

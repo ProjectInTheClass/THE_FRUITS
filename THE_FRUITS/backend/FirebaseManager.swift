@@ -22,10 +22,11 @@ class FireStoreManager: ObservableObject {
     @Published var cart: CartModel?
     @Published var orderprod: [OrderProdModel] = []
     @Published var seller: SellerModel?
-    
-    //@Published var brand: BrandModel?
+
     
     let db = Firestore.firestore()
+    
+
     
     /*init() {
      fetchData()
@@ -100,7 +101,7 @@ class FireStoreManager: ObservableObject {
             }
         }
     }
-    
+
     
     // fetch customer data
     func fetchCustomer() {
@@ -168,6 +169,54 @@ class FireStoreManager: ObservableObject {
             print("No orderprodids found in cart")
             return nil
         }
+        }
+    }
+    func fetchSeller(){
+        db.collection("seller").document(self.sellerid).getDocument{ (document, error) in
+//            if let error = error {
+//                print("Error fetching customer data document")
+//                return
+//            }
+           if let document = document, document.exists {
+               do {
+                   let seller = try document.data(as: SellerModel.self)
+                   self.seller = seller
+                   print("seller brand ids \(seller.brands)")
+                    //print("Customer Data: \(customer)")
+               } catch {
+                   //print("Error decoding document into CustomerModel: \(error.localizedDescription)")
+                   print("error decoding document into SellerModel")
+               }
+           } else {
+               print("Document does not exist")
+           }
+        }
+    }
+    
+    func fetchCart(userId: String) async {
+        do{
+            let cartDocuments = try await db.collection("customer").document(userId).collection("cart").getDocuments()
+            
+            guard let document = cartDocuments.documents.first else {
+                print("No cart documents found")
+                return
+            }
+            let cart = try document.data(as: CartModel.self)
+            self.cart = cart
+                        
+        } catch {
+            print("fetch cart error")
+            
+        }
+    }
+    
+    func fetchOrderProd() async -> [OrderProdModel]? {
+        guard let orderprodids = cart?.orderprodid else {
+            
+            print("No orderprodids found in cart")
+            return nil
+        }
+
     
         var fetchedOrderProd: [OrderProdModel] = []
         
@@ -183,6 +232,45 @@ class FireStoreManager: ObservableObject {
                     fetchedOrderProd.append(orderProd)
                 } else {
                     print("No data found for orderprodid \(orderprodid)")
+                }
+            }
+            // @Published 배열에 저장t
+            DispatchQueue.main.async {
+                self.orderprod = fetchedOrderProd
+            }
+            return fetchedOrderProd
+        } catch {
+            print("Error fetching orderprod data: \(error)")
+            return nil
+        }
+    }
+    
+    func fetchBrand(brandId: String, completion: @escaping (BrandModel?) -> Void) {
+        db.collection("brand").document(brandId).getDocument { (document, error) in
+            if let document = document, document.exists {
+                do {
+                    let brand = try document.data(as: BrandModel.self)
+                    completion(brand) // 성공적으로 데이터를 가져오면 반환
+                } catch {
+                    print("Error decoding document into BrandModel")
+                    completion(nil) // 에러 발생 시 nil 반환
+                }
+            } else {
+                print("Document does not exist")
+                completion(nil) // 문서가 존재하지 않을 경우 nil 반환
+            }
+        }
+    }
+    
+    func fetchProduct(productId: String, completion: @escaping (ProductModel?) -> Void) {
+        db.collection("product").document(productId).getDocument { (document, error) in
+            if let document = document, document.exists {
+                do {
+                    let product = try document.data(as: ProductModel.self)
+                    completion(product)
+                } catch{
+                    print("Error decoding document into ProductModel")
+                    completion(nil) // 에러 발생 시 nil 반환
                 }
             }
             // @Published 배열에 저장t
@@ -250,7 +338,13 @@ class FireStoreManager: ObservableObject {
                     completion([])
                 }
             }
+            else {
+                print("Document does not exist")
+                completion(nil) // 문서가 존재하지 않을 경우 nil 반환
+            }
+        }
     }
+
     
     
     

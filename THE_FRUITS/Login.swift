@@ -26,7 +26,7 @@ struct Login: View {
     @EnvironmentObject var firestoreManager: FireStoreManager // StateObject 대신 EnvironmentObject를 써서 로그인 후에도 해당 유저에 대한 데이터가 저장되도록 한다
     
     var userType:String
-        
+    
     var body: some View {
         NavigationStack{
             ZStack {
@@ -78,26 +78,26 @@ struct Login: View {
                                     Spacer().frame(height: 20)
                                     
                                     /*CustomButton(title: "로그인",background:Color(red: 26/255, green: 50/255, blue: 27/255), foregroundColor:.white,width:300,height:60,size:14, cornerRadius:10){
-                                        signInUser()
-                                        print("로그인 클릭")
-                                        print("user type: ", userType)
-                                    }*/
+                                     signInUser()
+                                     print("로그인 클릭")
+                                     print("user type: ", userType)
+                                     }*/
                                     
                                     // 로그인 클릭 시 userType에 따라 화면 전환
                                     NavigationLink(destination: destinationView, tag: .seller, selection: $destination) { EmptyView() }
-                                                        NavigationLink(destination: destinationView, tag: .customer, selection: $destination) { EmptyView() }
-
-                                                        Button(action: {
-                                                            signInUser()
-                                                        }) {
-                                                            Text("로그인")
-                                                                .frame(maxWidth: .infinity)
-                                                                .padding()
-                                                                .background(Color(.darkGreen))
-                                                                .foregroundColor(.white)
-                                                                .cornerRadius(10)
-                                                        }
-                                                        .frame(width: 300, height: 60)
+                                    NavigationLink(destination: destinationView, tag: .customer, selection: $destination) { EmptyView() }
+                                    
+                                    Button(action: {
+                                        signInUser()
+                                    }) {
+                                        Text("로그인")
+                                            .frame(maxWidth: .infinity)
+                                            .padding()
+                                            .background(Color(.darkGreen))
+                                            .foregroundColor(.white)
+                                            .cornerRadius(10)
+                                    }
+                                    .frame(width: 300, height: 60)
                                 }
                                     .padding() // 내부 여백 추가
                             )
@@ -117,25 +117,37 @@ struct Login: View {
         if destination == .seller {
             SellerRootView(selectedTab: $selectedTab).navigationBarBackButtonHidden(true)
         } else if destination == .customer {
-            CustomerRootView().navigationBarBackButtonHidden(true)
+            CustomerRootView(selectedTab: $selectedTab).navigationBarBackButtonHidden(true)
         }
     }
     
-    func signInUser() { // user credentials check
+    func signInUser() {
+        // user credentials check
         Auth.auth().signIn(withEmail: user_id, password: password) { authResult, error in
             if let error = error {
                 print("Error logging in: \(error.localizedDescription)")
             } else if let user = authResult?.user {
                 print("User logged in: \(user.uid)")
-                firestoreManager.fetchUserData(userType: userType, userId: user.uid)
-                
-                // if seller, store the sellerid to fetch data about the corresponding seller in other screens
-                if userType == "seller"{
-                    firestoreManager.sellerid = user.uid
+                firestoreManager.validateLogin(userType: userType, userId: user.uid) { isValid in
+                    if isValid {
+                        firestoreManager.fetchUserData(userType: userType, userId: user.uid)
+                        // if seller, store the sellerid to fetch data about the corresponding seller in other screens
+                        if userType == "seller"{
+                            firestoreManager.sellerid = user.uid
+                            destination = .seller
+                        }
+                        else if userType == "customer"{
+                            firestoreManager.customerid = user.uid
+                            destination = .customer
+                        }
+                        loginStatus = true
+                    }
+                    else {
+                        print("Login failed. Invalid \(userType). Logging out.")
+                        try? Auth.auth().signOut()
+                    }
+                    
                 }
-
-                destination = userType == "seller" ? .seller : .customer
-                loginStatus = true
             }
         }
     }

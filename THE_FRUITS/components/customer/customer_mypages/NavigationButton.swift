@@ -19,13 +19,14 @@ struct NavigationButton<Destination: View>: View {
                     if let icon = icon { // icon이 nil이 아닐 경우에만 Image 표시
                         Image(systemName: icon)
                             .resizable()
-                            .frame(width: 20, height: 23)
+                            .frame(width: 20, height: 23)// icon size
+                            .frame(width: 40) // icon space size
                             .padding(.leading, 20)
                             .padding(.trailing, 10)
                     }
+                    Text(title)
+                        .font(.custom("Pretendard-SemiBold", size: 18))
                 }
-                Text(title)
-                    .font(.custom("Pretendard-SemiBold", size: 18))
             }
             .buttonStyle(PlainButtonStyle()) // 기본 버튼 스타일 제거
     }

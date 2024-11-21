@@ -88,6 +88,7 @@ struct SellerRootView: View {
 #Preview {
     @Previewable @State var selectedTab = 0
     SellerRootView(selectedTab: $selectedTab)
+        .environmentObject(FireStoreManager())
 }
 
 

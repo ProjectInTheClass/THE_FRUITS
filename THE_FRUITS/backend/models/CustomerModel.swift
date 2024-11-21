@@ -39,6 +39,8 @@ struct ProductModel: Codable {
     let prodtitle: String
     let price: Int
     let info: String
+    let imageUrl: String
+
 }
 
 struct OrderModel: Codable{

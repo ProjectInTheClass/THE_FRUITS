@@ -22,12 +22,17 @@ struct THE_FRUITSApp: App {
     
    @StateObject private var firestoreManager = FireStoreManager() // 처음에만 선언해주어 화면 간 이동을 해도 같은 데이터에 대해 공유한다
     
+    
+    
+    @State var selectedTab = 0
     var body: some Scene {
         WindowGroup {
             //ContentView()
             OnBoarding()
             //CustomerRootView()
+            //SellerRootView(selectedTab: $selectedTab)
                 .environmentObject(firestoreManager)
+                
             
         }
     }

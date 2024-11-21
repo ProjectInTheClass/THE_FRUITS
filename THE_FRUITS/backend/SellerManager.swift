@@ -2,7 +2,6 @@
 //  SellerManager.swift
 //  THE_FRUITS
 //
-//  Created by Bada Hong on 11/21/24.
 //
 
 import Firebase
