@@ -66,54 +66,6 @@ struct PriceSection: View {
     }
 }
 
-//struct FetchBrand: View {
-//    @EnvironmentObject var firestoreManager: FireStoreManager
-//    @State private var brand: BrandModel? // 브랜드 데이터를 저장할 상태 변수
-//    @State private var product: [ProductModel?]
-//    
-//    @State private var products: [ProductModel] = [] // ProductModel 배열
-//    let productId : [String] = ["8bdNHbRMQBxf166p8jJ7","AzyVlJfAZBr6fr9PGgWc"]
-//    
-//
-//    var body: some View {
-//        VStack {
-//            if let brand = brand {
-//                // 브랜드 데이터가 로드되었을 때 UI 표시
-//                Text("Brand ID: \(brand.brandid)")
-//                Text("Brand Name: \(brand.name)")
-//            } else {
-//                Text("Loading brand data...")
-//                    .foregroundColor(.gray)
-//            }
-//            
-//            if products.isEmpty {
-//                            Text("Loading product data...")
-//                                .foregroundColor(.gray)
-//            } else {
-//                List(products, id: \.productid) { product in
-//                    VStack(alignment: .leading) {
-//                        Text("Product Name: \(product.prodtitle)")
-//                        Text("Product Price: \(product.price)")
-//                    }
-//                }
-//            }
-//        }
-//        .onAppear {
-//            firestoreManager.fetchBrand(brandId: "3jzUOdeiSvD5gtZGsTee") { fetchedBrand in
-//                if let fetchedBrand = fetchedBrand {
-//                    DispatchQueue.main.async {
-//                        self.brand = fetchedBrand // 데이터를 상태 변수에 저장
-//                    }
-//                }
-//            }
-//            firestoreManager.fetchProducts(for: productId) { fetchedProducts in
-//                DispatchQueue.main.async {
-//                    self.products = fetchedProducts
-//                }
-//            }
-//        }
-//    }
-//}
 
 struct CustomerCart: View {
     var body: some View {

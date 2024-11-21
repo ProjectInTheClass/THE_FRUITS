@@ -11,7 +11,7 @@ struct FruitItem: Identifiable {
 struct CustomerHome: View {
     @State private var searchText: String = ""
     @State private var fetchedBrandIDs: [String] = [] // 초기값 설정
-    @State private var brands:[FireStoreManager.BrandModel]=[]
+    @State private var brands:[BrandModel]=[]
     @State private var fruits:[FruitItem]=[]
         
 
@@ -81,7 +81,7 @@ struct CustomerHome: View {
                 }
                 
                 let group = DispatchGroup()
-                var fetchedBrands: [FireStoreManager.BrandModel] = []
+                var fetchedBrands: [BrandModel] = []
                 
                 for brandID in brandIDs {
                     group.enter()
