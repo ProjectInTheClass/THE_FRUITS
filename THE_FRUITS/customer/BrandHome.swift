@@ -5,7 +5,7 @@ class ProductItem: Identifiable, ObservableObject {
     var id: String
     var name: String
     var price: Int
-    let imageUrl: String
+    var imageUrl: String
     @Published var f_count: Int  // 수량을 관리할 상태 변수
     
     init(id: String, name: String, price: Int, imageUrl: String, f_count: Int = 0) {
