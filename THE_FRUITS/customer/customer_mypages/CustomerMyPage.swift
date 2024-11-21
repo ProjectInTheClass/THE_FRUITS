@@ -138,6 +138,7 @@ struct CustomerMyPage: View {
 
 #Preview {
     CustomerMyPage()
+        .environmentObject(FireStoreManager())
 }
 
 

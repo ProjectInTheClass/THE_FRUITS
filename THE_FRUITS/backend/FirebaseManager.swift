@@ -20,6 +20,8 @@ class FireStoreManager: ObservableObject {
     @Published var customer: CustomerModel?
     @Published var cart: CartModel?
     @Published var orderprod: [OrderProdModel] = []
+    @Published var seller: SellerModel?
+
     
     let db = Firestore.firestore()
     
@@ -47,19 +49,21 @@ class FireStoreManager: ObservableObject {
     }
     
     func fetchUserData(userType: String, userId: String) {
+        
         let collection = userType == "customer" ? "customer" : "seller"
-        let db = Firestore.firestore()
+        
         db.collection(collection).document(userId).getDocument { (document, error) in
             if let document = document, document.exists {
                 let data = document.data()
                 if userType == "seller" { // store sellerid if it is seller
                     self.sellerid = data?["sellerid"] as? String ?? ""
                     print("sellerid in fetch: ", self.sellerid)
+                    self.fetchSeller()
                 }
                 else if userType == "customer"{
                     self.customerid = data?["customerid"] as? String ?? ""
-//                    print("customerid in fetch: ", self.customerid)
-                    self.fetchCustomerData()
+                    print("customerid in fetch: ", self.customerid)
+                    self.fetchCustomer()
                 }
                 self.name = data?["name"] as? String ?? ""
                 self.username = data?["username"] as? String ?? ""
@@ -94,43 +98,10 @@ class FireStoreManager: ObservableObject {
     }
 
     
-    func fetchBrands() { // to fetch brands owned by user with sellerid
-        guard !sellerid.isEmpty else {
-            print("Seller ID is empty. Cannot fetch brands.")
-            return
-        }
-        
-        let db = Firestore.firestore()
-        db.collection("brand")
-            .whereField("sellerid", isEqualTo: sellerid)
-            .getDocuments { (snapshot, error) in
-                if let error = error {
-                    print("Error fetching brands: \(error)")
-                    return
-                }
-                guard let documents = snapshot?.documents else {
-                    print("No brands found")
-                    return
-                }
-                self.brands = documents.compactMap { document in
-                    let data = document.data()
-                    guard let name = data["name"] as? String,
-                          let logo = data["logo"] as? String else {
-                        return nil
-                    }
-                    print("sellerid: ", self.sellerid)
-                    print("name: ", name)
-                    print("logo: ", logo)
-                    return Brand(name: name, logo: logo)
-                }
-            }
-    }
     
     
     // fetch customer data
-    func fetchCustomerData() {
-        let db = Firestore.firestore()
-        //let customerId = userId
+    func fetchCustomer() {
         db.collection("customer").document(self.customerid).getDocument{ (document, error) in
 //            if let error = error {
 //                print("Error fetching customer data document")
@@ -144,6 +115,27 @@ class FireStoreManager: ObservableObject {
                } catch {
                    //print("Error decoding document into CustomerModel: \(error.localizedDescription)")
                    print("error decoding document into CustomerModel")
+               }
+           } else {
+               print("Document does not exist")
+           }
+        }
+    }
+    func fetchSeller(){
+        db.collection("seller").document(self.sellerid).getDocument{ (document, error) in
+//            if let error = error {
+//                print("Error fetching customer data document")
+//                return
+//            }
+           if let document = document, document.exists {
+               do {
+                   let seller = try document.data(as: SellerModel.self)
+                   self.seller = seller
+                   print("seller brand ids \(seller.brands)")
+                    //print("Customer Data: \(customer)")
+               } catch {
+                   //print("Error decoding document into CustomerModel: \(error.localizedDescription)")
+                   print("error decoding document into SellerModel")
                }
            } else {
                print("Document does not exist")
@@ -185,14 +177,13 @@ class FireStoreManager: ObservableObject {
                 
                 // 데이터가 있는 경우 OrderProdModel로 디코딩
                 if let data = document.data() {
-                    print("here")
                     let orderProd = try Firestore.Decoder().decode(OrderProdModel.self, from: data)
                     fetchedOrderProd.append(orderProd)
                 } else {
                     print("No data found for orderprodid \(orderprodid)")
                 }
             }
-            // @Published 배열에 저장
+            // @Published 배열에 저장t
             DispatchQueue.main.async {
                 self.orderprod = fetchedOrderProd
             }
@@ -203,9 +194,38 @@ class FireStoreManager: ObservableObject {
         }
     }
     
-
+    func fetchBrand(brandId: String, completion: @escaping (BrandModel?) -> Void) {
+        db.collection("brand").document(brandId).getDocument { (document, error) in
+            if let document = document, document.exists {
+                do {
+                    let brand = try document.data(as: BrandModel.self)
+                    completion(brand) // 성공적으로 데이터를 가져오면 반환
+                } catch {
+                    print("Error decoding document into BrandModel")
+                    completion(nil) // 에러 발생 시 nil 반환
+                }
+            } else {
+                print("Document does not exist")
+                completion(nil) // 문서가 존재하지 않을 경우 nil 반환
+            }
+        }
+    }
     
-    
+    func fetchProduct(productId: String, completion: @escaping (ProductModel?) -> Void) {
+        db.collection("product").document(productId).getDocument { (document, error) in
+            if let document = document, document.exists {
+                do {
+                    let product = try document.data(as: ProductModel.self)
+                    completion(product)
+                } catch{
+                    print("Error decoding document into ProductModel")
+                    completion(nil) // 에러 발생 시 nil 반환
+                }
+            }
+            else {
+                print("Document does not exist")
+                completion(nil) // 문서가 존재하지 않을 경우 nil 반환
+            }
+        }
+    }
 }
-
-

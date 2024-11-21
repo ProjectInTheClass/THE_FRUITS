@@ -5,9 +5,6 @@
 //  Created by 박지은 on 11/19/24.
 //
 
-import FirebaseFirestore
-
-
 struct CustomerModel: Codable {
     let address: String
     let cartid: String
@@ -27,7 +24,7 @@ struct CartModel: Codable {
 
 struct OrderProductsModel: Codable {
     let num: Int
-    let productid: DocumentReference
+    let productid: String
 }
 
 struct OrderProdModel: Codable {
@@ -42,4 +39,5 @@ struct ProductModel: Codable {
     let prodtitle: String
     let price: Int
     let info: String
+    let imageUrl: String
 }
