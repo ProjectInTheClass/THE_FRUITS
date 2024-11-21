@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct CustomerRootView: View {
-    @State private var selectedTab = 1  // 기본적으로
+    @State private var selectedTab = 0  // 기본적으로
     @State private var isOnRootView=true
     
     var body: some View {

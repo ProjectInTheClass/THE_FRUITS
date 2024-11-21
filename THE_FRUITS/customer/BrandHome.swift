@@ -1,4 +1,5 @@
 import SwiftUI
+import FirebaseFirestore
 
 class ProductItem: Identifiable, ObservableObject {
     var id: String
@@ -17,34 +18,36 @@ class ProductItem: Identifiable, ObservableObject {
 }
 //클래스로 관리
 class ObservableProducts: ObservableObject {
-    @Published var items: [ProductItem]
-    init() {
+    @Published var items: [ProductItem]=[]
+    //사실은 브랜드에 맞는 products json을 페치받아와야 함
+    /*init() {
         self.items = [
             ProductItem(id: "1", name: "프리미엄 고당도 애플망고", price: 7500, imageUrl: "https://example.com/mango.jpg"),
-            ProductItem(id: "2", name: "골드 키위", price: 5500, imageUrl: "https://example.com/kiwi.jpg")
+            ProductItem(id: "2", name: "골드 키위", price: 5500, imageUrl: "https://example.com/kiwi.jpg"),
+            ProductItem(id: "3", name: "꿀 사과", price: 2000, imageUrl: "https://example.com/kiwi.jpg"),
+            ProductItem(id: "4", name: "골드 샤인머스캣", price: 9900, imageUrl: "https://example.com/kiwi.jpg"),
+            ProductItem(id: "5", name: "하우스 겨울딸기", price: 8500, imageUrl: "https://example.com/kiwi.jpg"),
+            ProductItem(id: "6", name: "골드 키위", price: 5500, imageUrl: "https://example.com/kiwi.jpg"),
         ]
-    }
+    }*/
 }
-
-
 struct BrandHome: View {
-    let storeName: String
+    let storeName: String//FruitCardView에서 프롭으로 받음.
     let storeDesc: String = "Whatever Your Pick!"
     @Binding var storeLikes: Int //
     @StateObject private var products = ObservableProducts()//전역 상태 관리
     let backgroundUrl: String = "https://example.com/background.jpg"
     let logoUrl: String = "https://example.com/store-logo.jpg"
+    
     @State private var searchFruit: String = ""
     @State private var isCartPresented = false // 장바구니 드롭업 뷰 상태
     @State private var isModalPresented = false // 모달창 상태
-    @State var tmp_storeLikes = 27 // State 변수 정의
-
+    //@State var tmp_storeLikes = 27 // State 변수 정의
+    @EnvironmentObject var firestoreManager: FireStoreManager
+    //브랜드 id를 가지고 오고, 그 brand테이블에 가서 productid json에 있는 productid를 보고 product테이블에서 해당 과일 정보를 가지고 와야 함.
+    
     var body: some View {
         VStack(alignment: .leading) {
-//            SearchBar(searchText: $searchFruit)
-//                .padding(.top,30)
-//            Spacer()
-            
             // Background image and store details section
             ZStack(alignment: .bottomLeading) {
                 // 상위 배경 이미지
@@ -89,8 +92,13 @@ struct BrandHome: View {
                         Spacer()
                         
                         VStack {
-                            CustomButton(title: "가게정보", background: .yellow, foregroundColor: .black, width: 70, height: 30, size: 14, cornerRadius: 15) {
-                                print("가게 정보 버튼이 눌렸습니다.")
+                            NavigationLink(destination: BrandDetail(storeName: storeName)) {
+                                Text("가게정보")
+                                    .font(.custom("Pretendard-SemiBold", size: 14))
+                                    .frame(width: 70, height: 30)
+                                    .foregroundColor(.black)
+                                    .background(Color.yellow)
+                                    .cornerRadius(15)
                             }
                             HStack(spacing: 8) {
                                 Image(systemName: "heart.fill")
@@ -118,7 +126,7 @@ struct BrandHome: View {
             ScrollView {
                 VStack(spacing: 16) {
                     ForEach(products.items) { product in
-                        ProductRow(product: product)
+                        ProductRow(product: product)//가져온 데이터 렌더링
                     }
                 }
             }
@@ -146,6 +154,9 @@ struct BrandHome: View {
             
             HStack {
                 Button(action: {
+                    //1이상 고른 과일을 {"num":f_count,"productid":db에 담긴 productid}
+                    //saveProductsToDB(products: products, firestoreManager: FireStoreManager())
+                    
                     isModalPresented = true // 모달창 표시
                 }) {
                     Text("장바구니 추가")
@@ -181,8 +192,38 @@ struct BrandHome: View {
         .padding()
         .navigationTitle(storeName)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {//장바구니 툴바 추가
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: {
+                    isCartPresented = true
+                }) {
+                    Image(systemName: "cart")
+                        .font(.title3)
+                        .foregroundColor(.black)
+                }
+            }
+        }
+        .onAppear{
+            loadProducts()
+        }
         
     }
+    
+    func loadProducts() {
+        firestoreManager.fetchProductIdsForBrand(storeName: storeName) { productIds in
+            print("Fetched Product IDs: \(productIds)") // 디버그 출력
+
+            firestoreManager.fetchProducts(for: productIds) { fetchedProducts in
+                print("Fetched Products: \(fetchedProducts)") // 디버그 출력
+
+                DispatchQueue.main.async {
+                    self.products.items = fetchedProducts
+                    print("Items updated: \(self.products.items)") // 업데이트 확인
+                }
+            }
+        }
+    }
+    
         
 }
 
@@ -214,6 +255,7 @@ struct ProductRow: View {
                     CustomStepper(f_count: $product.f_count,width:120,height:20)
                         .padding(.leading, -173)
                         .padding(.top, 80)
+                    //전역으로 products배열을 하나 선언한 다음에. 여기서 f_count("num"의 value)를
                 }
                 Spacer()
             }
@@ -221,6 +263,44 @@ struct ProductRow: View {
        // }
     }
 }
+
+/*func prepareProductsForDB(products:ObservableProducts)->[ [String:Any]]{
+    return products.items.map{ product in
+        [
+        "productid":product.id,
+        "num":product.f_count
+        ]
+        //배열의 각 하나의 요소가 {"num":3,"prodid":과일 이름} 이어야 함.
+    }
+    //배열을 리턴함.
+    
+}
+
+func saveProductsToDB(products:ObservableProducts,firestoreManager:FireStoreManager){//orderprod 테이블에 orderedid(파이어베이스가 자동생성), products(배열),selected(bool-default:false)가 추가되어야 함.
+    //@StateObject var firestoreManager=FireStoreManager()
+    let db = Firestore.firestore()
+    let cartId = firestoreManager.cartId
+    let productData = prepareProductsForDB(products:products)
+    
+    
+    //cartId에 맞는 테이블에 넣어야 하는데
+    db.collection("orderprod").addDocument(data: [
+        "products":productData,
+        "selected":false,
+        "timestamp":Date(),
+        "cartId":cartId
+        
+    ]){
+        error in
+        if let error = error{
+            print("오류 발생")
+        }
+        else{
+            print("성공적으로 add")
+        }
+    }
+    
+}*/
 //
 //#Preview {
 //    BrandHome(storeName: "온브릭스",storeLikes: $storeLikes)
