@@ -20,7 +20,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 struct THE_FRUITSApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     
-    @StateObject private var firestoreManager = FireStoreManager() // 처음에만 선언해주어 화면 간 이동을 해도 같은 데이터에 대해 공유한다
+   @StateObject private var firestoreManager = FireStoreManager() // 처음에만 선언해주어 화면 간 이동을 해도 같은 데이터에 대해 공유한다
     
     var body: some Scene {
         WindowGroup {
