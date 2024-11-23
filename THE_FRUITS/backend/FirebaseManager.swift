@@ -24,6 +24,7 @@ class FireStoreManager: ObservableObject {
     @Published var seller: SellerModel?
     
 
+
     
     /*init() {
      fetchData()

@@ -9,6 +9,7 @@ import Firebase
 
 extension FireStoreManager{
     
+    
     func fetchCart() async {
         do {
             let cartDocuments = try await db.collection("customer").document(self.customerid).collection("cart").getDocuments()
@@ -48,7 +49,6 @@ extension FireStoreManager{
     func asyncFetchBrand(brandId: String) async throws -> BrandModel? {
         let document = try await db.collection("brand").document(brandId).getDocument()
         if document.exists {
-            print("패치완료")
             return try document.data(as: BrandModel.self)
         } else {
             print("Document does not exist")
@@ -59,7 +59,8 @@ extension FireStoreManager{
     func getCartBrandName() async -> String? {
         // 1. Cart 데이터를 확인
         guard let cart = cart else {
-            print("Cart is not loaded")
+            print("Cart is not loaded in getCartBrandName")
+            await fetchCart()
             return nil
         }
         
@@ -79,7 +80,8 @@ extension FireStoreManager{
     
     func getDelCost() async->Int?{
         guard let cart = cart else {
-            print("Cart is not loaded")
+            print("Cart is not loaded in getDelCost")
+            await fetchCart()
             return nil
         }
         
@@ -99,15 +101,21 @@ extension FireStoreManager{
     
     
     func fetchCartDetails() async throws -> [OrderSummary] {
+//            if cart == nil {
+//                print("Cart is not loaded. Fetching cart...")
+//                await fetchCart()
+//            }
             // Ensure cart exists
-            guard let cart = self.cart else {
+            guard let cart = cart else {
+                print("cart is not loaded in fetchCartDetails")
+                await fetchCart()
                 throw NSError(domain: "CartError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Cart not loaded"])
             }
 
             var orderSummaries: [OrderSummary] = []
 
             for orderprodId in cart.orderprodid {
-                print("orderprod id is\(orderprodId)")
+               // print("orderprod id is\(orderprodId)")
                 // Fetch each orderprod object
                 let orderProd = try await fetchOrderProd(orderprodId: orderprodId)
 
