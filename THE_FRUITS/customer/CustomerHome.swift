@@ -7,7 +7,6 @@ struct FruitItem: Identifiable {
     var tags: [String]
     var likes: Int
 }
-
 struct CustomerHome: View {
     @State private var searchText: String = ""
     @State private var fetchedBrandIDs: [String] = [] // 초기값 설정
@@ -21,7 +20,6 @@ struct CustomerHome: View {
                 SearchBar(searchText: $searchText)
                     .padding(.top, 45)
                     .padding(.bottom, 6)
-
                 HStack {
                     CustomButton(
                         title: "최신등록순",
