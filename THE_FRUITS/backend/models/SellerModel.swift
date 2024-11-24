@@ -30,6 +30,7 @@ struct BrandModel: Codable {
     let notification: String
     let purchase_notice: String
     let return_policy: String
+    let imageUrl:String
 }
 
 struct OrderModel: Codable{

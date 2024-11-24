@@ -5,6 +5,9 @@ struct CustomStepper: View {
     var width: CGFloat
     var height: CGFloat
     //@Binding var initialValue: Int
+    var strokeColor: Color // stroke 컬러를 전달받을 변수 추가
+
+
 
     var body: some View {
         HStack(spacing: 0) { // 간격을 완전히 없앰
@@ -44,14 +47,15 @@ struct CustomStepper: View {
         .frame(width: width + height * 2, height: height) // 텍스트와 버튼을 포함하는 크기 설정
         .background(
             RoundedRectangle(cornerRadius: height / 2)
-                .stroke(Color.black, lineWidth: 2)
+                .stroke(strokeColor, lineWidth: 2)
+                .fill(Color.white.opacity(0.7)) // 배경에 하얀색과 투명도 적용
         )
         .accessibilityElement(children: .combine)
     }
 }
 
 #Preview {
-    StatefulPreviewWrapper(0) { CustomStepper(f_count: $0, width: 80, height: 40) }
+    StatefulPreviewWrapper(0) { CustomStepper(f_count: $0, width: 80, height: 40,strokeColor: .black) }
 }
 
 // StatefulPreviewWrapper: 상태를 관리할 수 있는 래퍼 구조체

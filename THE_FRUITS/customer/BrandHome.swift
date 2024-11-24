@@ -36,8 +36,8 @@ struct BrandHome: View {
     let storeDesc: String = "Whatever Your Pick!"
     @Binding var storeLikes: Int //
     @StateObject private var products = ObservableProducts()//전역 상태 관리
-    let backgroundUrl: String = "https://example.com/background.jpg"
-    let logoUrl: String = "https://example.com/store-logo.jpg"
+    let backgroundUrl: String = "https://firebasestorage.googleapis.com/v0/b/thefruits-f8886.firebasestorage.app/o/IMG_0965.jpg?alt=media&token=cf26d6c0-7678-4919-98d0-86e03e6540e9"
+    let logoUrl: String = "https://firebasestorage.googleapis.com/v0/b/thefruits-f8886.firebasestorage.app/o/IMG_0974.jpg?alt=media&token=d3ff6f17-5940-4b1c-9416-5656e2c5339e"
     
     @State private var searchFruit: String = ""
     @State private var isCartPresented = false // 장바구니 드롭업 뷰 상태
@@ -252,7 +252,7 @@ struct ProductRow: View {
                     Text("\(product.price)원")
                         .font(.subheadline)
                         .foregroundColor(.black)
-                    CustomStepper(f_count: $product.f_count,width:120,height:20)
+                    CustomStepper(f_count: $product.f_count,width:120,height:20,strokeColor: .white)
                         .padding(.leading, -173)
                         .padding(.top, 80)
                     //전역으로 products배열을 하나 선언한 다음에. 여기서 f_count("num"의 value)를

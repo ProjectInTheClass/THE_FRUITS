@@ -111,8 +111,8 @@ struct CustomerHome: View {
              FruitItem(
                  id: brand.brandid, // BrandModel의 ID를 사용
                  name: brand.name,  // BrandModel의 이름을 사용
-                 imageUrl: brand.logo, // BrandModel의 로고를 이미지 URL로 사용
-                 tags: [], // 태그는 비워 두거나, 필요하면 추가 로직 구현
+                 imageUrl: brand.imageUrl, // BrandModel의 로고를 이미지 URL로 사용
+                 tags: ["사과","배","망고"], // 태그는 비워 두거나, 필요하면 추가 로직 구현
                  likes: brand.likes // BrandModel의 좋아요 수를 사용
              )
          }
