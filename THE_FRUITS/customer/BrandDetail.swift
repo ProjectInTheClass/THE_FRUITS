@@ -6,7 +6,7 @@ struct BrandDetail: View {
     var detailText: String = """
     특유의 달콤함으로 기분까지 좋게 만들어주죠. 제주 농협의 통합 브랜드, 골로장생이 맛 좋은 감귤을 엄선해 준비했습니다. 꼼꼼한 선별을 통해 새콤달콤한 맛이 눈으로도 느껴질 만큼 탐스럽게 익은 감귤인데요, 껍질질을 벗기면 상품한 균형감까지 느껴져요. 작은 조각을 입안으로 쏙 넣고 깨물면 새콤달콤한 과즙이 한뭉치 터져나옵니다. 생과일은 물론 디저트의 토핑으로도 제격일 거예요. [스토어 정보]
     """
-    var imageUrl: String = "https://example.com/sample-image.jpg"
+    var imageUrl: String = "https://firebasestorage.googleapis.com/v0/b/thefruits-f8886.firebasestorage.app/o/IMG_0969.jpg?alt=media&token=56046c41-b210-401a-a4b1-0a6a74f1c1d6"
 
     @State private var expandedSection: String? = nil // 현재 확장된 섹션
     
@@ -18,8 +18,8 @@ struct BrandDetail: View {
                     AsyncImage(url: URL(string: imageUrl)) { image in
                         image
                             .resizable()
-                            .scaledToFit()
-                            .frame(height: 300)
+                            .scaledToFill()
+                            .frame(maxWidth: .infinity)
                             .clipped()
                     } placeholder: {
                         Color.gray.opacity(0.3)

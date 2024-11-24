@@ -21,7 +21,7 @@ struct FruitCardView: View {
                         image
                             .resizable()
                             .aspectRatio(contentMode: .fill)
-                            .frame(width: 165, height: 165)
+                            .frame(width: 160, height: 165)
                             .clipped()
                             .cornerRadius(8)
                     } placeholder: {
