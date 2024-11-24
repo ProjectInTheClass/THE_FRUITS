@@ -156,6 +156,62 @@ extension FireStoreManager{
         return product
     }
   
+    func updateOrderProd(orderprodId: String) async throws {
+        do {
+            // 현재 문서 가져오기
+            let document = try await db.collection("orderprod").document(orderprodId).getDocument()
+            guard let data = document.data(),
+                  let currentSelected = data["selected"] as? Bool else {
+                print("Field 'selected' not found or invalid")
+                return
+            }
+
+            // 'selected' 값을 반대로 토글
+            let newSelected = !currentSelected
+            try await db.collection("orderprod").document(orderprodId).updateData([
+                "selected": newSelected
+            ])
+
+            print("Document updated: selected -> \(newSelected)")
+        } catch {
+            print("Error updating document in updateOrderProd: \(error.localizedDescription)")
+            throw error
+        }
+    }
+    
+    func updateProductQuantity(orderprodId: String, productId: String, newQuantity: Int) async throws {
+        do {
+            let document = db.collection("orderprod").document(orderprodId)
+            let fieldPath = "products"
+            
+            // Firestore에서 현재 products 배열 가져오기
+            let snapshot = try await document.getDocument()
+            guard var data = snapshot.data(),
+                  var products = data["products"] as? [[String: Any]] else {
+                throw NSError(domain: "FirestoreError", code: 404, userInfo: [NSLocalizedDescriptionKey: "Products not found"])
+            }
+            
+            // 특정 productId의 수량 업데이트
+            for (index, product) in products.enumerated() {
+                if let id = product["productid"] as? String, id == productId {
+                    products[index]["num"] = newQuantity
+                    break
+                }
+            }
+            
+            // 업데이트된 배열 Firestore에 저장
+            try await document.updateData([
+                fieldPath: products
+            ])
+            
+            print("Quantity updated successfully")
+        } catch {
+            print("Error updating quantity: \(error.localizedDescription)")
+            throw error
+        }
+    }
+
+
 
     
     

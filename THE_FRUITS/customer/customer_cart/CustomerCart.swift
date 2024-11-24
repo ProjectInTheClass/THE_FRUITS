@@ -18,18 +18,33 @@ struct CartSummaryView: View {
                 } else {
                     ForEach(orderSummaries, id: \.orderprodid) { summary in
                         VStack {
-                            HStack { 
+                            HStack {
                                 ZStack {
+                                    Button(action: {
+                                    Task {
+                                        do {
+                                            try await firestoreManager.updateOrderProd(orderprodId: summary.orderprodid)
+                                            // 체크박스 상태 업데이트 (옵션)
+//                                            if let index = orderSummaries.firstIndex(where: { $0.orderprodid == summary.orderprodid }) {
+//                                                orderSummaries[index].selected.toggle() // 상태 업데이트
+//                                            }
+                                            orderSummaries = try await firestoreManager.fetchCartDetails()
+                                            updateSelectedTotal()
+                                        } catch {
+                                            print("Error updating order product: \(error.localizedDescription)")
+                                        }
+                                    }
+                                }) {
                                     Circle()
                                         .stroke(Color("darkGreen"), lineWidth: 1.5)
                                         .frame(width: 15, height: 15)
-                                    
-                                    if summary.selected {
-                                        Circle()
-                                            .fill(Color("darkGreen"))
-                                            .frame(width: 10, height: 10)
-                                    }
+                                        .overlay(
+                                            summary.selected
+                                                ? Circle().fill(Color("darkGreen")).frame(width: 10, height: 10)
+                                                : nil
+                                        )
                                 }
+                            }
                                 Spacer()
                             }
 
@@ -37,18 +52,35 @@ struct CartSummaryView: View {
                                 HStack {
                                     HStack(spacing: 5) {
                                         Text(product.productName)
-                                            .font(.system(size: 16, weight: .bold))
+                                            .font(.system(size: 16))
+                                        Spacer()
                                         Text("\(product.price)원")
                                             .font(.system(size: 14))
                                             .foregroundColor(.gray)
                                     }
                                     Spacer()
-                                    HStack(spacing: 10) {
+                                    HStack{
+                                        Button(action: {
+                                            print("here")
+                                        }) {
+                                            Text("-")
+                                                .font(.system(size: 20))
+                                                .padding(.bottom,2)
+                                                .foregroundColor(.white)
+                                        }
                                         Text("\(product.num)")
                                             .font(.system(size: 10))
                                             .foregroundColor(.white)
+                                        Button(action: {
+                                            print("here")
+                                        }) {
+                                            Text("+")
+                                                .font(.system(size: 15))
+                                                .foregroundColor(.white)
+                                        }
+                                        
                                     }
-                                    .frame(width: 70, height: 30)
+                                    .frame(width: 60, height: 25)
                                     .background(Color("darkGreen"))
                                     .cornerRadius(20)
                                 }
@@ -118,7 +150,7 @@ struct BrandButton: View {
 }
 
 struct PriceSection: View {
-    var orderAmount: Int // 주문 금액
+    @Binding var orderAmount: Int // 주문 금액
     @EnvironmentObject var firestoreManager: FireStoreManager
     @State private var delCost: Int? = nil // 배송비를 비동기로 업데이트
     var totalAmount: Int {
@@ -197,7 +229,7 @@ struct CustomerCart: View {
                         VStack(spacing: 20) {
                             BrandButton()
                             CartSummaryView(selectedTotal: $selectedTotal)
-                            PriceSection(orderAmount: selectedTotal)
+                            PriceSection(orderAmount: $selectedTotal)
                             CustomButton(
                                 title: "주문하기",
                                 background: Color("darkGreen"),
