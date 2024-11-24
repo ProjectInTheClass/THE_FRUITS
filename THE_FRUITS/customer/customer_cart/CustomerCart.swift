@@ -16,39 +16,35 @@ struct CartSummaryView: View {
                     Text("Loading cart details...")
                         .padding(5)
                 } else {
-                    ForEach(orderSummaries, id: \.orderprodid) { summary in
+                    ForEach(orderSummaries.indices, id: \.self) { summaryIndex in
+                        var summary = orderSummaries[summaryIndex]
                         VStack {
                             HStack {
                                 ZStack {
                                     Button(action: {
-                                    Task {
-                                        do {
-                                            try await firestoreManager.updateOrderProd(orderprodId: summary.orderprodid)
-                                            // 체크박스 상태 업데이트 (옵션)
-//                                            if let index = orderSummaries.firstIndex(where: { $0.orderprodid == summary.orderprodid }) {
-//                                                orderSummaries[index].selected.toggle() // 상태 업데이트
-//                                            }
-                                            orderSummaries = try await firestoreManager.fetchCartDetails()
-                                            updateSelectedTotal()
-                                        } catch {
-                                            print("Error updating order product: \(error.localizedDescription)")
+                                        Task {
+                                            do {
+                                                try await firestoreManager.updateOrderProdSelected(orderprodId: summary.orderprodid)
+                                                orderSummaries = try await firestoreManager.fetchCartDetails()
+                                                updateSelectedTotal()
+                                            } catch {
+                                                print("Error updating order product: \(error.localizedDescription)")
+                                            }
                                         }
-                                    }
-                                }) {
-                                    Circle()
-                                        .stroke(Color("darkGreen"), lineWidth: 1.5)
-                                        .frame(width: 15, height: 15)
-                                        .overlay(
-                                            summary.selected
+                                    }) {
+                                        Circle()
+                                            .stroke(Color("darkGreen"), lineWidth: 1.5)
+                                            .frame(width: 15, height: 15)
+                                            .overlay(
+                                                summary.selected
                                                 ? Circle().fill(Color("darkGreen")).frame(width: 10, height: 10)
                                                 : nil
-                                        )
+                                            )
+                                    }
                                 }
-                            }
                                 Spacer()
                             }
-
-                            ForEach(summary.products, id: \.productName) { product in
+                            ForEach(Array(summary.products.enumerated()), id: \.element.productid) { index, product in
                                 HStack {
                                     HStack(spacing: 5) {
                                         Text(product.productName)
@@ -61,7 +57,22 @@ struct CartSummaryView: View {
                                     Spacer()
                                     HStack{
                                         Button(action: {
-                                            print("here")
+                                            if (summary.products[index].num>1){
+                                                Task{                                                    
+                                                    do{
+                                                        let quantity = summary.products[index].num-1
+                                                        summary.products[index].num = quantity
+                                                        try await firestoreManager.updateOrderProdQuantity(orderprodId: summary.orderprodid, productId: product.productid, newQuantity: quantity)
+                                                        orderSummaries = try await firestoreManager.fetchCartDetails()
+                                                        updateSelectedTotal()
+                                                        //updateSelectedTotal()
+                                                    }catch{
+                                                        print("error")
+                                                    }
+                                                }
+                                            }
+                                            
+                                            
                                         }) {
                                             Text("-")
                                                 .font(.system(size: 20))
@@ -72,7 +83,18 @@ struct CartSummaryView: View {
                                             .font(.system(size: 10))
                                             .foregroundColor(.white)
                                         Button(action: {
-                                            print("here")
+                                            Task{
+
+                                                do{
+                                                    let quantity = summary.products[index].num+1
+                                                    summary.products[index].num = quantity
+                                                    try await firestoreManager.updateOrderProdQuantity(orderprodId: summary.orderprodid, productId: product.productid, newQuantity: quantity)
+                                                    orderSummaries = try await firestoreManager.fetchCartDetails()
+                                                    updateSelectedTotal()
+                                                }catch{
+                                                    print("error")
+                                                }
+                                            }
                                         }) {
                                             Text("+")
                                                 .font(.system(size: 15))
@@ -117,7 +139,6 @@ struct CartSummaryView: View {
         }
     }
 }
-
 struct BrandButton: View {
     @EnvironmentObject var firestoreManager: FireStoreManager
     @State private var brandName: String? = nil
@@ -126,7 +147,7 @@ struct BrandButton: View {
         VStack {
             if let brandName {
                 CustomButton(
-                    title: "< \(brandName)",
+                    title: "\(brandName)",
                     background: Color("darkGreen"),
                     foregroundColor: .white,
                     width: 80,
@@ -226,8 +247,9 @@ struct CustomerCart: View {
                     }
                 } else {
                     ScrollView {
-                        VStack(spacing: 20) {
+                        VStack(spacing: 15) {
                             BrandButton()
+                                .frame(maxWidth: .infinity, alignment: .leading)
                             CartSummaryView(selectedTotal: $selectedTotal)
                             PriceSection(orderAmount: $selectedTotal)
                             CustomButton(

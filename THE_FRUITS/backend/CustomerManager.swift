@@ -124,6 +124,8 @@ extension FireStoreManager{
                 for product in orderProd.products {
                     let productModel = try await fetchProduct(productId: product.productid)
                     let detail = ProductDetail(
+                        //add product id
+                        productid : productModel.productid,
                         productName: productModel.prodtitle,
                         price: productModel.price,
                         num: product.num
@@ -132,7 +134,7 @@ extension FireStoreManager{
                 }
 
                 // Add summary for this orderprod
-                let summary = OrderSummary(orderprodid: orderProd.orderprodid, products: productDetails, selected: orderProd.selected)
+                var summary = OrderSummary(orderprodid: orderProd.orderprodid, products: productDetails, selected: orderProd.selected)
                 orderSummaries.append(summary)
 
             }
@@ -155,8 +157,10 @@ extension FireStoreManager{
         }
         return product
     }
+    
+    
   
-    func updateOrderProd(orderprodId: String) async throws {
+    func updateOrderProdSelected(orderprodId: String) async throws {
         do {
             // 현재 문서 가져오기
             let document = try await db.collection("orderprod").document(orderprodId).getDocument()
@@ -179,41 +183,37 @@ extension FireStoreManager{
         }
     }
     
-    func updateProductQuantity(orderprodId: String, productId: String, newQuantity: Int) async throws {
+    
+    func updateOrderProdQuantity(orderprodId: String, productId: String, newQuantity: Int) async throws {
         do {
             let document = db.collection("orderprod").document(orderprodId)
-            let fieldPath = "products"
             
-            // Firestore에서 현재 products 배열 가져오기
+            // 현재 orderprod 데이터를 가져오기
             let snapshot = try await document.getDocument()
             guard var data = snapshot.data(),
                   var products = data["products"] as? [[String: Any]] else {
-                throw NSError(domain: "FirestoreError", code: 404, userInfo: [NSLocalizedDescriptionKey: "Products not found"])
+                throw NSError(domain: "FirestoreError", code: 404, userInfo: [NSLocalizedDescriptionKey: "Products not found in the document"])
             }
             
-            // 특정 productId의 수량 업데이트
+            // 특정 productid의 num 값을 업데이트
             for (index, product) in products.enumerated() {
                 if let id = product["productid"] as? String, id == productId {
                     products[index]["num"] = newQuantity
+                    print(newQuantity, products[index]["num"])
                     break
                 }
             }
             
-            // 업데이트된 배열 Firestore에 저장
+            // Firestore에 업데이트된 products 배열 저장
             try await document.updateData([
-                fieldPath: products
+                "products": products
             ])
             
-            print("Quantity updated successfully")
+            print("Product quantity updated successfully.")
         } catch {
-            print("Error updating quantity: \(error.localizedDescription)")
+            print("Error updating product quantity: \(error.localizedDescription)")
             throw error
         }
     }
 
-
-
-    
-    
-    
 }
