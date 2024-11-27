@@ -58,7 +58,7 @@ struct CartSummaryView: View {
                                     HStack{
                                         Button(action: {
                                             if (summary.products[index].num>1){
-                                                Task{                                                    
+                                                Task{                                             
                                                     do{
                                                         let quantity = summary.products[index].num-1
                                                         summary.products[index].num = quantity
