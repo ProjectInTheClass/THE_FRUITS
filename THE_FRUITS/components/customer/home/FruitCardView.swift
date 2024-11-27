@@ -2,22 +2,22 @@ import SwiftUI
 import Foundation
 
 struct FruitCardView: View {
-    let brand: FruitItem
+    let brand: BrandModel
     @State private var currentLikes: Int // 좋아요 수 관리
     @State private var hasLiked: Bool = false // 사용자가 좋아요를 눌렀는지 관리
 
-    init(brand: FruitItem) {
+    init(brand: BrandModel) {
         self.brand = brand
         _currentLikes = State(initialValue: brand.likes)
     }
 
     var body: some View {
-        NavigationLink(destination: BrandHome(storeName: brand.name, storeLikes: $currentLikes)) {
+        NavigationLink(destination: BrandHome(brand:brand,storeLikes: $currentLikes)) {
             VStack(alignment: .leading, spacing: 3) {
                 // 이미지
                 HStack {
                     Spacer()
-                    AsyncImage(url: URL(string: brand.imageUrl)) { image in
+                    AsyncImage(url: URL(string: brand.thumbnail)) { image in
                         image
                             .resizable()
                             .aspectRatio(contentMode: .fill)
@@ -40,7 +40,7 @@ struct FruitCardView: View {
                 // 태그
                 ScrollView(.horizontal, showsIndicators: false) {
                     LazyHStack(spacing: 4) {
-                        ForEach(brand.tags, id: \.self) { tag in
+                        ForEach(brand.sigtype ?? [], id: \.self) { tag in
                             Text(tag)
                                 .font(.custom("Pretendard-SemiBold", size: 10))
                                 .padding(.vertical, 5)
@@ -83,13 +83,13 @@ struct FruitCardView: View {
     }
 }
 
-#Preview {
-    FruitCardView(brand: FruitItem(
-        id: "1",
-        name: "온브릭스",
-        imageUrl: "https://example.com/image.jpg",
-        tags: ["애플망고", "수박", "샤인머스캣"],
-        likes: 27
-    ))
-}
+//#Preview {
+//    FruitCardView(brand: BrandModel(
+//        brandid: "1",
+//        name: "온브릭스",
+//        imageUrl: "https://example.com/image.jpg",
+//        sigtype: ["애플망고", "수박", "샤인머스캣"],
+//        likes: 27
+//    ))
+//}
 
