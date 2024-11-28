@@ -7,6 +7,11 @@
 
 import FirebaseFirestore
 
+struct Brand{ // used for seller home
+    let name: String
+    let logo: String
+}
+
 struct BrandModel: Codable {
     let brandid: String
     let sellerid: String

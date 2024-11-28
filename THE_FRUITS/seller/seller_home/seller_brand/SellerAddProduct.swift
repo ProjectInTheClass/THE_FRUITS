@@ -62,7 +62,7 @@ struct SellerAddProduct: View{
                 }
                 
                 InputField(title: "상품 가격", placeholder: "상품 가격을 입력해주세요.", text: $productPrice)
-                InputField(title: "상품 종류", placeholder: "상품 종류를 입력해주세요.", text: $productType)
+                InputField(title: "상품 품종", placeholder: "상품 품종을 입력해주세요. (ex. 사과, 딸기 등)", text: $productType)
                 
                 Spacer()
                 

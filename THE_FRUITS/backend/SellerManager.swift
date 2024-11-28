@@ -7,35 +7,31 @@
 import Firebase
 
 extension FireStoreManager{
-    func fetchBrands() { // to fetch brands owned by user with sellerid
+    func fetchBrands() async throws -> [BrandModel] {
+        let db = Firestore.firestore()
+        
+        // Ensure seller ID is not empty
         guard !sellerid.isEmpty else {
             print("Seller ID is empty. Cannot fetch brands.")
-            return
+            return []
         }
         
-        let db = Firestore.firestore()
-        db.collection("brand")
+        // Query the Firestore collection for all brands matching the seller ID
+        let querySnapshot = try await db.collection("brand")
             .whereField("sellerid", isEqualTo: sellerid)
-            .getDocuments { (snapshot, error) in
-                if let error = error {
-                    print("Error fetching brands: \(error)")
-                    return
-                }
-                guard let documents = snapshot?.documents else {
-                    print("No brands found")
-                    return
-                }
-                self.brands = documents.compactMap { document in
-                    let data = document.data()
-                    guard let name = data["name"] as? String,
-                          let logo = data["logo"] as? String else {
-                        return nil
-                    }
-                    print("sellerid: ", self.sellerid)
-                    print("name: ", name)
-                    print("logo: ", logo)
-                    return Brand(name: name, logo: logo)
-                }
-            }
+            .getDocuments()
+        
+        // Decode each document into a `BrandModel` object
+        let brands = try querySnapshot.documents.compactMap { document in
+            try document.data(as: BrandModel.self)
+        }
+        
+        if brands.isEmpty {
+            print("No brands found for seller ID: \(sellerid)")
+        } else {
+            print("Successfully fetched \(brands.count) brands.")
+        }
+        
+        return brands
     }
 }
