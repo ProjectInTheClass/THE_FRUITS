@@ -360,5 +360,26 @@ class FireStoreManager: ObservableObject {
         }
     }
     
+    func fetchCartBrandId(completion: @escaping (String?) -> Void) {
+        db.collection("customer")
+            .document(self.customerid)
+            .collection("cart")
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("Error fetching cart brand ID: \(error.localizedDescription)")
+                    completion(nil)
+                    return
+                }
+                
+                if let document = snapshot?.documents.first {
+                    let brandid = document.data()["brandid"] as? String
+                    completion(brandid)
+                } else {
+                    completion(nil) // 장바구니가 비어 있는 경우
+                }
+            }
+    }
+
+    
 }
     

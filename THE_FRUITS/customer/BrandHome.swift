@@ -126,23 +126,9 @@ struct BrandHome: View {
                  .alert("장바구니에 담겼습니다.", isPresented: $isModalPresented, actions: {
                      Button("확인", role: .cancel) { isModalPresented = false }
                  })
-             
                 .navigationTitle(brand.name)
                 .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button(action: {
-                            isCartPresented = true
-                        }) {
-                            Image(systemName: "cart")
-                                .font(.title3)
-                                .foregroundColor(.black)
-                        }
-                    }
-                }
-                .onAppear {
-                    loadProducts()
-                }
+
             }
 
             // Sticky Footer
@@ -171,21 +157,33 @@ struct BrandHome: View {
                             guard !cartItems.isEmpty else {
                                 isModalPresented = false
                                 return
+                                //nil인 경우 모달 축
                             }
                             
-                            firestoreManager.uploadCartItems(brandid:brand.brandid, cartItems: cartItems) { result in
-                                switch result {
-                                case .success:
-                                    DispatchQueue.main.async {
-                                        isModalPresented = true
-                                        products.items.forEach { $0.f_count = 0 }
+                            // 현재 장바구니 상태 확인
+                            firestoreManager.fetchCartBrandId { currentBrandId in
+                                if currentBrandId == nil || currentBrandId == brand.brandid {
+                                    // 같은 브랜드거나, 장바구니가 비어 있으면 바로 추가
+                                    firestoreManager.uploadCartItems(brandid: brand.brandid, cartItems: cartItems) { result in
+                                        switch result {
+                                        case .success:
+                                            DispatchQueue.main.async {
+                                                isModalPresented = true
+                                                products.items.forEach { $0.f_count = 0 }
+                                            }
+                                        case .failure(let error):
+                                            print("Error uploading cart items: \(error.localizedDescription)")
+                                            
+                                        }
                                     }
-                                case .failure(let error):
-                                    print("Error uploading cart items: \(error.localizedDescription)")
+                                } else {
+                                    // 다른 브랜드인 경우 모달 표시
+                                    self.currentBrandId = currentBrandId ?? ""
+                                    self.newBrandId = brand.brandid
+                                    isReplaceCartModalPresented = true
                                 }
                             }
-                        }){
-                            Text("장바구니 추가")
+                        }){  Text("장바구니 추가")
                                 .font(.headline)
                                 .padding()
                                 .frame(maxWidth: .infinity)
@@ -193,6 +191,28 @@ struct BrandHome: View {
                                 .foregroundColor(.white)
                                 .cornerRadius(10)
                         }
+                        .alert(isPresented: $isReplaceCartModalPresented) { // 이 부분 추가
+                            Alert(
+                                title: Text("장바구니 브랜드 변경"),
+                                message: Text("현재 장바구니에는 '\(brand.name)' 브랜드 상품이 있습니다. '\(brand.name)' 브랜드 상품으로 변경하시겠습니까?"),
+                                primaryButton: .destructive(Text("확인")) {//확인을 누르면 그제서야
+                                    let cartItems = products.getCartItems()//orderprod테이블에 장바구니가 등록되고
+                                    firestoreManager.uploadCartItems(brandid: brand.brandid, cartItems: cartItems) { result in
+                                        switch result {
+                                        case .success:
+                                            DispatchQueue.main.async {
+                                                isModalPresented = true
+                                                products.items.forEach { $0.f_count = 0 }
+                                            }
+                                        case .failure(let error):
+                                            print("Error replacing cart items: \(error.localizedDescription)")
+                                        }
+                                    }
+                                },
+                                secondaryButton: .cancel(Text("취소"))
+                            )
+                        }
+                        
                     }
                 }
                 .padding()
@@ -201,6 +221,21 @@ struct BrandHome: View {
             }
             .frame(maxHeight: .infinity, alignment: .bottom) // 하단 고정
         }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: {
+                    isCartPresented = true
+                }) {
+                    Image(systemName: "cart")
+                        .font(.title3)
+                        .foregroundColor(.black)
+                }
+            }
+        }
+        .onAppear {
+            loadProducts()
+        }
+
     }
 
     func loadProducts() {
