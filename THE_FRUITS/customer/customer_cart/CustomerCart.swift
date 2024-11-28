@@ -17,14 +17,14 @@ struct CartSummaryView: View {
                         .padding(5)
                 } else {
                     ForEach(orderSummaries.indices, id: \.self) { summaryIndex in
-                        var summary = orderSummaries[summaryIndex]
                         VStack {
                             HStack {
                                 ZStack {
                                     Button(action: {
                                         Task {
                                             do {
-                                                try await firestoreManager.updateOrderProdSelected(orderprodId: summary.orderprodid)
+                                                // Firestore 업데이트
+                                                try await firestoreManager.updateOrderProdSelected(orderprodId: orderSummaries[summaryIndex].orderprodid)
                                                 orderSummaries = try await firestoreManager.fetchCartDetails()
                                                 updateSelectedTotal()
                                             } catch {
@@ -36,15 +36,37 @@ struct CartSummaryView: View {
                                             .stroke(Color("darkGreen"), lineWidth: 1.5)
                                             .frame(width: 15, height: 15)
                                             .overlay(
-                                                summary.selected
-                                                ? Circle().fill(Color("darkGreen")).frame(width: 10, height: 10)
-                                                : nil
+                                                orderSummaries[summaryIndex].selected
+                                                    ? Circle().fill(Color("darkGreen")).frame(width: 10, height: 10)
+                                                    : nil
                                             )
                                     }
                                 }
                                 Spacer()
+
+                                // 삭제 버튼 추가
+                                Button(action: {
+                                    Task {
+                                        do {
+                                            // Firestore에서 삭제
+                                            try await firestoreManager.deleteOrderProd(orderprodId: orderSummaries[summaryIndex].orderprodid)
+
+                                            // 로컬 데이터에서 삭제
+                                            orderSummaries.remove(at: summaryIndex)
+                                            updateSelectedTotal() // 총합 업데이트
+                                        } catch {
+                                            print("Error deleting orderprodid \(orderSummaries[summaryIndex].orderprodid): \(error.localizedDescription)")
+                                        }
+                                    }
+                                }) {
+                                    Text("x")
+                                        .font(.system(size: 23))
+                                        .foregroundColor(Color("darkGreen"))
+                                }
                             }
-                            ForEach(Array(summary.products.enumerated()), id: \.element.productid) { index, product in
+
+                            // Product 리스트 렌더링
+                            ForEach(Array(orderSummaries[summaryIndex].products.enumerated()), id: \.element.productid) { index, product in
                                 HStack {
                                     HStack(spacing: 5) {
                                         Text(product.productName)
@@ -55,44 +77,45 @@ struct CartSummaryView: View {
                                             .foregroundColor(.gray)
                                     }
                                     Spacer()
-                                    HStack{
+                                    HStack {
                                         Button(action: {
-                                            if (summary.products[index].num>1){
-                                                Task{                                             
-                                                    do{
-                                                        let quantity = summary.products[index].num-1
-                                                        summary.products[index].num = quantity
-                                                        try await firestoreManager.updateOrderProdQuantity(orderprodId: summary.orderprodid, productId: product.productid, newQuantity: quantity)
-                                                        orderSummaries = try await firestoreManager.fetchCartDetails()
+                                            if orderSummaries[summaryIndex].products[index].num > 1 {
+                                                Task {
+                                                    do {
+                                                        // 수량 감소
+                                                        orderSummaries[summaryIndex].products[index].num -= 1
+                                                        try await firestoreManager.updateOrderProdQuantity(
+                                                            orderprodId: orderSummaries[summaryIndex].orderprodid,
+                                                            productId: product.productid,
+                                                            newQuantity: orderSummaries[summaryIndex].products[index].num
+                                                        )
                                                         updateSelectedTotal()
-                                                        //updateSelectedTotal()
-                                                    }catch{
-                                                        print("error")
+                                                    } catch {
+                                                        print("Error updating quantity")
                                                     }
                                                 }
                                             }
-                                            
-                                            
                                         }) {
                                             Text("-")
                                                 .font(.system(size: 20))
-                                                .padding(.bottom,2)
                                                 .foregroundColor(.white)
                                         }
-                                        Text("\(product.num)")
+                                        Text("\(orderSummaries[summaryIndex].products[index].num)")
                                             .font(.system(size: 10))
                                             .foregroundColor(.white)
                                         Button(action: {
-                                            Task{
-
-                                                do{
-                                                    let quantity = summary.products[index].num+1
-                                                    summary.products[index].num = quantity
-                                                    try await firestoreManager.updateOrderProdQuantity(orderprodId: summary.orderprodid, productId: product.productid, newQuantity: quantity)
-                                                    orderSummaries = try await firestoreManager.fetchCartDetails()
+                                            Task {
+                                                do {
+                                                    // 수량 증가
+                                                    orderSummaries[summaryIndex].products[index].num += 1
+                                                    try await firestoreManager.updateOrderProdQuantity(
+                                                        orderprodId: orderSummaries[summaryIndex].orderprodid,
+                                                        productId: product.productid,
+                                                        newQuantity: orderSummaries[summaryIndex].products[index].num
+                                                    )
                                                     updateSelectedTotal()
-                                                }catch{
-                                                    print("error")
+                                                } catch {
+                                                    print("Error updating quantity")
                                                 }
                                             }
                                         }) {
@@ -100,7 +123,6 @@ struct CartSummaryView: View {
                                                 .font(.system(size: 15))
                                                 .foregroundColor(.white)
                                         }
-                                        
                                     }
                                     .frame(width: 60, height: 25)
                                     .background(Color("darkGreen"))
@@ -112,6 +134,8 @@ struct CartSummaryView: View {
                                 .padding(.vertical, 5)
                         }
                     }
+
+
                 }
             }
             .padding(10)
@@ -141,13 +165,23 @@ struct CartSummaryView: View {
 }
 struct BrandButton: View {
     @EnvironmentObject var firestoreManager: FireStoreManager
-    @State private var brandName: String? = nil
-
+    @State private var brand: BrandModel?
+    //@State private var navigateToBrandHome = false
+    
     var body: some View {
         VStack {
-            if let brandName {
+            if let brand {
+//                NavigationLink(
+//                    destination: BrandHome(brand: brand, storeLikes: 0), // BrandHomeView로 이동
+//                    isActive: $navigateToBrandHome // 상태에 따라 네비게이션 실행
+//                ) {
+//                    EmptyView() // NavigationLink를 숨기기 위해 사용
+//                }
+//                .hidden()
+                
+                
                 CustomButton(
-                    title: "\(brandName)",
+                    title: "\(brand.name)",
                     background: Color("darkGreen"),
                     foregroundColor: .white,
                     width: 80,
@@ -155,14 +189,14 @@ struct BrandButton: View {
                     size: 14,
                     cornerRadius: 3,
                     action: {
-                        // submitUserInfo()
+                        print("브랜드 페이지 이동")
                     }
                 )
             } else {
                 Text("Loading brand name...")
                     .onAppear {
                         Task {
-                            brandName = await firestoreManager.getCartBrandName()
+                            brand = await firestoreManager.getCartBrand()
                         }
                     }
             }

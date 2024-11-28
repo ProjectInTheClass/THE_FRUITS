@@ -23,6 +23,7 @@ extension FireStoreManager{
             
             DispatchQueue.main.async {
                 self.cart = cart // 상태 업데이트를 메인 스레드에서 수행
+                print("cart id \(cart.cartid)")
             }
         } catch {
             print("fetch cart error: \(error.localizedDescription)")
@@ -40,7 +41,28 @@ extension FireStoreManager{
         }
     }
     
-    func getCartBrandName() async -> String? {
+//    func getCartBrandName() async -> String? {
+//        // 1. Cart 데이터를 확인
+//        guard let cart = cart else {
+//            print("Cart is not loaded in getCartBrandName")
+//            await fetchCart()
+//            return nil
+//        }
+//        
+//        do {
+//            // 2. Brand ID를 사용해 브랜드 데이터를 가져옴
+//            if let brand = try await asyncFetchBrand(brandId: cart.brandid) {
+//                return brand.name // 성공적으로 가져온 브랜드 이름 반환
+//            } else {
+//                print("Brand not found for brandId: \(cart.brandid)")
+//                return nil
+//            }
+//        } catch {
+//            print("Error fetching brand for cart: \(error.localizedDescription)")
+//            return nil
+//        }
+//    }
+    func getCartBrand() async -> BrandModel? {
         // 1. Cart 데이터를 확인
         guard let cart = cart else {
             print("Cart is not loaded in getCartBrandName")
@@ -51,7 +73,7 @@ extension FireStoreManager{
         do {
             // 2. Brand ID를 사용해 브랜드 데이터를 가져옴
             if let brand = try await asyncFetchBrand(brandId: cart.brandid) {
-                return brand.name // 성공적으로 가져온 브랜드 이름 반환
+                return brand // 성공적으로 가져온 브랜드 이름 반환
             } else {
                 print("Brand not found for brandId: \(cart.brandid)")
                 return nil
@@ -93,6 +115,7 @@ extension FireStoreManager{
             guard let cart = cart else {
                 print("cart is not loaded in fetchCartDetails")
                 await fetchCart()
+                
                 throw NSError(domain: "CartError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Cart not loaded"])
             }
 
@@ -134,12 +157,12 @@ extension FireStoreManager{
             return orderProd
         }
 
-    private func fetchProduct(productId: String) async throws -> ProductModel {
-        let document = try await db.collection("product").document(productId).getDocument()
-        guard let product = try document.data(as: ProductModel?.self) else {
-            throw NSError(domain: "ProductError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Product not found for id: \(productId)"])
-        }
-        return product
+        private func fetchProduct(productId: String) async throws -> ProductModel {
+            let document = try await db.collection("product").document(productId).getDocument()
+            guard let product = try document.data(as: ProductModel?.self) else {
+                throw NSError(domain: "ProductError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Product not found for id: \(productId)"])
+            }
+            return product
     }
     
     
@@ -220,6 +243,66 @@ extension FireStoreManager{
             print("Error encoding order: \(error.localizedDescription)")
         }
     }
+    
+//    func deleteOrderProd(orderprodId: String) async throws {
+//        let orderprod = db.collection("orderprod")
+//        
+//        
+//        // Firestore에서 해당 문서를 조회
+//        let snapshot = try await orderprod.whereField("orderprodid", isEqualTo: orderprodId).getDocuments()
+//        
+//        guard !snapshot.documents.isEmpty else {
+//            throw NSError(domain: "", code: 404, userInfo: [NSLocalizedDescriptionKey: "Document not found."])
+//        }
+//        
+//        // 조회된 모든 문서를 삭제
+//        for document in snapshot.documents {
+//            try await document.reference.delete()
+//        }
+//    }
+
+    func deleteOrderProd(orderprodId: String) async throws {
+        let orderprodCollection = db.collection("orderprod")
+        let cartCollection = db.collection("customer").document(self.customerid).collection("cart")
+        
+        
+        
+        // 1. `orderprod` 컬렉션에서 해당 문서 삭제
+        let orderprodSnapshot = try await orderprodCollection
+            .whereField("orderprodid", isEqualTo: orderprodId)
+            .getDocuments()
+        
+        guard !orderprodSnapshot.documents.isEmpty else {
+            throw NSError(domain: "", code: 404, userInfo: [NSLocalizedDescriptionKey: "OrderProd document not found."])
+        }
+        
+        for document in orderprodSnapshot.documents {
+            try await document.reference.delete()
+        }
+        
+        // 2. `cart` 컬렉션에서 해당 `orderprodid`를 배열에서 삭제
+        let cartSnapshot = try await cartCollection
+            .whereField("cartid", isEqualTo: self.cart?.cartid)
+            .getDocuments()
+        
+        guard let cartDocument = cartSnapshot.documents.first else {
+            throw NSError(domain: "", code: 404, userInfo: [NSLocalizedDescriptionKey: "Cart document not found."])
+        }
+        
+        try await cartDocument.reference.updateData([
+            "orderprodid": FieldValue.arrayRemove([orderprodId]) // 배열에서 ID 삭제
+        ])
+        
+        print("Successfully deleted orderprodid \(orderprodId) from both orderprod and cart.")
+    }
+    
+    
+    func addOrder(brand: BrandModel, orderSummary: [OrderSummary]) async throws {
+        print("\(brand.brandid), \(orderSummary)")
+        
+    }
+
+
 
 
 }
