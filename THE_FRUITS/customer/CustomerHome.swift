@@ -1,27 +1,33 @@
 import SwiftUI
 
-struct FruitItem: Identifiable {
-    var id: String
-    var name: String
-    var imageUrl: String
-    var tags: [String]
-    var likes: Int
+struct BrandItem: Identifiable {
+    var id: String{brandid}
+    let brandid:String
+    let name: String
+    let logo: String
+    let sigtype: [String]
+    let likes: Int
+    
+    init(brandid: String, name: String, logo: String, sigtype: [String], likes: Int) {
+        self.brandid = brandid
+        self.name = name
+        self.logo = logo
+        self.sigtype = sigtype
+        self.likes = likes
+    }
 }
-
 struct CustomerHome: View {
     @State private var searchText: String = ""
     @State private var fetchedBrandIDs: [String] = [] // 초기값 설정
     @State private var brands:[BrandModel]=[]
-    @State private var fruits:[FruitItem]=[]
-        
-
+    @State private var brandItems: [BrandItem] = []
+    //@State private var fruits:[Fruit]=[]
     var body: some View {
         NavigationView {
             VStack {
                 SearchBar(searchText: $searchText)
                     .padding(.top, 45)
                     .padding(.bottom, 6)
-
                 HStack {
                     CustomButton(
                         title: "최신등록순",
@@ -44,8 +50,8 @@ struct CustomerHome: View {
 
                 ScrollView {
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 14) {
-                        ForEach(fruits) { fruit in
-                            FruitCardView(brand: fruit)
+                        ForEach(brands, id: \.brandid) { brand in
+                            FruitCardView(brand: brand)
                         }
                     }
                     .padding(.horizontal, 4)
@@ -65,14 +71,14 @@ struct CustomerHome: View {
         firestoreManager.fetchBrandIDs { brandIDs in
             DispatchQueue.main.async {
                 self.fetchedBrandIDs = brandIDs
-                //print("Fetched Brand IDs: \(brandIDs)") // 디버그 출력
+                print("Fetched Brand IDs: \(brandIDs)") // 디버그 출력
             }
         }
     }
     
     func fetchBrandIDsAndDetails() {
         let firestoreManager = FireStoreManager()
-        
+
         firestoreManager.fetchBrandIDs { brandIDs in
             DispatchQueue.main.async {
                 guard !brandIDs.isEmpty else {
@@ -87,7 +93,7 @@ struct CustomerHome: View {
                     group.enter()
                     print("Fetching details for Brand ID: \(brandID)")
                     
-                    firestoreManager.fetchBrand(brandId: brandID) { brand in
+                    firestoreManager.fetchBrand(brandid: brandID) { brand in
                         if let brand = brand {
                             print("Fetched Brand: \(brand)")
                             fetchedBrands.append(brand)
@@ -97,29 +103,27 @@ struct CustomerHome: View {
                         group.leave()
                     }
                 }
-                
                 group.notify(queue: .main) {
                     self.brands = fetchedBrands
                     print("All brands fetched: \(self.brands)")
-                    self.convertBrandsToFruits()
+                    self.brandItems=self.convertBrandsToFruits()
                 }
             }
         }
     }
     
     // brands 배열을 FruitItem 배열로 변환
-     func convertBrandsToFruits() {
-         self.fruits = brands.map { brand in
-             FruitItem(
-                 id: brand.brandid, // BrandModel의 ID를 사용
-                 name: brand.name,  // BrandModel의 이름을 사용
-                 imageUrl: brand.logo, // BrandModel의 로고를 이미지 URL로 사용
-                 tags: [], // 태그는 비워 두거나, 필요하면 추가 로직 구현
-                 likes: brand.likes // BrandModel의 좋아요 수를 사용
-             )
-         }
-         print("Fruits generated from Brands: \(self.fruits)")
-     }
+    func convertBrandsToFruits() -> [BrandItem] {
+        return brands.map { brand in
+            BrandItem(
+                brandid:brand.brandid,
+                name: brand.name,
+                logo: brand.logo,
+                sigtype: brand.sigtype ?? [], // 기본값 처리
+                likes: brand.likes
+            )
+        }
+    }
 }
 
 #Preview {

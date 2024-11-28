@@ -33,7 +33,6 @@ struct THE_FRUITSApp: App {
             //SellerRootView(selectedTab: $selectedTab)
                 .environmentObject(firestoreManager)
                 
-            
         }
     }
 }
