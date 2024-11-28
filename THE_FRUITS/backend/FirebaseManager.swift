@@ -22,7 +22,9 @@ class FireStoreManager: ObservableObject {
     @Published var cart: CartModel?
     @Published var orderprod: [OrderProdModel] = []
     @Published var seller: SellerModel?
-
+    
+    
+    
     
     /*init() {
      fetchData()
@@ -52,7 +54,7 @@ class FireStoreManager: ObservableObject {
     func fetchUserData(userType: String, userId: String) {
         
         let collection = userType == "customer" ? "customer" : "seller"
-
+        
         db.collection(collection).document(userId).getDocument { (document, error) in
             if let document = document, document.exists {
                 let data = document.data()
@@ -97,67 +99,56 @@ class FireStoreManager: ObservableObject {
             }
         }
     }
-
+    
     
     // fetch customer data
     func fetchCustomer() {
         db.collection("customer").document(self.customerid).getDocument{ (document, error) in
-//            if let error = error {
-//                print("Error fetching customer data document")
-//                return
-//            }
-           if let document = document, document.exists {
-               do {
-                   let customer = try document.data(as: CustomerModel.self)
-                   self.customer = customer
+            //            if let error = error {
+            //                print("Error fetching customer data document")
+            //                return
+            //            }
+            if let document = document, document.exists {
+                do {
+                    let customer = try document.data(as: CustomerModel.self)
+                    self.customer = customer
                     //print("Customer Data: \(customer)")
-               } catch {
-                   //print("Error decoding document into CustomerModel: \(error.localizedDescription)")
-                   print("error decoding document into CustomerModel")
-               }
-           } else {
-               print("Document does not exist")
-           }
-        }
-    }
-    func fetchSeller(){
-        db.collection("seller").document(self.sellerid).getDocument{ (document, error) in
-//            if let error = error {
-//                print("Error fetching customer data document")
-//                return
-//            }
-           if let document = document, document.exists {
-               do {
-                   let seller = try document.data(as: SellerModel.self)
-                   self.seller = seller
-                   print("seller brand ids \(seller.brands)")
-                    //print("Customer Data: \(customer)")
-               } catch {
-                   //print("Error decoding document into CustomerModel: \(error.localizedDescription)")
-                   print("error decoding document into SellerModel")
-               }
-           } else {
-               print("Document does not exist")
-           }
+                } catch {
+                    //print("Error decoding document into CustomerModel: \(error.localizedDescription)")
+                    print("error decoding document into CustomerModel")
+                }
+            } else {
+                print("Document does not exist")
+            }
         }
     }
     
-    func fetchCart(userId: String) async {
-        do{
-            let cartDocuments = try await db.collection("customer").document(userId).collection("cart").getDocuments()
-            
-            guard let document = cartDocuments.documents.first else {
-                print("No cart documents found")
-                return
+    
+    
+    func fetchSeller(){
+        db.collection("seller").document(self.sellerid).getDocument{ (document, error) in
+            //            if let error = error {
+            //                print("Error fetching customer data document")
+            //                return
+            //            }
+            if let document = document, document.exists {
+                do {
+                    let seller = try document.data(as: SellerModel.self)
+                    self.seller = seller
+                    print("seller brand ids \(seller.brands)")
+                    //print("Customer Data: \(customer)")
+                } catch {
+                    //print("Error decoding document into CustomerModel: \(error.localizedDescription)")
+                    print("error decoding document into SellerModel")
+                }
+            } else {
+                print("Document does not exist")
             }
-            let cart = try document.data(as: CartModel.self)
-            self.cart = cart
-                        
-        } catch {
-            print("fetch cart error")
-            
         }
     }
+    
+    
+    
     
     /* storeName으로 브랜드테이블에 접근*/
     func fetchProductIdsForBrand(storeName: String, completion: @escaping ([String]) -> Void) {
@@ -198,7 +189,7 @@ class FireStoreManager: ObservableObject {
                 }
             }
     }
-
+    
     
     
     
@@ -260,32 +251,33 @@ class FireStoreManager: ObservableObject {
                 completion([])
                 return
             }
-
+            
             // 문서 ID만 가져오기
             let brandIDs = documents.map { $0.documentID }
             print("Fetched brand IDs: \(brandIDs)")
             completion(brandIDs)
         }
     }
-
+    
+    
     func fetchBrand(brandid: String, completion: @escaping (BrandModel?) -> Void) {
         print("브랜드 Id params으로=>", brandid) // 잘 받아옴
-
+        
         db.collection("brand").document(brandid).getDocument { (document, error) in
             if let error = error {
                 print("Error fetching document: \(error.localizedDescription)")
                 completion(nil)
                 return
             }
-
+            
             guard let document = document, let data = document.data() else {
                 print("Document does not exist or contains no data")
                 completion(nil)
                 return
             }
-
+            
             print("Fetched raw data: \(data)") // 디버깅용 출력
-
+            
             do {
                 let brand = try document.data(as: BrandModel.self)
                 completion(brand)
@@ -297,19 +289,20 @@ class FireStoreManager: ObservableObject {
     }
     
     func uploadCartItems(storeName: String, cartItems: [[String: Any]], completion: @escaping (Result<Void, Error>) -> Void) {
-            let collectionRef = db.collection("orderprod")
-            collectionRef.addDocument(data: [
-                //"storeName": storeName,
-                "pruducts": cartItems,
-                "selected": false
-            ]) { error in
-                if let error = error {
-                    completion(.failure(error))
-                } else {
-                    completion(.success(()))
-                }
+        let collectionRef = db.collection("orderprod")
+        collectionRef.addDocument(data: [
+            //"storeName": storeName,
+            "pruducts": cartItems,
+            "selected": false
+        ]) { error in
+            if let error = error {
+                completion(.failure(error))
+            } else {
+                completion(.success(()))
             }
         }
-
+    }
+    
+    
 }
     
