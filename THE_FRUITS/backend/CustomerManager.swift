@@ -29,22 +29,6 @@ extension FireStoreManager{
         }
     }
 
-    func fetchBrand(brandId: String, completion: @escaping (BrandModel?) -> Void) {
-        db.collection("brand").document(brandId).getDocument { (document, error) in
-            if let document = document, document.exists {
-                do {
-                    let brand = try document.data(as: BrandModel.self)
-                    completion(brand) // 성공적으로 데이터를 가져오면 반환
-                } catch {
-                    print("Error decoding document into BrandModel: \(error.localizedDescription)")
-                    completion(nil) // 에러 발생 시 nil 반환
-                }
-            } else {
-                print("Document does not exist")
-                completion(nil) // 문서가 존재하지 않을 경우 nil 반환
-            }
-        }
-    }
     
     func asyncFetchBrand(brandId: String) async throws -> BrandModel? {
         let document = try await db.collection("brand").document(brandId).getDocument()
