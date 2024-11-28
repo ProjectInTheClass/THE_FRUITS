@@ -5,6 +5,7 @@ struct CartListView: View {
     @EnvironmentObject var products: ObservableProducts
     @EnvironmentObject var firestoreManager: FireStoreManager // FirestoreManager 주입
     @State private var isModalPresented = false // 모달 상태
+    let brandid:String
     
     var body: some View {
         VStack {
@@ -32,7 +33,7 @@ struct CartListView: View {
                     return
                 }
 
-                firestoreManager.uploadCartItems(storeName: "Store Name", cartItems: cartItems) { result in
+                firestoreManager.uploadCartItems(brandid: brandid, cartItems: cartItems) { result in
                     switch result {
                     case .success:
                         DispatchQueue.main.async {

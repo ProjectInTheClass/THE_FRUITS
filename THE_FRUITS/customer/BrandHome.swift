@@ -36,6 +36,10 @@ struct BrandHome: View {
     @State private var isCartPresented = false
     @State private var isModalPresented = false
     @EnvironmentObject var firestoreManager: FireStoreManager
+    @State private var isReplaceCartModalPresented = false
+    @State private var newBrandId: String = ""
+    @State private var currentBrandId: String = ""
+
     var body: some View {
         ZStack {
             // Scrollable content
@@ -60,7 +64,7 @@ struct BrandHome: View {
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(width: 90, height: 90)
-                                    //.background(Color.white.opacity(0.8))
+
                                     .background(Color.clear) // 배경을 투명하게 설정
                                     .cornerRadius(8)
                                     .padding(.bottom, 1)
@@ -103,8 +107,6 @@ struct BrandHome: View {
                         .background(Color.clear) // HStack 전체 배경 투명화
                         .padding(.horizontal, 12)
                     }
-                    //.padding(.bottom, 53)
-
                     Divider()
                         .frame(height: 2)
                         .padding(.vertical, 8)
@@ -118,7 +120,7 @@ struct BrandHome: View {
                 }
                 .padding()
                 .sheet(isPresented: $isCartPresented) {
-                     CartListView()
+                    CartListView(brandid:brand.brandid)
                          .environmentObject(products)
                  }
                  .alert("장바구니에 담겼습니다.", isPresented: $isModalPresented, actions: {
@@ -145,10 +147,7 @@ struct BrandHome: View {
 
             // Sticky Footer
             VStack(spacing: 0) {
-//                Divider()
-//                    .frame(height: 1)
-//                    .background(Color.gray.opacity(0.4))
-//
+
                 VStack {
                     Button(action: {
                         isCartPresented = true
@@ -164,13 +163,8 @@ struct BrandHome: View {
                     }
                     .frame(height: 15) // 전체 높이 조정
                     .clipped() // 추가된 패딩의 영향을 제거
-                    //.padding(.horizontal, 10) // 좌우만 패딩 추가
-
-//                    Divider()
-//                        .frame(height: 1)
-//                        .background(Color.gray.opacity(0.4))
-//                        .padding(.top, 5) // 버튼과 간격 확보
                     .padding(.bottom,10)
+                    
                     HStack {
                         Button(action: {
                             let cartItems = products.getCartItems()
@@ -178,7 +172,8 @@ struct BrandHome: View {
                                 isModalPresented = false
                                 return
                             }
-                            firestoreManager.uploadCartItems(storeName: brand.name, cartItems: cartItems) { result in
+                            
+                            firestoreManager.uploadCartItems(brandid:brand.brandid, cartItems: cartItems) { result in
                                 switch result {
                                 case .success:
                                     DispatchQueue.main.async {
@@ -189,25 +184,13 @@ struct BrandHome: View {
                                     print("Error uploading cart items: \(error.localizedDescription)")
                                 }
                             }
-                        }) {
+                        }){
                             Text("장바구니 추가")
                                 .font(.headline)
                                 .padding()
                                 .frame(maxWidth: .infinity)
                                 .background(Color("darkGreen"))
                                 .foregroundColor(.white)
-                                .cornerRadius(10)
-                        }
-
-                        Button(action: {
-                            // 바로 구매하기 로직
-                        }) {
-                            Text("바로 구매하기")
-                                .font(.headline)
-                                .padding()
-                                .frame(maxWidth: .infinity)
-                                .background(Color("beige"))
-                                .foregroundColor(Color("darkGreen"))
                                 .cornerRadius(10)
                         }
                     }

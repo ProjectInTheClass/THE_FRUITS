@@ -17,6 +17,7 @@
 		EF9C82B12CD08C81002A8422 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = EF9C82B02CD08C81002A8422 /* FirebaseFirestore */; };
 		EF9C82B32CD08C81002A8422 /* FirebaseFirestoreCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = EF9C82B22CD08C81002A8422 /* FirebaseFirestoreCombine-Community */; };
 		EF9C82B52CD08C81002A8422 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = EF9C82B42CD08C81002A8422 /* FirebaseStorage */; };
+		EFF49CCD2CF865EC008876AB /* FirebaseAppDistribution-Beta in Frameworks */ = {isa = PBXBuildFile; productRef = EFF49CCC2CF865EC008876AB /* FirebaseAppDistribution-Beta */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -74,6 +75,7 @@
 				EF9C82AD2CD08C81002A8422 /* FirebaseCore in Frameworks */,
 				EF9C82B12CD08C81002A8422 /* FirebaseFirestore in Frameworks */,
 				EF9C82AF2CD08C81002A8422 /* FirebaseDatabase in Frameworks */,
+				EFF49CCD2CF865EC008876AB /* FirebaseAppDistribution-Beta in Frameworks */,
 				EF9C82A52CD08C81002A8422 /* FirebaseAnalyticsOnDeviceConversion in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -145,6 +147,7 @@
 				EF9C82B02CD08C81002A8422 /* FirebaseFirestore */,
 				EF9C82B22CD08C81002A8422 /* FirebaseFirestoreCombine-Community */,
 				EF9C82B42CD08C81002A8422 /* FirebaseStorage */,
+				EFF49CCC2CF865EC008876AB /* FirebaseAppDistribution-Beta */,
 			);
 			productName = THE_FRUITS;
 			productReference = EF0D15012CBBE1A1007CAABD /* THE_FRUITS.app */;
@@ -652,6 +655,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = EF9C82A12CD08BE5002A8422 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseStorage;
+		};
+		EFF49CCC2CF865EC008876AB /* FirebaseAppDistribution-Beta */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = EF9C82A12CD08BE5002A8422 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = "FirebaseAppDistribution-Beta";
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
