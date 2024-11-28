@@ -11,11 +11,6 @@ struct SellerHome: View {
     @EnvironmentObject var firestoreManager: FireStoreManager // can fetch data about the sellerid stored in FirebaseManager shared with other screens
     //@State private var sellerid = "troY2ZvhHxGfrSDCIggI"
     
-    @State private var sampleProducts = [
-        ProductItem(id: "1", name: "프리미엄 고당도 애플망고", price: 7500, imageUrl: "applemango"),
-        ProductItem(id: "2", name: "골드 키위", price: 5500, imageUrl: "goldkiwi")
-    ]
-    
     @State private var brands: [BrandModel] = []
     
     var body: some View {
@@ -28,8 +23,7 @@ struct SellerHome: View {
                 Spacer().frame(height: 50)
                 
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 20){
-                    ForEach(brands, id: \.brandid) { brand in                     NavigationLink(destination: SellerBrandMainPage(brand: brand, products: $sampleProducts)) {
-                        
+                    ForEach(brands, id: \.brandid) { brand in                     NavigationLink(destination: SellerBrandMainPage(brand: brand)) {
                         VStack{
                             AsyncImage(url: URL(string: brand.logo)) { image in
                                 image
@@ -67,7 +61,7 @@ struct SellerHome: View {
     
     // Add button view
     private var addButton: some View {
-        NavigationLink(destination: SellerAddBrand().navigationBarBackButtonHidden(true)){
+        NavigationLink(destination: SellerAddBrand()){
             RoundedRectangle(cornerRadius: 10)
                 .stroke(Color.gray, lineWidth: 1)
                 .frame(width: 150, height: 150)

@@ -22,7 +22,7 @@ class FireStoreManager: ObservableObject {
     @Published var cart: CartModel?
     @Published var orderprod: [OrderProdModel] = []
     @Published var seller: SellerModel?
-    
+    @Published var products: [ProductModel] = []
     
     
     

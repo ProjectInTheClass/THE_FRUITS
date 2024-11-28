@@ -34,14 +34,15 @@ struct OrderProdModel: Codable {
 }
 
 
-struct ProductModel: Codable {
-    let productid: String
-    let prodtitle: String
-    let price: Int
-    let info: String
-    let imageUrl: String
-    let type: String
-    let soldout: Bool
+struct ProductModel: Codable, Identifiable {
+    var productid: String
+    var prodtitle: String
+    var price: Int
+    var info: String
+    var imageUrl: String
+    var type: String
+    var soldout: Bool
+    var id: String { productid }
 }
 
 struct OrderSummary {

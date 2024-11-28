@@ -19,7 +19,7 @@ struct Login: View {
     @State private var loginStatus: Bool = false
     @State private var showLoginBox: Bool = false // 로그인 박스 표시 여부
     @State private var joinButtonClicked:Bool=false
-    @State private var selectedTab: Int = 2
+    @State private var selectedTab: Int = 0
     @State private var navigationPath = NavigationPath() // path depending on seller or customer
     @State private var destination: Destination? = nil
     

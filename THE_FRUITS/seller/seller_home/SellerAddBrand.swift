@@ -6,49 +6,48 @@
 //
 
 import SwiftUI
+import Firebase
+import FirebaseFirestore
 
 struct SellerAddBrand: View{
     var body: some View{
-        NavigationView{
-            VStack{
-                BackArrowButton(title: "")
-                Spacer()
-                Text("사업자 등록증이 있으신가요?")
-                    .font(.title)
-                    .bold()
-                    .padding()
-                
-                Spacer().frame(height: 30)
-                
-                NavigationLink(destination: SellerInsertBusinessNum().navigationBarBackButtonHidden(true)){
-                    RoundedRectangle(cornerRadius: 50)
-                        .foregroundColor(.black)
-                        .frame(width: 350, height: 60)
-                        .overlay(
-                            Text("예")
-                                .foregroundColor(.white)
-                        )
-                }
-                
-                Spacer().frame(height: 20)
-                
-                NavigationLink(destination: SellerTutorial().navigationBarBackButtonHidden(true)){
-                    RoundedRectangle(cornerRadius: 50)
-                        .stroke(Color.black, lineWidth: 1)
-                        .frame(width: 350, height: 60)
-                        .overlay(
-                            Text("아니오")
-                                .foregroundColor(.black)
-                        )
-                }
-                Spacer()
+        VStack{
+            Spacer()
+            Text("사업자 등록증이 있으신가요?")
+                .font(.title)
+                .bold()
+                .padding()
+            
+            Spacer().frame(height: 30)
+            
+            NavigationLink(destination: SellerInsertBusinessNum().navigationBarBackButtonHidden(true)){
+                RoundedRectangle(cornerRadius: 50)
+                    .foregroundColor(.black)
+                    .frame(width: 350, height: 60)
+                    .overlay(
+                        Text("예")
+                            .foregroundColor(.white)
+                    )
             }
+            
+            Spacer().frame(height: 20)
+            
+            NavigationLink(destination: SellerTutorial().navigationBarBackButtonHidden(true)){
+                RoundedRectangle(cornerRadius: 50)
+                    .stroke(Color.black, lineWidth: 1)
+                    .frame(width: 350, height: 60)
+                    .overlay(
+                        Text("아니오")
+                            .foregroundColor(.black)
+                    )
+            }
+            Spacer()
         }
     }
 }
 
 struct SellerInsertBusinessNum: View{
-    @State private var businessNumber: String = ""
+    @State private var businessNum: String = ""
     @State private var selectedTab = 0
         
     var body: some View{
@@ -61,7 +60,7 @@ struct SellerInsertBusinessNum: View{
                     .padding()
                 
                 HStack{
-                    TextField("사업자 등록번호", text: $businessNumber)
+                    TextField("사업자 등록번호", text: $businessNum)
                         .padding()
                         .frame(width: 300)
                         .background(
@@ -77,7 +76,7 @@ struct SellerInsertBusinessNum: View{
                             .foregroundColor(.black) // Color of the icon
                             .frame(width: 40, height: 40)
                     }*/
-                    NavigationLink(destination: SellerBrandInfo()){
+                    NavigationLink(destination: SellerBrandInfo(businessNum: $businessNum)){
                         Image(systemName: "arrow.right") // Arrow icon
                             .font(.title2) // Adjust size as needed
                             .foregroundColor(.black) // Color of the icon
@@ -93,14 +92,18 @@ struct SellerInsertBusinessNum: View{
 }
 
 struct SellerBrandInfo: View{
+    @EnvironmentObject var firestoreManager: FireStoreManager
+    
     @State private var brandName: String = ""
     @State private var brandLogo: String = ""
+    @State private var brandSlogan: String = ""
     @State private var brandThumbnail: String = ""
     @State private var brandInfo: String = ""
     @State private var brandFruits: [String] = []
     @State private var brandBank: String = ""
     @State private var brandAccount: String = ""
     @State private var brandAddress: String = ""
+    @State private var brandPhone: String = ""
     
     @State private var selectedTab = 0
     @State private var isBankListPresented = false // bottom sheet for bank
@@ -108,6 +111,8 @@ struct SellerBrandInfo: View{
     // for modal sheet
     @State private var isModalPresented = false
     @State private var shouldNavigate = false
+    
+    @Binding var businessNum: String
     
     var body: some View{
         ScrollView {
@@ -198,7 +203,10 @@ struct SellerBrandInfo: View{
                 Spacer()
                 
                 Button(action: {
-                    isModalPresented = true // 모달창 표시
+                    Task {
+                        await saveBrand()
+                        isModalPresented = true // 모달창 표시
+                    }
                 }) {
                     Text("등록하기")
                         .frame(maxWidth: .infinity)
@@ -235,6 +243,40 @@ struct SellerBrandInfo: View{
         // checking for brand name redundancy
         
     }
+    
+    func saveBrand() async {
+        let brandModel = BrandModel(
+            brandid: "0",
+            sellerid: FireStoreManager().sellerid,
+            info: brandInfo,
+            name: brandName,
+            logo: brandLogo,
+            thumbnail: brandThumbnail,
+            slogan: brandSlogan,
+            likes: 0,
+            orders: [],
+            createdAt: Timestamp(date: Date()),
+            productid: [],
+            account: brandAccount,
+            bank: brandBank,
+            deliverycost: 0,
+            sigtype: nil,
+            phone: brandPhone,
+            address: brandAddress,
+            businessnum: businessNum,
+            notification: "",
+            purchase_notice: "",
+            return_policy: ""
+        )
+        
+        do {
+            try await firestoreManager.addBrand(brand: brandModel)
+        } catch {
+            // Handle error (you can print the error or show an alert)
+            print("Error saving brand: \(error)")
+        }
+    }
+
 }
 
 struct BankListView: View {

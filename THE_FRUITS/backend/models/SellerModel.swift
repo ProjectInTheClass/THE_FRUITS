@@ -13,8 +13,8 @@ struct Brand{ // used for seller home
 }
 
 struct BrandModel: Codable {
-    let brandid: String
-    let sellerid: String
+    var brandid: String
+    var sellerid: String
     let info: String
     let name: String
     let logo: String
