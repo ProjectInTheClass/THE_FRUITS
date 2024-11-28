@@ -41,5 +41,19 @@ struct ProductModel: Codable {
     let info: String
     let imageUrl: String
     let type: String
+    let soldout: Bool
+}
+
+struct OrderSummary {
+    var orderprodid: String
+    var products: [ProductDetail]
+    var selected: Bool
+}
+
+struct ProductDetail {
+    var productid: String
+    var productName: String
+    var price: Int
+    var num: Int
 }
 
