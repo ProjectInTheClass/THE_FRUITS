@@ -215,5 +215,27 @@ extension FireStoreManager{
             throw error
         }
     }
+    
+    
+    // make order in cart
+    func addOrderToFirestore(order: OrderModel) {
+        
+        do {
+            // Codable 구조체를 딕셔너리로 변환
+            let orderData = try JSONEncoder().encode(order)
+            if let dictionary = try JSONSerialization.jsonObject(with: orderData, options: []) as? [String: Any] {
+                db.collection("orders").document(order.orderid).setData(dictionary) { error in
+                    if let error = error {
+                        print("Error adding order: \(error.localizedDescription)")
+                    } else {
+                        print("Order successfully added!")
+                    }
+                }
+            }
+        } catch {
+            print("Error encoding order: \(error.localizedDescription)")
+        }
+    }
+
 
 }

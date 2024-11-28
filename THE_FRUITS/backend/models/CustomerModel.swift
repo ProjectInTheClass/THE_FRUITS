@@ -40,7 +40,8 @@ struct ProductModel: Codable {
     let price: Int
     let info: String
     let imageUrl: String
-
+    let type: String
+    let soldout: Bool
 }
 
 struct OrderSummary {
@@ -55,5 +56,4 @@ struct ProductDetail {
     var price: Int
     var num: Int
 }
-
 
