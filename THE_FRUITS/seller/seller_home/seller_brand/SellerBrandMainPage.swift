@@ -188,7 +188,7 @@ struct SellerBrandMainPage: View{
     }
     func loadProducts() async {
         do {
-            products = try await firestoreManager.fetchBrandProducts(for: brand.productid)
+            products = try await firestoreManager.fetchBrandProducts(for: brand.brandid)
         } catch {
             print("Error fetching products: \(error)")
         }

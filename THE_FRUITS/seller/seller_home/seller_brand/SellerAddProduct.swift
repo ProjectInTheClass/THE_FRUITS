@@ -119,7 +119,6 @@ struct SellerAddProduct: View{
         
         do {
             try await firestoreManager.addProduct(product: productModel, brandid: brandid)
-            try await firestoreManager.fetchBrands()
         } catch {
             // Handle error (you can print the error or show an alert)
             print("Error saving brand: \(error)")

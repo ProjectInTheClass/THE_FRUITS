@@ -35,9 +35,18 @@ extension FireStoreManager{
         return brands
     }
     
-    func fetchBrandProducts(for productIDs: [String]) async throws -> [ProductModel] {
+    func fetchBrandProducts(for brandId: String) async throws -> [ProductModel] {
         let db = Firestore.firestore()
         var products: [ProductModel] = []
+        
+        let querySnapshot = try await db.collection("brand")
+                .whereField("brandid", isEqualTo: brandId)
+                .getDocuments()
+
+            // Extract productid values from the documents
+            let productIDs = querySnapshot.documents.flatMap { document in
+                document.data()["productid"] as? [String] ?? []
+            }
         
         for productID in productIDs {
             let documentSnapshot = try await db.collection("product").document(productID).getDocument()
