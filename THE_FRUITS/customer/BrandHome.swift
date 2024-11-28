@@ -36,6 +36,7 @@ struct BrandHome: View {
     @State private var isCartPresented = false
     @State private var isModalPresented = false
     @EnvironmentObject var firestoreManager: FireStoreManager
+    @State private var modalMessage = "" // 모달 메시지를 동적으로 변경
     var body: some View {
         ZStack {
             // Scrollable content
@@ -164,25 +165,23 @@ struct BrandHome: View {
                     }
                     .frame(height: 15) // 전체 높이 조정
                     .clipped() // 추가된 패딩의 영향을 제거
-                    //.padding(.horizontal, 10) // 좌우만 패딩 추가
 
-//                    Divider()
-//                        .frame(height: 1)
-//                        .background(Color.gray.opacity(0.4))
-//                        .padding(.top, 5) // 버튼과 간격 확보
                     .padding(.bottom,10)
                     HStack {
                         Button(action: {
                             let cartItems = products.getCartItems()
-                            guard !cartItems.isEmpty else {
-                                isModalPresented = false
+                            if cartItems.isEmpty {
+                                modalMessage = "장바구니에 한개 이상의 상품을 담아주세요" // 모달 메시지 설정
+                                isModalPresented = true
                                 return
                             }
+
                             firestoreManager.uploadCartItems(storeName: brand.name, cartItems: cartItems) { result in
                                 switch result {
                                 case .success:
                                     DispatchQueue.main.async {
                                         isModalPresented = true
+                                        modalMessage="장바구니에 담겼습니다."
                                         products.items.forEach { $0.f_count = 0 }
                                     }
                                 case .failure(let error):
@@ -198,7 +197,10 @@ struct BrandHome: View {
                                 .foregroundColor(.white)
                                 .cornerRadius(10)
                         }
-
+                        .alert(modalMessage, isPresented: $isModalPresented, actions: {
+                            Button("확인", role: .cancel) { isModalPresented = false }
+                        })
+                        
                         Button(action: {
                             // 바로 구매하기 로직
                         }) {

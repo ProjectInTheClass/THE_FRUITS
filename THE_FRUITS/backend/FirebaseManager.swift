@@ -268,6 +268,7 @@ class FireStoreManager: ObservableObject {
         }
     }
 
+    
     func fetchBrand(brandid: String, completion: @escaping (BrandModel?) -> Void) {
         print("브랜드 Id params으로=>", brandid) // 잘 받아옴
 
