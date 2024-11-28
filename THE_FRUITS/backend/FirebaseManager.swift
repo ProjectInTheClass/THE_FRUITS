@@ -289,25 +289,61 @@ class FireStoreManager: ObservableObject {
     }
     
     func uploadCartItems(storeName: String, cartItems: [[String: Any]], completion: @escaping (Result<Void, Error>) -> Void) {
-        let collectionRef = db.collection("orderprod")
-        let uid = UUID().uuidString // 고유 UID 생성
+        let orderprodCollection = db.collection("orderprod")
+        let orderprodId = UUID().uuidString // 고유 UID 생성
 
         // Firestore에 저장될 데이터
-        let data: [String: Any] = [
-            "orderprodid": uid, // 매장 이름
-            "products": cartItems, // 장바구니 상품
-            "selected": false // 기본 선택 상태
+        let orderprodData: [String: Any] = [
+            "orderprodid": orderprodId,
+            "products": cartItems,
+            "selected": false
         ]
 
-        // uid를 Firestore 문서 ID로 사용
-        collectionRef.document(uid).setData(data) { error in
+        // 1. `orderprod` 컬렉션에 데이터 저장
+        orderprodCollection.document(orderprodId).setData(orderprodData) { [weak self] error in
+            guard let self = self else { return }
             if let error = error {
                 completion(.failure(error))
             } else {
-                completion(.success(()))
+                // 2. `cart` 업데이트
+                Task {
+                    do {
+                        try await self.updatecartOrderprod(orderprodId: orderprodId)
+                        completion(.success(()))
+                    } catch {
+                        completion(.failure(error))
+                    }
+                }
             }
         }
     }
+
+    // `cart`의 `orderprod` 배열 업데이트 함수
+    func updatecartOrderprod(orderprodId: String) async throws {
+        do {
+            // 1. cart 데이터를 가져오기
+            let cartDocuments = try await db.collection("customer")
+                .document(self.customerid)
+                .collection("cart")
+                .getDocuments()
+
+            guard let document = cartDocuments.documents.first else {
+                throw NSError(domain: "", code: 404, userInfo: [NSLocalizedDescriptionKey: "No cart documents found"])
+            }
+
+            // 2. Firestore에서 cart 문서를 업데이트
+            let cartRef = document.reference
+            try await cartRef.updateData([
+                "orderprodid": FieldValue.arrayUnion([orderprodId]) // 배열에 새 orderprodId 추가
+            ])
+            print("Successfully added \(orderprodId) to orderprod array")
+        } catch {
+            throw error
+        }
+    }
+
+   
+
 
     
     

@@ -23,6 +23,7 @@ extension FireStoreManager{
             
             DispatchQueue.main.async {
                 self.cart = cart // 상태 업데이트를 메인 스레드에서 수행
+                print("cart id \(cart.cartid)")
             }
         } catch {
             print("fetch cart error: \(error.localizedDescription)")
@@ -114,6 +115,7 @@ extension FireStoreManager{
             guard let cart = cart else {
                 print("cart is not loaded in fetchCartDetails")
                 await fetchCart()
+                
                 throw NSError(domain: "CartError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Cart not loaded"])
             }
 
@@ -293,6 +295,13 @@ extension FireStoreManager{
         
         print("Successfully deleted orderprodid \(orderprodId) from both orderprod and cart.")
     }
+    
+    
+    func addOrder(brand: BrandModel, orderSummary: [OrderSummary]) async throws {
+        print("\(brand.brandid), \(orderSummary)")
+        
+    }
+
 
 
 
