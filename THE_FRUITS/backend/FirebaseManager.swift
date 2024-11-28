@@ -290,11 +290,17 @@ class FireStoreManager: ObservableObject {
     
     func uploadCartItems(storeName: String, cartItems: [[String: Any]], completion: @escaping (Result<Void, Error>) -> Void) {
         let collectionRef = db.collection("orderprod")
-        collectionRef.addDocument(data: [
-            //"storeName": storeName,
-            "pruducts": cartItems,
-            "selected": false
-        ]) { error in
+        let uid = UUID().uuidString // 고유 UID 생성
+
+        // Firestore에 저장될 데이터
+        let data: [String: Any] = [
+            "orderprodid": uid, // 매장 이름
+            "products": cartItems, // 장바구니 상품
+            "selected": false // 기본 선택 상태
+        ]
+
+        // uid를 Firestore 문서 ID로 사용
+        collectionRef.document(uid).setData(data) { error in
             if let error = error {
                 completion(.failure(error))
             } else {
@@ -302,6 +308,7 @@ class FireStoreManager: ObservableObject {
             }
         }
     }
+
     
     
 }
