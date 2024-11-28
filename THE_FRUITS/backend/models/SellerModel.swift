@@ -17,19 +17,19 @@ struct BrandModel: Codable {
     let slogan: String
     let likes: Int
     let orders: [String]
-    //let ordernum: Int
     let createdAt: Timestamp
     let productid: [String]
     let account: String
     let bank: String
     let deliverycost: Int
-    let sigtype: [String]
+    let sigtype: [String]?
     let phone: String
     let address: String
     let businessnum: String
-    let notification: String
+    let notification: String//추가
     let purchase_notice: String
     let return_policy: String
+    //let imageUrl:String
 }
 
 struct OrderModel: Codable{
