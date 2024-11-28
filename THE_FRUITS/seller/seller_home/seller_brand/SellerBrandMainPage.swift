@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SellerBrandMainPage: View{
-    @State private var brand: Brand
+    @State private var brand: BrandModel
     @Binding private var products: [ProductItem]
     
     
@@ -18,10 +18,12 @@ struct SellerBrandMainPage: View{
     let backgroundUrl: String = "https://example.com/background.jpg"
     let storeDesc: String = "Whatever Your Pick!"
     
-    init(brand: Brand, products: Binding<[ProductItem]>) {
+    init(brand: BrandModel, products: Binding<[ProductItem]>) {
         _brand = State(initialValue: brand)
         _products = products
     }
+    
+    let productimage = ["applemango", "goldkiwi"]
     
     var body: some View{
         NavigationView{
@@ -29,7 +31,7 @@ struct SellerBrandMainPage: View{
                 VStack(alignment: .leading) {
                     ZStack(alignment: .bottomLeading) {
                         // 상위 배경 이미지
-                        AsyncImage(url: URL(string: backgroundUrl)) { image in
+                        AsyncImage(url: URL(string: "\(brand.thumbnail)")) { image in
                             image
                                 .resizable()
                                 .aspectRatio(contentMode: .fill)
@@ -132,12 +134,13 @@ struct SellerBrandMainPage: View{
                     
                     Spacer()
                     
+                    let index = 0
                     VStack(alignment: .leading, spacing: 16) {
-                        ForEach($products, id: \.id) { $product in
+                        ForEach(Array(zip(products.indices, $products)), id: \.1.id) { index, $product in
                             VStack {
                                 HStack(alignment: .top) {
                                     // Product Image
-                                    AsyncImage(url: URL(string: product.imageUrl)) { image in
+                                    AsyncImage(url: URL(string: "\(product.imageUrl)")) { image in
                                         image
                                             .resizable()
                                             .aspectRatio(contentMode: .fill)
@@ -228,11 +231,14 @@ struct SellerBrandMainPage: View{
     }
 }
 
+/*
 #Preview {
-    @Previewable @State var sampleProducts: [ProductItem] = [
+    @State var sampleProducts: [ProductItem] = [
         ProductItem(id: "1", name: "프리미엄 고당도 애플망고", price: 7500, imageUrl: "https://example.com/mango.jpg"),
         ProductItem(id: "2", name: "골드 키위", price: 5500, imageUrl: "https://example.com/kiwi.jpg")
     ]
-    let sampleBrand = Brand(name: "onbrix", logo: "onbrix")
+    let sampleBrand = BrandModel(name: "onbrix", logo: "https://example.com/onbrix.jpg")
+    
     SellerBrandMainPage(brand: sampleBrand, products: $sampleProducts)
 }
+*/
