@@ -9,6 +9,7 @@ import Firebase
 
 extension FireStoreManager{
     
+
     
     func fetchCart() async {
         do {
@@ -42,6 +43,7 @@ extension FireStoreManager{
         }
     }
     
+
     func getCartBrand() async -> BrandModel? {
         // 1. Cart 데이터를 확인
         guard let cart = cart else {
@@ -227,8 +229,6 @@ extension FireStoreManager{
     func deleteOrderProd(orderprodId: String) async throws {
         let orderprodCollection = db.collection("orderprod")
         let cartCollection = db.collection("customer").document(self.customerid).collection("cart")
-        
-
         // 1. `orderprod` 컬렉션에서 해당 문서 삭제
         let orderprodSnapshot = try await orderprodCollection
             .whereField("orderprodid", isEqualTo: orderprodId)

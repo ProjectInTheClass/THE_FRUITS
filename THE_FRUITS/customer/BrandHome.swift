@@ -36,6 +36,10 @@ struct BrandHome: View {
     @State private var isCartPresented = false
     @State private var isModalPresented = false
     @EnvironmentObject var firestoreManager: FireStoreManager
+    @State private var isReplaceCartModalPresented = false
+    @State private var newBrandId: String = ""
+    @State private var currentBrandId: String = ""
+
     var body: some View {
         ZStack {
             // Scrollable content
@@ -60,7 +64,7 @@ struct BrandHome: View {
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(width: 90, height: 90)
-                                    //.background(Color.white.opacity(0.8))
+
                                     .background(Color.clear) // 배경을 투명하게 설정
                                     .cornerRadius(8)
                                     .padding(.bottom, 1)
@@ -103,8 +107,6 @@ struct BrandHome: View {
                         .background(Color.clear) // HStack 전체 배경 투명화
                         .padding(.horizontal, 12)
                     }
-                    //.padding(.bottom, 53)
-
                     Divider()
                         .frame(height: 2)
                         .padding(.vertical, 8)
@@ -118,37 +120,19 @@ struct BrandHome: View {
                 }
                 .padding()
                 .sheet(isPresented: $isCartPresented) {
-                     CartListView()
+                    CartListView(brandid:brand.brandid)
                          .environmentObject(products)
                  }
                  .alert("장바구니에 담겼습니다.", isPresented: $isModalPresented, actions: {
                      Button("확인", role: .cancel) { isModalPresented = false }
                  })
-             
                 .navigationTitle(brand.name)
                 .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button(action: {
-                            isCartPresented = true
-                        }) {
-                            Image(systemName: "cart")
-                                .font(.title3)
-                                .foregroundColor(.black)
-                        }
-                    }
-                }
-                .onAppear {
-                    loadProducts()
-                }
+
             }
 
             // Sticky Footer
             VStack(spacing: 0) {
-//                Divider()
-//                    .frame(height: 1)
-//                    .background(Color.gray.opacity(0.4))
-//
                 VStack {
                     Button(action: {
                         isCartPresented = true
@@ -164,33 +148,41 @@ struct BrandHome: View {
                     }
                     .frame(height: 15) // 전체 높이 조정
                     .clipped() // 추가된 패딩의 영향을 제거
-                    //.padding(.horizontal, 10) // 좌우만 패딩 추가
-
-//                    Divider()
-//                        .frame(height: 1)
-//                        .background(Color.gray.opacity(0.4))
-//                        .padding(.top, 5) // 버튼과 간격 확보
                     .padding(.bottom,10)
+                    
                     HStack {
                         Button(action: {
                             let cartItems = products.getCartItems()
                             guard !cartItems.isEmpty else {
                                 isModalPresented = false
                                 return
+                                //nil인 경우 모달 축
                             }
-                            firestoreManager.uploadCartItems(storeName: brand.name, cartItems: cartItems) { result in
-                                switch result {
-                                case .success:
-                                    DispatchQueue.main.async {
-                                        isModalPresented = true
-                                        products.items.forEach { $0.f_count = 0 }
+                            
+                            // 현재 장바구니 상태 확인
+                            firestoreManager.fetchCartBrandId { currentBrandId in
+                                if currentBrandId == nil || currentBrandId == brand.brandid {
+                                    // 같은 브랜드거나, 장바구니가 비어 있으면 바로 추가
+                                    firestoreManager.uploadCartItems(brandid: brand.brandid, cartItems: cartItems) { result in
+                                        switch result {
+                                        case .success:
+                                            DispatchQueue.main.async {
+                                                isModalPresented = true
+                                                products.items.forEach { $0.f_count = 0 }
+                                            }
+                                        case .failure(let error):
+                                            print("Error uploading cart items: \(error.localizedDescription)")
+                                            
+                                        }
                                     }
-                                case .failure(let error):
-                                    print("Error uploading cart items: \(error.localizedDescription)")
+                                } else {
+                                    // 다른 브랜드인 경우 모달 표시
+                                    self.currentBrandId = currentBrandId ?? ""
+                                    self.newBrandId = brand.brandid
+                                    isReplaceCartModalPresented = true
                                 }
                             }
-                        }) {
-                            Text("장바구니 추가")
+                        }){  Text("장바구니 추가")
                                 .font(.headline)
                                 .padding()
                                 .frame(maxWidth: .infinity)
@@ -198,18 +190,46 @@ struct BrandHome: View {
                                 .foregroundColor(.white)
                                 .cornerRadius(10)
                         }
-
-                        Button(action: {
-                            // 바로 구매하기 로직
-                        }) {
-                            Text("바로 구매하기")
-                                .font(.headline)
-                                .padding()
-                                .frame(maxWidth: .infinity)
-                                .background(Color("beige"))
-                                .foregroundColor(Color("darkGreen"))
-                                .cornerRadius(10)
+                        .alert(isPresented: $isReplaceCartModalPresented) {
+                            Alert(
+                                title: Text("장바구니 브랜드 변경"),
+                                message: Text("현재 장바구니에는 '\(brand.name)' 브랜드 상품이 있습니다. '\(brand.name)' 브랜드 상품으로 변경하시겠습니까?"),
+                                primaryButton: .destructive(Text("확인")) {
+                                    Task {
+                                        do {
+                                            // 기존 카트의 항목 가져오기
+                                            //실시간 페치
+                                            //await firestoreManager.fetchCart();
+                                            let deleteItems = try await firestoreManager.fetchCartOrderprodid()
+                                            
+                                            print("deleteItems: \(deleteItems)")
+                                            
+                                            // 기존 카트 항목 삭제
+                                            for orderprodid in deleteItems {
+                                                try await firestoreManager.deleteOrderProd(orderprodId:orderprodid)
+                                            }
+                                            // 새 장바구니 항목 업로드
+                                            let cartItems = products.getCartItems()
+                                            firestoreManager.uploadCartItems(brandid: brand.brandid, cartItems: cartItems) { result in
+                                                switch result {
+                                                case .success:
+                                                    DispatchQueue.main.async {
+                                                        isModalPresented = true
+                                                        products.items.forEach { $0.f_count = 0 }
+                                                    }
+                                                case .failure(let error):
+                                                    print("Error replacing cart items: \(error.localizedDescription)")
+                                                }
+                                            }
+                                        } catch {
+                                            print("Error fetching cart orderprodid: \(error.localizedDescription)")
+                                        }
+                                    }
+                                },
+                                secondaryButton: .cancel(Text("취소"))
+                            )
                         }
+
                     }
                 }
                 .padding()
@@ -218,6 +238,26 @@ struct BrandHome: View {
             }
             .frame(maxHeight: .infinity, alignment: .bottom) // 하단 고정
         }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: {
+                    isCartPresented = true
+                }) {
+                    Image(systemName: "cart")
+                        .font(.title3)
+                        .foregroundColor(.black)
+                }
+            }
+        }
+        .onAppear {
+            Task{
+                await firestoreManager.fetchCart();
+                loadProducts()
+                
+            }
+
+        }
+
     }
 
     func loadProducts() {
