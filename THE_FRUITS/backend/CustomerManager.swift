@@ -97,7 +97,6 @@ extension FireStoreManager{
             guard let cart = cart else {
                 print("cart is not loaded in fetchCartDetails")
                 await fetchCart()
-                
                 throw NSError(domain: "CartError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Cart not loaded"])
             }
 
@@ -230,7 +229,6 @@ extension FireStoreManager{
     func deleteOrderProd(orderprodId: String) async throws {
         let orderprodCollection = db.collection("orderprod")
         let cartCollection = db.collection("customer").document(self.customerid).collection("cart")
-        
         // 1. `orderprod` 컬렉션에서 해당 문서 삭제
         let orderprodSnapshot = try await orderprodCollection
             .whereField("orderprodid", isEqualTo: orderprodId)

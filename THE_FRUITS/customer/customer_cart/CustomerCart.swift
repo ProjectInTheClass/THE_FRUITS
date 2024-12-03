@@ -3,7 +3,7 @@ import SwiftUI
 struct CartSummaryView: View {
     @EnvironmentObject var firestoreManager: FireStoreManager
     @Binding var selectedTotal: Int // 선택된 총합을 바인딩으로 전달받음
-    @State private var orderSummaries: [OrderSummary] = []
+    @Binding var orderSummaries: [OrderSummary]
     @State private var isLoading = true
 
     var body: some View {
@@ -266,10 +266,13 @@ struct PriceSection: View {
     }
 }
 
+
+
 struct CustomerCart: View {
     @EnvironmentObject var firestoreManager: FireStoreManager
     @State private var isLoading: Bool = true // 로딩 상태를 별도로 관리
     @State private var selectedTotal: Int = 0 // 선택된 총합 상태 추가
+    @State private var orderSummaries: [OrderSummary] = []
 
     var body: some View {
         NavigationStack {
@@ -284,7 +287,10 @@ struct CustomerCart: View {
                         VStack(spacing: 15) {
                             BrandButton()
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                            CartSummaryView(selectedTotal: $selectedTotal)
+                            CartSummaryView(
+                                selectedTotal: $selectedTotal,
+                                orderSummaries: $orderSummaries
+                            )
                             PriceSection(orderAmount: $selectedTotal)
                             CustomButton(
                                 title: "주문하기",
@@ -295,8 +301,26 @@ struct CustomerCart: View {
                                 size: 14,
                                 cornerRadius: 15,
                                 action: {
-                                    // 주문하기 액션
-                                    print("Final total: \(selectedTotal)")
+                                    Task {
+                                        do {
+                                            // 선택된 orderprodid 필터링
+                                            let selectedOrderProdIds = orderSummaries
+                                                .filter { $0.selected } // selected가 true인 항목만 필터링
+                                                .map { $0.orderprodid } // 필터링된 항목에서 orderprodid만 추출
+                                            
+                                            print("Selected Order Prod IDs: \(selectedOrderProdIds)")
+                                            
+                                            // 각 orderprodid에 대해 deleteOrderProd 호출
+                                            for orderprodId in selectedOrderProdIds {
+                                                try await firestoreManager.deleteOrderProd(orderprodId: orderprodId)
+                                            }
+                                            print("All selected OrderProd IDs have been deleted.")
+                                        } catch {
+                                            print("Error deleting OrderProd: \(error.localizedDescription)")
+                                        }
+                                    }
+                                    
+
                                 }
                             )
                         }
