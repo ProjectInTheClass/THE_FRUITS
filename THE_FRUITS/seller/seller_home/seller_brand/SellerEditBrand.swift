@@ -6,20 +6,28 @@
 //
 
 import SwiftUI
+import Firebase
+import FirebaseFirestore
 
 // should contain already uploaded info
 struct SellerEditBrand: View{
+    @State var brand: BrandModel
+    @EnvironmentObject var firestoreManager: FireStoreManager
+    
     @State private var brandName: String = ""
     @State private var brandLogo: String = ""
     @State private var brandThumbnail: String = ""
     @State private var brandInfo: String = ""
-    @State private var brandFruits: [String] = []
+    @State private var brandFruits: [String] = ["", "", ""]
     @State private var brandBank: String = ""
     @State private var brandAccount: String = ""
     @State private var brandAddress: String = ""
     
     @State private var selectedTab = 0
     @State private var isBankListPresented = false // bottom sheet for bank
+    
+    @State private var isBrandNameDuplicate = false
+    @State private var showDuplicateAlert = false
     
     var body: some View{
         ScrollView {
@@ -42,32 +50,50 @@ struct SellerEditBrand: View{
                             .cornerRadius(8)
                     }
                 }
+                .alert(isPresented: $showDuplicateAlert) {
+                    Alert(
+                        title: Text(isBrandNameDuplicate ? "중복된 브랜드 이름" : "사용 가능한 브랜드 이름"),
+                        message: Text(isBrandNameDuplicate ? "\(brandName)은 이미 등록된 브랜드 이름입니다." : "\(brandName)은 사용 가능합니다."),
+                        dismissButton: .default(Text("확인"), action: {
+                            if isBrandNameDuplicate{
+                                brandName = ""
+                            }
+                            isBrandNameDuplicate = false
+                        })
+                    )
+                }
                 
                 // brand logo & thubmnail image
+                /*HStack(spacing: 50) {
+                 VStack {
+                 Text("브랜드 로고 이미지")
+                 RoundedRectangle(cornerRadius: 10)
+                 .stroke(Color.gray, lineWidth: 1)
+                 .frame(width: 100, height: 100)
+                 .overlay(
+                 Image(systemName: "plus")
+                 .font(.largeTitle)
+                 .foregroundColor(.gray)
+                 )
+                 }
+                 
+                 VStack {
+                 Text("브랜드 배경 이미지")
+                 RoundedRectangle(cornerRadius: 10)
+                 .stroke(Color.gray, lineWidth: 1)
+                 .frame(width: 100, height: 100)
+                 .overlay(
+                 Image(systemName: "plus")
+                 .font(.largeTitle)
+                 .foregroundColor(.gray)
+                 )
+                 }
+                 }
+                 .frame(maxWidth: .infinity, alignment: .center)*/
+                
                 HStack(spacing: 50) {
-                    VStack {
-                        Text("브랜드 로고 이미지")
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.gray, lineWidth: 1)
-                            .frame(width: 100, height: 100)
-                            .overlay(
-                                Image(systemName: "plus")
-                                    .font(.largeTitle)
-                                    .foregroundColor(.gray)
-                            )
-                    }
-                    
-                    VStack {
-                        Text("브랜드 배경 이미지")
-                        RoundedRectangle(cornerRadius: 10)
-                            .stroke(Color.gray, lineWidth: 1)
-                            .frame(width: 100, height: 100)
-                            .overlay(
-                                Image(systemName: "plus")
-                                    .font(.largeTitle)
-                                    .foregroundColor(.gray)
-                            )
-                    }
+                    UploadImageField(title: "브랜드 로고 이미지", imageUrl: $brandLogo)
+                    UploadImageField(title: "브랜드 배경 이미지", imageUrl: $brandThumbnail)
                 }
                 .frame(maxWidth: .infinity, alignment: .center)
                 
@@ -80,7 +106,19 @@ struct SellerEditBrand: View{
                         .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
                 }
                 
-                InputField(title: "대표과일 등록", placeholder: "대표과일을 3개 등록해주세요.")
+                VStack(alignment: .leading){
+                    Text("대표과일 등록")
+                    Text("대표과일을 3개 등록해주세요. (ex. 사과 오렌지)")
+                        .font(.caption)
+                    HStack{
+                        ForEach(0..<3, id: \.self) { index in
+                            TextField("과일 \(index + 1)", text: $brandFruits[index])
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
+                        }
+                    }
+                }
                 
                 Group{
                     Text("거래 은행 등록")
@@ -109,13 +147,22 @@ struct SellerEditBrand: View{
                 
                 Spacer()
                 
-                NavigationLink(destination: SellerRootView(selectedTab: $selectedTab).navigationBarBackButtonHidden(true)) {
-                    Text("수정하기")
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color("darkGreen"))
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
+                Button(action: {
+                    updateBrandInFirebase()
+                    // Navigate after the action
+                    selectedTab = 1 // Set the tab you want to navigate to, if applicable
+                }) {
+                    NavigationLink(
+                        destination: SellerBrandMainPage(brand: brand)
+                            .navigationBarBackButtonHidden(true)
+                    ) {
+                        Text("수정하기")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color("darkGreen"))
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                    }
                 }
             }
             .padding()
@@ -123,14 +170,98 @@ struct SellerEditBrand: View{
         .sheet(isPresented: $isBankListPresented) { // bottom sheet with bank list
             BankListView(selectedBank: $brandBank)
         }
+        .onAppear {
+            Task {
+                await loadBrandData()
+            }
+        }
     }
     
     func checkBrandNameRedundancy() {
-        // checking for brand name redundancy
+        let db = Firestore.firestore()
         
+        // Query the `brand` collection where `name` equals the user's input
+        db.collection("brand").whereField("name", isEqualTo: brandName)
+            .getDocuments { (querySnapshot, error) in
+                if let error = error {
+                    print("Error checking brand name: \(error)")
+                } else {
+                    if let documents = querySnapshot?.documents, !documents.isEmpty {
+                        if brand.name != brandName{
+                            // Brand name exists
+                            isBrandNameDuplicate = true
+                            showDuplicateAlert = true
+                        }
+                    } else {
+                        // Brand name does not exist
+                        isBrandNameDuplicate = false
+                        showDuplicateAlert = true
+                    }
+                }
+            }
+    }
+    
+    func loadBrandData() async {
+        do {
+            let brand: BrandEditModel = try await firestoreManager.fetchBrandDetails(brandId: brand.brandid)
+            brandName = brand.name
+            brandLogo = brand.logo
+            brandThumbnail = brand.thumbnail
+            brandFruits = brand.sigtype
+            brandInfo = brand.info
+            brandBank = brand.bank
+            brandAccount = brand.account
+            brandAddress = brand.address
+        } catch {
+            print("Error loading brand data: \(error)")
+        }
+    }
+    
+    func updateBrandInFirebase() {
+            let updatedBrand = BrandEditModel(
+                brandid: brand.brandid,
+                name: brandName,
+                logo: brandLogo,
+                thumbnail: brandThumbnail,
+                info: brandInfo,
+                sigtype: brandFruits,
+                bank: brandBank,
+                account: brandAccount,
+                address: brandAddress
+            )
+
+            Task {
+                do {
+                    try await firestoreManager.updateBrand(brand: updatedBrand)
+                    print("Brand updated successfully")
+                } catch {
+                    print("Error updating brand: \(error)")
+                }
+            }
+        }
+
+}
+
+struct UploadImageField: View {
+    let title: String
+    @Binding var imageUrl: String
+    
+    var body: some View {
+        VStack {
+            Text(title)
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(Color.gray, lineWidth: 1)
+                .frame(width: 100, height: 100)
+                .overlay(
+                    AsyncImage(url: URL(string: imageUrl)) { image in
+                        image.resizable().aspectRatio(contentMode: .fill)
+                    } placeholder: {
+                        Image(systemName: "plus")
+                            .font(.largeTitle)
+                            .foregroundColor(.gray)
+                    }
+                )
+        }
     }
 }
 
-#Preview {
-    SellerEditBrand()
-}

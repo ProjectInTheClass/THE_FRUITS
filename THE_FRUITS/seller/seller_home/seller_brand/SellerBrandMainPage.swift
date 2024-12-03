@@ -68,7 +68,7 @@ struct SellerBrandMainPage: View{
                             Spacer()
                             
                             VStack {
-                                NavigationLink(destination: SellerBrandSetting()){
+                                NavigationLink(destination: SellerEditBrand(brand: brand)){
                                     RoundedRectangle(cornerRadius: 100)
                                         .stroke(Color.gray, lineWidth: 1)
                                         .frame(width: 120, height: 33)

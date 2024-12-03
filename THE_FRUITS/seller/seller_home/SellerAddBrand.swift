@@ -99,7 +99,7 @@ struct SellerBrandInfo: View{
     @State private var brandSlogan: String = ""
     @State private var brandThumbnail: String = ""
     @State private var brandInfo: String = ""
-    @State private var brandFruits: [String] = []
+    @State private var brandFruits: [String] = ["", "", ""]
     @State private var brandBank: String = ""
     @State private var brandAccount: String = ""
     @State private var brandAddress: String = ""
@@ -111,6 +111,9 @@ struct SellerBrandInfo: View{
     // for modal sheet
     @State private var isModalPresented = false
     @State private var shouldNavigate = false
+    
+    @State private var isBrandNameDuplicate = false
+    @State private var showDuplicateAlert = false
     
     @Binding var businessNum: String
     
@@ -134,6 +137,18 @@ struct SellerBrandInfo: View{
                             .background(Color("darkGreen"))
                             .cornerRadius(8)
                     }
+                }
+                .alert(isPresented: $showDuplicateAlert) {
+                    Alert(
+                        title: Text(isBrandNameDuplicate ? "중복된 브랜드 이름" : "사용 가능한 브랜드 이름"),
+                        message: Text(isBrandNameDuplicate ? "\(brandName)은 이미 등록된 브랜드 이름입니다." : "\(brandName)은 사용 가능합니다."),
+                        dismissButton: .default(Text("확인"), action: {
+                            if isBrandNameDuplicate {
+                                brandName = ""
+                            }
+                            isBrandNameDuplicate = false
+                        })
+                    )
                 }
                 
                 // brand logo & thubmnail image
@@ -173,7 +188,21 @@ struct SellerBrandInfo: View{
                         .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
                 }
                 
-                InputField(title: "대표과일 등록", placeholder: "대표과일을 3개 등록해주세요.")
+                VStack(alignment: .leading){
+                    Text("대표과일 등록")
+                    Text("대표과일을 3개 등록해주세요. (ex. 사과 오렌지)")
+                        .font(.caption)
+                    HStack{
+                        ForEach(0..<3, id: \.self) { index in
+                            TextField("과일 \(index + 1)", text: $brandFruits[index])
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
+                        }
+                    }
+                }
+                
+                //InputField(title: "대표과일 등록", placeholder: "대표과일을 3개 등록해주세요.")
                 
                 Group{
                     Text("거래 은행 등록")
@@ -240,8 +269,25 @@ struct SellerBrandInfo: View{
     }
     
     func checkBrandNameRedundancy() {
-        // checking for brand name redundancy
+        let db = Firestore.firestore()
         
+        // Query the `brand` collection where `name` equals the user's input
+        db.collection("brand").whereField("name", isEqualTo: brandName)
+            .getDocuments { (querySnapshot, error) in
+                if let error = error {
+                    print("Error checking brand name: \(error)")
+                } else {
+                    if let documents = querySnapshot?.documents, !documents.isEmpty {
+                        // Brand name exists
+                        isBrandNameDuplicate = true
+                        showDuplicateAlert = true
+                    } else {
+                        // Brand name does not exist
+                        isBrandNameDuplicate = false
+                        showDuplicateAlert = true
+                    }
+                }
+            }
     }
     
     func saveBrand() async {
@@ -276,7 +322,7 @@ struct SellerBrandInfo: View{
             print("Error saving brand: \(error)")
         }
     }
-
+    
 }
 
 struct BankListView: View {
