@@ -133,7 +133,6 @@ struct BrandHome: View {
 
             // Sticky Footer
             VStack(spacing: 0) {
-
                 VStack {
                     Button(action: {
                         isCartPresented = true
@@ -191,28 +190,46 @@ struct BrandHome: View {
                                 .foregroundColor(.white)
                                 .cornerRadius(10)
                         }
-                        .alert(isPresented: $isReplaceCartModalPresented) { // 이 부분 추가
+                        .alert(isPresented: $isReplaceCartModalPresented) {
                             Alert(
                                 title: Text("장바구니 브랜드 변경"),
                                 message: Text("현재 장바구니에는 '\(brand.name)' 브랜드 상품이 있습니다. '\(brand.name)' 브랜드 상품으로 변경하시겠습니까?"),
-                                primaryButton: .destructive(Text("확인")) {//확인을 누르면 그제서야
-                                    let cartItems = products.getCartItems()//orderprod테이블에 장바구니가 등록되고
-                                    firestoreManager.uploadCartItems(brandid: brand.brandid, cartItems: cartItems) { result in
-                                        switch result {
-                                        case .success:
-                                            DispatchQueue.main.async {
-                                                isModalPresented = true
-                                                products.items.forEach { $0.f_count = 0 }
+                                primaryButton: .destructive(Text("확인")) {
+                                    Task {
+                                        do {
+                                            // 기존 카트의 항목 가져오기
+                                            //실시간 페치
+                                            //await firestoreManager.fetchCart();
+                                            let deleteItems = try await firestoreManager.fetchCartOrderprodid()
+                                            
+                                            print("deleteItems: \(deleteItems)")
+                                            
+                                            // 기존 카트 항목 삭제
+                                            for orderprodid in deleteItems {
+                                                try await firestoreManager.deleteOrderProd(orderprodId:orderprodid)
                                             }
-                                        case .failure(let error):
-                                            print("Error replacing cart items: \(error.localizedDescription)")
+                                            // 새 장바구니 항목 업로드
+                                            let cartItems = products.getCartItems()
+                                            firestoreManager.uploadCartItems(brandid: brand.brandid, cartItems: cartItems) { result in
+                                                switch result {
+                                                case .success:
+                                                    DispatchQueue.main.async {
+                                                        isModalPresented = true
+                                                        products.items.forEach { $0.f_count = 0 }
+                                                    }
+                                                case .failure(let error):
+                                                    print("Error replacing cart items: \(error.localizedDescription)")
+                                                }
+                                            }
+                                        } catch {
+                                            print("Error fetching cart orderprodid: \(error.localizedDescription)")
                                         }
                                     }
                                 },
                                 secondaryButton: .cancel(Text("취소"))
                             )
                         }
-                        
+
                     }
                 }
                 .padding()
@@ -233,7 +250,12 @@ struct BrandHome: View {
             }
         }
         .onAppear {
-            loadProducts()
+            Task{
+                await firestoreManager.fetchCart();
+                loadProducts()
+                
+            }
+
         }
 
     }

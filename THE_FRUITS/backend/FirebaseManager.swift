@@ -291,14 +291,14 @@ class FireStoreManager: ObservableObject {
     func uploadCartItems(brandid:String, cartItems: [[String: Any]], completion: @escaping (Result<Void, Error>) -> Void) {
         let orderprodCollection = db.collection("orderprod")
         let orderprodId = UUID().uuidString // 고유 UID 생성
-
+        
         // Firestore에 저장될 데이터
         let orderprodData: [String: Any] = [
             "orderprodid": orderprodId,
             "products": cartItems,
             "selected": false
         ]
-
+        
         // 1. `orderprod` 컬렉션에 데이터 저장
         orderprodCollection.document(orderprodId).setData(orderprodData) { [weak self] error in
             guard let self = self else { return }
@@ -316,8 +316,9 @@ class FireStoreManager: ObservableObject {
                 }
             }
         }
+        
     }
-
+    
     // `cart`의 `orderprod` 배열 업데이트 함수
     func updatecartOrderprod(brandid:String, orderprodId: String) async throws {
         do {
@@ -326,11 +327,11 @@ class FireStoreManager: ObservableObject {
                 .document(self.customerid)
                 .collection("cart")
                 .getDocuments()
-
+            
             guard let document = cartDocuments.documents.first else {
                 throw NSError(domain: "", code: 404, userInfo: [NSLocalizedDescriptionKey: "No cart documents found"])
             }
-
+            
             // 2. Firestore에서 cart 문서를 업데이트
             let cartData=document.data()
             let cartRef = document.reference
@@ -348,13 +349,13 @@ class FireStoreManager: ObservableObject {
                     "orderprodid":[orderprodId]
                 ])
             }
-
+            
             print("Successfully added \(orderprodId) to orderprod array")
             
             //만약 카드에 있는 brandid랑 brandHome에서 받는 brand.brandid랑 다르면
             //모달창을 띄운다(ex."장바구니에는 하나의 브랜드 상품만 담을 수 있습니다. 해당 브랜드의 상품을 담으시겠습니까?")
             //기존의 데이터의 필드 중 "brandid"는 brand.brandid로 바꾸고, orderprodid는 새로 들어온 orderprodid로 바뀌어야 함.(추가의 개념이 아님)
-        
+            
         } catch {
             throw error
         }
@@ -379,7 +380,23 @@ class FireStoreManager: ObservableObject {
                 }
             }
     }
+    
 
+    func fetchCartOrderprodid() async throws -> [String] {
+        if cart == nil {
+            print("Cart is not loaded. Fetching cart...")
+            await fetchCart()
+            // cart가 업데이트될 때까지 확인
+            while cart == nil {
+                try await Task.sleep(nanoseconds: 100_000_000) // 100ms 대기
+            }
+        }
+        guard let cart = cart else {
+            throw NSError(domain: "CartError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Cart could not be loaded after fetching"])
+        }
+
+        return cart.orderprodid
+    }
     
 }
     
