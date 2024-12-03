@@ -37,6 +37,18 @@ struct BrandModel: Codable {
     //let imageUrl:String
 }
 
+struct BrandEditModel: Codable{
+    let brandid: String
+    var name: String
+    var logo: String
+    var thumbnail: String
+    var info: String
+    var sigtype: [String]
+    var bank: String
+    var account: String
+    var address: String
+}
+
 struct OrderModel: Codable{
     let orderid: String
     let orderdate: String

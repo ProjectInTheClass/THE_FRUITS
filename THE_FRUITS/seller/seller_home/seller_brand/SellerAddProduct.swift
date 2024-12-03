@@ -34,17 +34,6 @@ struct SellerAddProduct: View{
                     TextField("상품 입력", text: $productName)
                         .padding()
                         .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
-                    
-                    Button(action: {
-                        checkProductNameRedundancy() // check name's redundancy
-                    }) {
-                        Text("중복 확인")
-                            .foregroundColor(.white)
-                            .padding(.vertical, 8)
-                            .padding(.horizontal, 16)
-                            .background(Color("darkGreen"))
-                            .cornerRadius(8)
-                    }
                 }
                 
                 // product image
@@ -99,11 +88,6 @@ struct SellerAddProduct: View{
             }
             .padding()
         }
-    }
-    
-    func checkProductNameRedundancy() {
-        // checking for brand name redundancy
-        
     }
     
     func saveProduct() async {

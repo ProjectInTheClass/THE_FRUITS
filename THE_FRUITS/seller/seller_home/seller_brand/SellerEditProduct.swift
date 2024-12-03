@@ -41,20 +41,10 @@ struct SellerEditProduct: View{
                         .padding()
                         .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
                     
-                    Button(action: {
-                        checkProductNameRedundancy() // check name's redundancy
-                    }) {
-                        Text("중복 확인")
-                            .foregroundColor(.white)
-                            .padding(.vertical, 8)
-                            .padding(.horizontal, 16)
-                            .background(Color("darkGreen"))
-                            .cornerRadius(8)
-                    }
                 }
                 
                 // product image
-                VStack {
+                /*VStack {
                     Text("상품 이미지")
                     RoundedRectangle(cornerRadius: 10)
                         .stroke(Color.gray, lineWidth: 1)
@@ -64,7 +54,8 @@ struct SellerEditProduct: View{
                                 .font(.largeTitle)
                                 .foregroundColor(.gray)
                         )
-                }
+                }*/
+                UploadImageField(title: "상품 이미지", imageUrl: $productImage)
                 
                 // product info
                 VStack(alignment: .leading) {
@@ -119,11 +110,6 @@ struct SellerEditProduct: View{
             }
             .padding()
         }
-    }
-    
-    func checkProductNameRedundancy() {
-        // checking for brand name redundancy
-        
     }
 }
 

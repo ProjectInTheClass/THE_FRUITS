@@ -131,4 +131,33 @@ extension FireStoreManager{
             print("Error saving product data: \(error.localizedDescription)")
         }
     }
+    
+    func fetchBrandDetails(brandId: String) async throws -> BrandEditModel {
+        let document = try await Firestore.firestore().collection("brand").document(brandId).getDocument()
+        guard let data = document.data() else { throw NSError() }
+        return BrandEditModel(
+            brandid: document.documentID,
+            name: data["name"] as? String ?? "",
+            logo: data["logo"] as? String ?? "",
+            thumbnail: data["thumbnail"] as? String ?? "",
+            info: data["info"] as? String ?? "",
+            sigtype: data["sigtype"] as? [String] ?? ["", "", ""],
+            bank: data["bank"] as? String ?? "",
+            account: data["account"] as? String ?? "",
+            address: data["address"] as? String ?? ""
+        )
+    }
+    
+    func updateBrand(brand: BrandEditModel) async throws {
+        let data: [String: Any] = [
+            "name": brand.name,
+            "logo": brand.logo,
+            "thumbnail": brand.thumbnail,
+            "info": brand.info,
+            "bank": brand.bank,
+            "account": brand.account,
+            "address": brand.address
+        ]
+        try await Firestore.firestore().collection("brand").document(brand.brandid).setData(data, merge: true)
+    }
 }
