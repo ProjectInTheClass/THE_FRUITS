@@ -42,27 +42,6 @@ extension FireStoreManager{
         }
     }
     
-//    func getCartBrandName() async -> String? {
-//        // 1. Cart 데이터를 확인
-//        guard let cart = cart else {
-//            print("Cart is not loaded in getCartBrandName")
-//            await fetchCart()
-//            return nil
-//        }
-//        
-//        do {
-//            // 2. Brand ID를 사용해 브랜드 데이터를 가져옴
-//            if let brand = try await asyncFetchBrand(brandId: cart.brandid) {
-//                return brand.name // 성공적으로 가져온 브랜드 이름 반환
-//            } else {
-//                print("Brand not found for brandId: \(cart.brandid)")
-//                return nil
-//            }
-//        } catch {
-//            print("Error fetching brand for cart: \(error.localizedDescription)")
-//            return nil
-//        }
-//    }
     func getCartBrand() async -> BrandModel? {
         // 1. Cart 데이터를 확인
         guard let cart = cart else {
@@ -244,22 +223,6 @@ extension FireStoreManager{
         }
     }
     
-//    func deleteOrderProd(orderprodId: String) async throws {
-//        let orderprod = db.collection("orderprod")
-//        
-//        
-//        // Firestore에서 해당 문서를 조회
-//        let snapshot = try await orderprod.whereField("orderprodid", isEqualTo: orderprodId).getDocuments()
-//        
-//        guard !snapshot.documents.isEmpty else {
-//            throw NSError(domain: "", code: 404, userInfo: [NSLocalizedDescriptionKey: "Document not found."])
-//        }
-//        
-//        // 조회된 모든 문서를 삭제
-//        for document in snapshot.documents {
-//            try await document.reference.delete()
-//        }
-//    }
 
     func deleteOrderProd(orderprodId: String) async throws {
         let orderprodCollection = db.collection("orderprod")
