@@ -10,13 +10,14 @@ import SwiftUI
 // should contain already uploaded info
 struct SellerEditProduct: View{
     @EnvironmentObject var firestoreManager: FireStoreManager
-
+    @Binding var product: ProductModel
+    
     @State private var productTitle: String
     @State private var productImage: String
+    @State private var imageData: Data? = nil
     @State private var productInfo: String
     @State private var productPrice: Int
     @State private var productType: String
-    @Binding var product: ProductModel
     
     @State private var selectedTab = 0
     
@@ -55,7 +56,7 @@ struct SellerEditProduct: View{
                                 .foregroundColor(.gray)
                         )
                 }*/
-                UploadImageField(title: "상품 이미지", imageUrl: $productImage)
+                UploadImageField(title: "상품 이미지", imageUrl: $productImage, imageData: $imageData, id: product.productid)
                 
                 // product info
                 VStack(alignment: .leading) {
@@ -81,9 +82,11 @@ struct SellerEditProduct: View{
                 Button(action: {
                     Task {
                         do {
+                            let imageURL = try await uploadImageToFirebase(imageData: imageData, fieldName: "image")
+                            
                             // Update product in Firestore
                             product.prodtitle = productTitle
-                            product.imageUrl = productImage
+                            product.imageUrl = imageURL
                             product.info = productInfo
                             product.price = productPrice
                             product.type = productType
