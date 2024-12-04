@@ -165,9 +165,8 @@ struct CartSummaryView: View {
 }
 struct BrandButton: View {
     @EnvironmentObject var firestoreManager: FireStoreManager
-    @State private var brand: BrandModel?
+    @Binding var brand: BrandModel?
     //@State private var navigateToBrandHome = false
-    
     var body: some View {
         VStack {
             if let brand {
@@ -178,8 +177,6 @@ struct BrandButton: View {
 //                    EmptyView() // NavigationLink를 숨기기 위해 사용
 //                }
 //                .hidden()
-                
-                
                 CustomButton(
                     title: "\(brand.name)",
                     background: Color("darkGreen"),
@@ -273,6 +270,7 @@ struct CustomerCart: View {
     @State private var isLoading: Bool = true // 로딩 상태를 별도로 관리
     @State private var selectedTotal: Int = 0 // 선택된 총합 상태 추가
     @State private var orderSummaries: [OrderSummary] = []
+    @State private var brand: BrandModel?
 
     var body: some View {
         NavigationStack {
@@ -285,7 +283,7 @@ struct CustomerCart: View {
                 } else {
                     ScrollView {
                         VStack(spacing: 15) {
-                            BrandButton()
+                            BrandButton(brand: $brand)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             CartSummaryView(
                                 selectedTotal: $selectedTotal,
@@ -303,18 +301,8 @@ struct CustomerCart: View {
                                 action: {
                                     Task {
                                         do {
-                                            // 선택된 orderprodid 필터링
-                                            let selectedOrderProdIds = orderSummaries
-                                                .filter { $0.selected } // selected가 true인 항목만 필터링
-                                                .map { $0.orderprodid } // 필터링된 항목에서 orderprodid만 추출
                                             
-                                            print("Selected Order Prod IDs: \(selectedOrderProdIds)")
-                                            
-                                            // 각 orderprodid에 대해 deleteOrderProd 호출
-                                            for orderprodId in selectedOrderProdIds {
-                                                try await firestoreManager.deleteOrderProd(orderprodId: orderprodId)
-                                            }
-                                            print("All selected OrderProd IDs have been deleted.")
+                                            try await firestoreManager.addOrder(brand: brand!, orderSummaries: orderSummaries, totalPrice: selectedTotal)
                                         } catch {
                                             print("Error deleting OrderProd: \(error.localizedDescription)")
                                         }
@@ -332,6 +320,7 @@ struct CustomerCart: View {
                 Task {
                     isLoading = true
                     await firestoreManager.fetchCart()
+                    
                     isLoading = false
                 }
             }

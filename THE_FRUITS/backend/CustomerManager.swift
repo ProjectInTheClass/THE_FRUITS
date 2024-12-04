@@ -6,10 +6,11 @@
 //
 
 import Firebase
+import Foundation
 
 extension FireStoreManager{
     
-
+    
     
     func fetchCart() async {
         do {
@@ -31,7 +32,7 @@ extension FireStoreManager{
             print("fetch cart error: \(error.localizedDescription)")
         }
     }
-
+    
     
     func asyncFetchBrand(brandId: String) async throws -> BrandModel? {
         let document = try await db.collection("brand").document(brandId).getDocument()
@@ -43,7 +44,7 @@ extension FireStoreManager{
         }
     }
     
-
+    
     func getCartBrand() async -> BrandModel? {
         // 1. Cart 데이터를 확인
         guard let cart = cart else {
@@ -89,65 +90,65 @@ extension FireStoreManager{
     
     
     func fetchCartDetails() async throws -> [OrderSummary] {
-//            if cart == nil {
-//                print("Cart is not loaded. Fetching cart...")
-//                await fetchCart()
-//            }
-            // Ensure cart exists
-            guard let cart = cart else {
-                print("cart is not loaded in fetchCartDetails")
-                await fetchCart()
-                throw NSError(domain: "CartError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Cart not loaded"])
-            }
-
-            var orderSummaries: [OrderSummary] = []
-
-            for orderprodId in cart.orderprodid {
-               // print("orderprod id is\(orderprodId)")
-                // Fetch each orderprod object
-                let orderProd = try await fetchOrderProd(orderprodId: orderprodId)
-
-                // Fetch product details for each product in the order
-                var productDetails: [ProductDetail] = []
-                for product in orderProd.products {
-                    let productModel = try await fetchProduct(productId: product.productid)
-                    let detail = ProductDetail(
-                        //add product id
-                        productid : productModel.productid,
-                        productName: productModel.prodtitle,
-                        price: productModel.price,
-                        num: product.num
-                    )
-                    productDetails.append(detail)
-                }
-
-                // Add summary for this orderprod
-                var summary = OrderSummary(orderprodid: orderProd.orderprodid, products: productDetails, selected: orderProd.selected)
-                orderSummaries.append(summary)
-
-            }
-
-            return orderSummaries
+        //            if cart == nil {
+        //                print("Cart is not loaded. Fetching cart...")
+        //                await fetchCart()
+        //            }
+        // Ensure cart exists
+        guard let cart = cart else {
+            print("cart is not loaded in fetchCartDetails")
+            await fetchCart()
+            throw NSError(domain: "CartError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Cart not loaded"])
         }
-
-        private func fetchOrderProd(orderprodId: String) async throws -> OrderProdModel {
-            let document = try await db.collection("orderprod").document(orderprodId).getDocument()
-            guard let orderProd = try document.data(as: OrderProdModel?.self) else {
-                throw NSError(domain: "OrderProdError", code: 0, userInfo: [NSLocalizedDescriptionKey: "OrderProd not found for id: \(orderprodId)"])
+        
+        var orderSummaries: [OrderSummary] = []
+        
+        for orderprodId in cart.orderprodid {
+            // print("orderprod id is\(orderprodId)")
+            // Fetch each orderprod object
+            let orderProd = try await fetchOrderProd(orderprodId: orderprodId)
+            
+            // Fetch product details for each product in the order
+            var productDetails: [ProductDetail] = []
+            for product in orderProd.products {
+                let productModel = try await fetchProduct(productId: product.productid)
+                let detail = ProductDetail(
+                    //add product id
+                    productid : productModel.productid,
+                    productName: productModel.prodtitle,
+                    price: productModel.price,
+                    num: product.num
+                )
+                productDetails.append(detail)
             }
-            return orderProd
+            
+            // Add summary for this orderprod
+            var summary = OrderSummary(orderprodid: orderProd.orderprodid, products: productDetails, selected: orderProd.selected)
+            orderSummaries.append(summary)
+            
         }
-
-        private func fetchProduct(productId: String) async throws -> ProductModel {
-            let document = try await db.collection("product").document(productId).getDocument()
-            guard let product = try document.data(as: ProductModel?.self) else {
-                throw NSError(domain: "ProductError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Product not found for id: \(productId)"])
-            }
-            return product
+        
+        return orderSummaries
+    }
+    
+    private func fetchOrderProd(orderprodId: String) async throws -> OrderProdModel {
+        let document = try await db.collection("orderprod").document(orderprodId).getDocument()
+        guard let orderProd = try document.data(as: OrderProdModel?.self) else {
+            throw NSError(domain: "OrderProdError", code: 0, userInfo: [NSLocalizedDescriptionKey: "OrderProd not found for id: \(orderprodId)"])
+        }
+        return orderProd
+    }
+    
+    private func fetchProduct(productId: String) async throws -> ProductModel {
+        let document = try await db.collection("product").document(productId).getDocument()
+        guard let product = try document.data(as: ProductModel?.self) else {
+            throw NSError(domain: "ProductError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Product not found for id: \(productId)"])
+        }
+        return product
     }
     
     
-  
+    
     func updateOrderProdSelected(orderprodId: String) async throws {
         do {
             // 현재 문서 가져오기
@@ -157,13 +158,13 @@ extension FireStoreManager{
                 print("Field 'selected' not found or invalid")
                 return
             }
-
+            
             // 'selected' 값을 반대로 토글
             let newSelected = !currentSelected
             try await db.collection("orderprod").document(orderprodId).updateData([
                 "selected": newSelected
             ])
-
+            
             print("Document updated: selected -> \(newSelected)")
         } catch {
             print("Error updating document in updateOrderProd: \(error.localizedDescription)")
@@ -205,27 +206,8 @@ extension FireStoreManager{
     }
     
     
-    // make order in cart
-    func addOrderToFirestore(order: OrderModel) {
-        
-        do {
-            // Codable 구조체를 딕셔너리로 변환
-            let orderData = try JSONEncoder().encode(order)
-            if let dictionary = try JSONSerialization.jsonObject(with: orderData, options: []) as? [String: Any] {
-                db.collection("orders").document(order.orderid).setData(dictionary) { error in
-                    if let error = error {
-                        print("Error adding order: \(error.localizedDescription)")
-                    } else {
-                        print("Order successfully added!")
-                    }
-                }
-            }
-        } catch {
-            print("Error encoding order: \(error.localizedDescription)")
-        }
-    }
     
-
+    
     func deleteOrderProd(orderprodId: String) async throws {
         let orderprodCollection = db.collection("orderprod")
         let cartCollection = db.collection("customer").document(self.customerid).collection("cart")
@@ -258,13 +240,88 @@ extension FireStoreManager{
         print("Successfully deleted orderprodid \(orderprodId) from both orderprod and cart.")
     }
     
-    
-    func addOrder(brand: BrandModel, orderSummary: [OrderSummary]) async throws {
-        print("\(brand.brandid), \(orderSummary)")
-        
+    func fetchSellerName(sellerId: String) async throws -> String? {
+        do {
+            // Firestore에서 문서 가져오기
+            let document = try await db.collection("seller").document(sellerId).getDocument()
+            
+            // "name" 필드 가져오기
+            if let name = document.data()?["name"] as? String {
+                return name
+            }else {
+                print("Name field does not exist for sellerId: \(sellerId)")
+                return nil
+            }
+        } catch {
+            print("Error fetching seller name: \(error.localizedDescription)")
+            throw error
+        }
     }
-
-
-
-
+    
+    func addOrder(brand: BrandModel, orderSummaries: [OrderSummary], totalPrice: Int) async throws {
+        
+        let selectedOrderProdIds = orderSummaries
+            .filter { $0.selected } // selected가 true인 항목만 필터링
+            .map { $0.orderprodid } // 필터링된 항목에서 orderprodid만 추출
+        
+        
+        let order = OrderModel(
+            orderid: UUID().uuidString,
+            orderdate: dateToString(Date()),
+            brandid: brand.brandid,
+            products: selectedOrderProdIds,
+            totalprice: totalPrice,
+            delcost: brand.deliverycost,
+            account: brand.account,
+            bank: brand.bank,
+            sellername: try await fetchSellerName(sellerId: brand.sellerid)!,
+            customername: self.customer?.name ?? "Unknown Customer",
+            customerphone:  self.customer?.phone ?? "Unknown Phone",
+            recaddress: self.customer?.address ?? "",
+            recname: self.customer?.name ?? "",
+            recphone:  self.customer?.phone ?? "",
+            state: 0,
+            delnum: "0",
+            delname: ""
+        )
+        
+        // Firestore에 데이터 저장
+        try await addOrderToFirestore(order : order)
+        // 각 orderprodid에 대해 deleteOrderProd 호출 -> 주문서 만들고 출력?
+        //        for orderprodId in selectedOrderProdIds {
+        //            try await deleteOrderProd(orderprodId: orderprodId)
+        //        }
+        print("All selected OrderProd IDs have been deleted.")
+    }
+    
+    // make order in cart
+    func addOrderToFirestore(order: OrderModel) async throws {
+        
+        do {
+            // Codable 구조체를 딕셔너리로 변환
+            let orderData = try JSONEncoder().encode(order)
+            if let dictionary = try JSONSerialization.jsonObject(with: orderData, options: []) as? [String: Any] {
+                db.collection("order").document(order.orderid).setData(dictionary) { error in
+                    if let error = error {
+                        print("Error adding order: \(error.localizedDescription)")
+                    } else {
+                        print("Order successfully added!")
+                    }
+                }
+            }
+        } catch {
+            print("Error encoding order: \(error.localizedDescription)")
+        }
+    }
+    
+    func dateToString(_ date: Date, format: String = "MM-dd-yyyy") -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = format
+        dateFormatter.locale = Locale(identifier: "en_US") // 영어 형식으로 설정
+        return dateFormatter.string(from: date)
+    }
+    
+    
 }
+
+

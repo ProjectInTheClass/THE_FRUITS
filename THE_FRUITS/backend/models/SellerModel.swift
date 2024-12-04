@@ -52,7 +52,7 @@ struct BrandEditModel: Codable{
 struct OrderModel: Codable{
     let orderid: String
     let orderdate: String
-    let brandid: Int
+    let brandid: String
     let products: [String]
     let totalprice: Int
     let delcost: Int
