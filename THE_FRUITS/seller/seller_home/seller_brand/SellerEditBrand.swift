@@ -8,6 +8,8 @@
 import SwiftUI
 import Firebase
 import FirebaseFirestore
+import FirebaseStorage
+import PhotosUI
 
 // should contain already uploaded info
 struct SellerEditBrand: View{
@@ -22,6 +24,9 @@ struct SellerEditBrand: View{
     @State private var brandBank: String = ""
     @State private var brandAccount: String = ""
     @State private var brandAddress: String = ""
+    
+    @State private var brandLogoData: Data? = nil
+    @State private var brandThumbnailData: Data? = nil
     
     @State private var selectedTab = 0
     @State private var isBankListPresented = false // bottom sheet for bank
@@ -92,8 +97,8 @@ struct SellerEditBrand: View{
                  .frame(maxWidth: .infinity, alignment: .center)*/
                 
                 HStack(spacing: 50) {
-                    UploadImageField(title: "브랜드 로고 이미지", imageUrl: $brandLogo)
-                    UploadImageField(title: "브랜드 배경 이미지", imageUrl: $brandThumbnail)
+                    UploadImageField(title: "브랜드 로고 이미지", imageUrl: $brandLogo, imageData: $brandLogoData, id: brand.brandid)
+                    UploadImageField(title: "브랜드 배경 이미지", imageUrl: $brandThumbnail, imageData: $brandThumbnailData, id: brand.brandid)
                 }
                 .frame(maxWidth: .infinity, alignment: .center)
                 
@@ -218,50 +223,96 @@ struct SellerEditBrand: View{
     }
     
     func updateBrandInFirebase() {
-            let updatedBrand = BrandEditModel(
-                brandid: brand.brandid,
-                name: brandName,
-                logo: brandLogo,
-                thumbnail: brandThumbnail,
-                info: brandInfo,
-                sigtype: brandFruits,
-                bank: brandBank,
-                account: brandAccount,
-                address: brandAddress
-            )
-
-            Task {
-                do {
-                    try await firestoreManager.updateBrand(brand: updatedBrand)
-                    print("Brand updated successfully")
-                } catch {
-                    print("Error updating brand: \(error)")
-                }
+        Task {
+            do {
+                // Step 1: Upload images first
+                let logoURL = try await uploadImageToFirebase(imageData: brandLogoData, fieldName: "logo")
+                let thumbnailURL = try await uploadImageToFirebase(imageData: brandThumbnailData, fieldName: "thumbnail")
+                
+                // Step 2: Update Firestore with the new image URLs and brand data
+                let updatedBrand = BrandEditModel(
+                    brandid: brand.brandid,
+                    name: brandName,
+                    logo: logoURL,
+                    thumbnail: thumbnailURL,
+                    info: brandInfo,
+                    sigtype: brandFruits,
+                    bank: brandBank,
+                    account: brandAccount,
+                    address: brandAddress
+                )
+                
+                try await firestoreManager.updateBrand(brand: updatedBrand)
+                print("Brand updated successfully")
+                
+            } catch {
+                print("Error updating brand: \(error)")
             }
         }
+    }
+}
 
+func uploadImageToFirebase(imageData: Data?, fieldName: String) async throws -> String {
+    guard let imageData = imageData else { throw NSError(domain: "No image data", code: 1) }
+
+    let storageRef = Storage.storage().reference().child("images/\(UUID().uuidString).jpg")
+    let _ = try await storageRef.putDataAsync(imageData)
+    let downloadURL = try await storageRef.downloadURL()
+    return downloadURL.absoluteString
 }
 
 struct UploadImageField: View {
     let title: String
     @Binding var imageUrl: String
+    @Binding var imageData: Data?
+    @State private var selectedItem: PhotosPickerItem? = nil
+    @State var id: String
     
     var body: some View {
         VStack {
             Text(title)
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(Color.gray, lineWidth: 1)
-                .frame(width: 100, height: 100)
-                .overlay(
-                    AsyncImage(url: URL(string: imageUrl)) { image in
-                        image.resizable().aspectRatio(contentMode: .fill)
-                    } placeholder: {
-                        Image(systemName: "plus")
-                            .font(.largeTitle)
-                            .foregroundColor(.gray)
+            ZStack{
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(Color.gray, lineWidth: 1)
+                    .frame(width: 100, height: 100)
+                    .overlay(
+                        AsyncImage(url: URL(string: imageUrl)) { image in
+                            image.resizable().aspectRatio(contentMode: .fill)
+                        } placeholder: {
+                            Image(systemName: "plus")
+                                .font(.largeTitle)
+                                .foregroundColor(.gray)
+                        }
+                    )
+                    .clipped()
+                
+                PhotosPicker(selection: $selectedItem, matching: .images) {
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color.gray, lineWidth: 1)
+                        .frame(width: 100, height: 100)
+                        .background(Color.white).opacity(0.3)
+                        .overlay(
+                            Image(systemName: "plus")
+                                .font(.system(size: 60))
+                                .foregroundColor(Color.black)
+                        )
+                    /*Text("이미지 선택")
+                        .foregroundColor(.black)
+                        .font(.caption)
+                        .padding(.vertical, 4)
+                        .padding(.horizontal, 6)
+                        .background(Color.lightGray)
+                        .cornerRadius(8)*/
+                }
+                .onChange(of: selectedItem) { newItem in
+                    Task {
+                        if let data = try? await newItem?.loadTransferable(type: Data.self) {
+                            self.imageData = data
+                        }
                     }
-                )
+                }
+            }
         }
     }
+    
 }
-
