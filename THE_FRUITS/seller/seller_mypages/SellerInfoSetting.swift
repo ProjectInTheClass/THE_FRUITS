@@ -6,27 +6,32 @@
 //
 
 import SwiftUI
+import FirebaseFirestore
 
 struct SellerInfoSetting: View {
-    @State private var userName: String = "김철수"
-    @State private var userId: String = "chulsu"
+    @EnvironmentObject var firestoreManager: FireStoreManager
+    @State var selectedTab: Int = 2
+    
+    @State private var userName: String = ""
+    @State private var userId: String = ""
     @State private var userPwd: String = ""
     @State private var userPwdConfirm: String = ""
-    @State private var userPhone: String = "01000000000"
+    @State private var userPhone: String = ""
     
     
     @State private var showAlert = false // 모달창을 띄우기 위한 상태관리 변수
     @State private var alertMessage:String=""
     
+    @State private var navigateToSellerRoot = false
     
     var body: some View {
-//        BackArrowButton(title: "내정보 설정")
-//        Spacer()
+        //        BackArrowButton(title: "내정보 설정")
+        //        Spacer()
         
-        CustomerInputBox(inputText: $userName, title: "이름", placeholder: userName)
-        CustomerInputBox(inputText: $userId, title: "아이디", placeholder: userId)
-        CustomerInputBox(inputText: $userPwd,title: "비밀번호", placeholder: "비밀번호", isPwd: true)
-        CustomerInputBox(inputText: $userPwdConfirm, title: "비밀번호 확인", placeholder: "비밀번호 확인", isPwd:true)
+        SellerInputBox(inputText: $userName, title: "이름", placeholder: userName)
+        SellerInputBox(inputText: $userId, title: "아이디", placeholder: userId)
+        SellerInputBox(inputText: $userPwd,title: "비밀번호", placeholder: "비밀번호", isPwd: true)
+        SellerInputBox(inputText: $userPwdConfirm, title: "비밀번호 확인", placeholder: "비밀번호 확인", isPwd:true)
         
         if userPwd != userPwdConfirm {
             Text("비밀번호가 일치하지 않습니다.")
@@ -35,49 +40,78 @@ struct SellerInfoSetting: View {
                 .padding(.top, -10)
         }
         
-        CustomerInputBox(inputText: $userPhone, title: "휴대폰", placeholder: userPhone)
+        SellerInputBox(inputText: $userPhone, title: "휴대폰", placeholder: userPhone)
         
-        CustomButton(
-            title: "확인",
-            background: Color("darkGreen"),
-            foregroundColor: .white,
-            width: 140,
-            height: 33,
-            size: 14,
-            cornerRadius: 15,
-            action: {
-                //버튼을 누르면 서버로 수정된 주소를 submit
-                submitUserInfo()
-            }
-        )
+        NavigationLink(
+            destination: SellerRootView(selectedTab: $selectedTab).navigationBarBackButtonHidden(true),
+            isActive: $navigateToSellerRoot
+        ) {
+            CustomButton(
+                title: "확인",
+                background: Color("darkGreen"),
+                foregroundColor: .white,
+                width: 140,
+                height: 33,
+                size: 14,
+                cornerRadius: 15,
+                action: {
+                    Task {
+                        await submitUserInfo()
+                    }
+                }
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
         .alert(isPresented:$showAlert){
             Alert(
                 title:Text("알림"),
                 message:Text(alertMessage),
-                dismissButton: .default(Text("확인"),action:{
-                    showAlert=false
-                })
+                dismissButton: .default(Text("확인")){
+                    navigateToSellerRoot = true
+                }
             )
         }
-        
-    }
-    private func submitUserInfo(){
-        
-        if userPwd != userPwdConfirm {
-            alertMessage = "비밀번호가 일치하지 않습니다."
-        }else {
-            alertMessage = """
-            입력하신 정보는 다음과 같습니다:
-            이름: \(userName)
-            아이디: \(userId)
-            비밀번호: \(userPwd)
-            휴대폰: \(userPhone)
-            """
+        .onAppear{
+            Task {
+                await loadSellerInfo()
+            }
         }
-        showAlert=true
         
     }
     
+    private func loadSellerInfo() async {
+        await firestoreManager.fetchSeller()
+        if let seller = firestoreManager.seller {
+            userName = seller.name ?? ""
+            userId = seller.username ?? ""
+            userPhone = seller.phone ?? ""
+        }
+    }
+    
+    private func submitUserInfo() async {
+        
+        if userPwd != userPwdConfirm {
+            alertMessage = "비밀번호가 일치하지 않습니다."
+            showAlert = true
+            return
+        }
+        
+        var updatedData: SellerEditModel = SellerEditModel(
+            name: userName,
+            userid: userId,
+            password: userPwd.isEmpty ? "" : userPwd,
+            phone: userPhone
+        )
+        
+        do {
+            let resultMessage = try await firestoreManager.editSeller(updatedData: updatedData)
+            alertMessage = resultMessage
+            showAlert = true
+        } catch {
+            alertMessage = "정보 수정 중 오류가 발생했습니다: \(error.localizedDescription)"
+            showAlert = true
+        }
+    }
 }
 
 #Preview {

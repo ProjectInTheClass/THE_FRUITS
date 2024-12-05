@@ -72,6 +72,18 @@ struct OrderModel: Codable, Identifiable{
     let ordernum: String
 }
 
+extension OrderModel {
+    var stateDescription: String {
+        switch state {
+        case 0: return "주문확인중"
+        case 1: return "주문완료"
+        case 2: return "배송준비중"
+        case 3: return "배송중"
+        case 4: return "배송완료"
+        default: return "상태불명"
+        }
+    }
+}
 
 struct SellerModel: Codable{
     let sellerid: String
@@ -82,3 +94,9 @@ struct SellerModel: Codable{
     let brands: [String]
 }
 
+struct SellerEditModel: Codable{
+    var name: String
+    var userid: String
+    var password: String
+    var phone: String
+}
