@@ -82,7 +82,13 @@ struct SellerEditProduct: View{
                 Button(action: {
                     Task {
                         do {
-                            let imageURL = try await uploadImageToFirebase(imageData: imageData, fieldName: "image")
+                            var imageURL = product.imageUrl
+                            
+                            if let newImageData = imageData {
+                                print("Uploading new logo...")
+                                imageURL = try await uploadImageToFirebase(imageData: newImageData, fieldName: "image")
+                                print("Logo uploaded: \(imageURL)")
+                            }
                             
                             // Update product in Firestore
                             product.prodtitle = productTitle

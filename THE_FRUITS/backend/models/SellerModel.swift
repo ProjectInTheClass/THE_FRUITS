@@ -79,3 +79,9 @@ struct SellerModel: Codable{
     let brands: [String]
 }
 
+struct SellerEditModel: Codable{
+    var name: String
+    var userid: String
+    var password: String
+    var phone: String
+}
