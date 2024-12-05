@@ -125,9 +125,11 @@ struct ShippingInfoView: View {
                 VStack(alignment: .leading, spacing: 5) {
                     Text(order?.recaddress ?? "정보 없음") // 주소
                         .foregroundColor(.black)
+                        .font(.system(size: 16))
 
                     Text("\(order?.recname ?? "정보 없음") | \(order?.recphone ?? "정보 없음")") // 이름 및 연락처
                         .foregroundColor(.black)
+                        .font(.system(size: 14))
                 }
             }
             .padding(.vertical, 15)
@@ -251,11 +253,15 @@ struct CustomerOrder: View {
         ScrollView {
             VStack(spacing: 20) {
                 // 브랜드 정보
-                if let brand = brand {
-                    BrandButton(brand: brand)
-                } else {
-                    Text("Loading brand information...")
+                HStack{
+                    if let brand = brand {
+                        BrandButton(brand: brand)
+                    } else {
+                        Text("Loading brand information...")
+                    }
+                    Spacer()
                 }
+                .frame(width: UIScreen.main.bounds.width - 30)
                 
                 // 컴포넌트 섹션들
                 OrderProdcutSection(orderList: orderList, order: order)

@@ -10,8 +10,6 @@ import Foundation
 
 extension FireStoreManager{
     
-    
-    
     func fetchCart() async {
         do {
             let cartDocuments = try await db.collection("customer").document(self.customerid).collection("cart").getDocuments()
