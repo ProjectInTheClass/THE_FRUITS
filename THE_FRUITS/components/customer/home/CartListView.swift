@@ -9,7 +9,7 @@ struct CartListView: View {
     @State private var newBrandId: String = ""
     @State private var currentBrandId: String = ""
     let brandid:String
-    
+
     var body: some View {
         VStack {
             Text("장바구니")

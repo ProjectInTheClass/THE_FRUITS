@@ -9,8 +9,8 @@ struct CartSummaryView: View {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 8)
-                .fill(Color("lightGray"))
-
+                .fill(Color(UIColor.systemGray6))
+                .frame(width: UIScreen.main.bounds.width - 30)
             VStack {
                 if isLoading {
                     Text("Loading cart details...")
@@ -163,47 +163,6 @@ struct CartSummaryView: View {
         }
     }
 }
-struct BrandButton: View {
-    @EnvironmentObject var firestoreManager: FireStoreManager
-    @State private var brand: BrandModel?
-    //@State private var navigateToBrandHome = false
-    
-    var body: some View {
-        VStack {
-            if let brand {
-//                NavigationLink(
-//                    destination: BrandHome(brand: brand, storeLikes: 0), // BrandHomeView로 이동
-//                    isActive: $navigateToBrandHome // 상태에 따라 네비게이션 실행
-//                ) {
-//                    EmptyView() // NavigationLink를 숨기기 위해 사용
-//                }
-//                .hidden()
-                
-                
-                CustomButton(
-                    title: "\(brand.name)",
-                    background: Color("darkGreen"),
-                    foregroundColor: .white,
-                    width: 80,
-                    height: 33,
-                    size: 14,
-                    cornerRadius: 3,
-                    action: {
-                        print("브랜드 페이지 이동")
-                    }
-                )
-            } else {
-                Text("Loading brand name...")
-                    .onAppear {
-                        Task {
-                            brand = await firestoreManager.getCartBrand()
-                        }
-                    }
-            }
-        }
-    }
-}
-
 struct PriceSection: View {
     @Binding var orderAmount: Int // 주문 금액
     @EnvironmentObject var firestoreManager: FireStoreManager
@@ -214,8 +173,8 @@ struct PriceSection: View {
     
     var body: some View {
         RoundedRectangle(cornerRadius: 8)
-            .fill(Color("lightGray"))
-            .frame(width: 360, height: 200)
+            .fill(Color(UIColor.systemGray6))
+            .frame(width: UIScreen.main.bounds.width - 30, height: 200)
             .overlay(
                 VStack(spacing: 10) {
                     Text("결제 금액")
@@ -266,78 +225,76 @@ struct PriceSection: View {
     }
 }
 
-
-
 struct CustomerCart: View {
     @EnvironmentObject var firestoreManager: FireStoreManager
-    @State private var isLoading: Bool = true // 로딩 상태를 별도로 관리
-    @State private var selectedTotal: Int = 0 // 선택된 총합 상태 추가
+    @State private var isLoading: Bool = true
+    @State private var selectedTotal: Int = 0
     @State private var orderSummaries: [OrderSummary] = []
-
+    @State private var brand: BrandModel?
+    @State private var orderList: [OrderSummary] = []
+    @State private var order: OrderModel?
+    @State private var navigateToOrder = false // 네비게이션 상태 추가
+    
     var body: some View {
-        NavigationStack {
-            Group {
-                if isLoading {
-                    VStack {
-                        ProgressView("Loading Cart...")
-                            .padding()
-                    }
-                } else {
-                    ScrollView {
-                        VStack(spacing: 15) {
-                            BrandButton()
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            CartSummaryView(
-                                selectedTotal: $selectedTotal,
-                                orderSummaries: $orderSummaries
-                            )
-                            PriceSection(orderAmount: $selectedTotal)
-                            CustomButton(
-                                title: "주문하기",
-                                background: Color("darkGreen"),
-                                foregroundColor: .white,
-                                width: 140,
-                                height: 33,
-                                size: 14,
-                                cornerRadius: 15,
-                                action: {
-                                    Task {
-                                        do {
-                                            // 선택된 orderprodid 필터링
-                                            let selectedOrderProdIds = orderSummaries
-                                                .filter { $0.selected } // selected가 true인 항목만 필터링
-                                                .map { $0.orderprodid } // 필터링된 항목에서 orderprodid만 추출
-                                            
-                                            print("Selected Order Prod IDs: \(selectedOrderProdIds)")
-                                            
-                                            // 각 orderprodid에 대해 deleteOrderProd 호출
-                                            for orderprodId in selectedOrderProdIds {
-                                                try await firestoreManager.deleteOrderProd(orderprodId: orderprodId)
-                                            }
-                                            print("All selected OrderProd IDs have been deleted.")
-                                        } catch {
-                                            print("Error deleting OrderProd: \(error.localizedDescription)")
-                                        }
+        Group {
+            if isLoading {
+                VStack {
+                    ProgressView("Loading Cart...")
+                        .padding()
+                }
+            } else {
+                ScrollView {
+                    VStack(spacing: 15) {
+                        BrandButton(brand: brand)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        CartSummaryView(
+                            selectedTotal: $selectedTotal,
+                            orderSummaries: $orderSummaries
+                        )
+                        PriceSection(orderAmount: $selectedTotal)
+                        CustomButton(
+                            title: "주문하기",
+                            background: Color("darkGreen"),
+                            foregroundColor: .white,
+                            width: 140,
+                            height: 33,
+                            size: 14,
+                            cornerRadius: 15,
+                            action: {
+                                Task {
+                                    do {
+                                        (order, orderList) = try await firestoreManager.addOrder(
+                                                    brand: brand!,
+                                                    orderSummaries: orderSummaries,
+                                                    totalPrice: selectedTotal
+                                            )
+                                        
+                                        navigateToOrder = true
+                                    } catch {
+                                        print("Error deleting OrderProd: \(error.localizedDescription)")
                                     }
-                                    
-
                                 }
-                            )
+                            }
+                        )
+                        .navigationDestination(isPresented: $navigateToOrder) {
+                            CustomerOrder(orderList: orderList, order: order)
                         }
-                        .padding(.horizontal, 20)
                     }
+                    .padding(.horizontal, 20)
                 }
             }
-            .onAppear {
-                Task {
-                    isLoading = true
-                    await firestoreManager.fetchCart()
-                    isLoading = false
-                }
+        }
+        .onAppear {
+            Task {
+                isLoading = true
+                await firestoreManager.fetchCart()
+                brand = await firestoreManager.getCartBrand()
+                isLoading = false
             }
         }
     }
 }
+
 
 #Preview {
     CustomerCart()

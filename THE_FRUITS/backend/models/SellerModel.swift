@@ -12,7 +12,8 @@ struct Brand{ // used for seller home
     let logo: String
 }
 
-struct BrandModel: Codable {
+struct BrandModel: Codable, Identifiable{
+    var id: String { brandid }
     var brandid: String
     var sellerid: String
     let info: String
@@ -93,3 +94,9 @@ struct SellerModel: Codable{
     let brands: [String]
 }
 
+struct SellerEditModel: Codable{
+    var name: String
+    var userid: String
+    var password: String
+    var phone: String
+}
