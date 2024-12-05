@@ -8,9 +8,11 @@
 import SwiftUI
 
 struct SellerOrderList: View{
-    @State private var brand: Brand
+    @State private var brand: BrandModel
+    @State private var orders: [OrderModel] = []
+    @EnvironmentObject var firestoreManager: FireStoreManager
     
-    init(brand: Brand) {
+    init(brand: BrandModel) {
         _brand = State(initialValue: brand)
     }
 
@@ -49,24 +51,21 @@ struct SellerOrderList: View{
                     .fill(Color.gray) // Set to a darker color
                     .frame(height: 1) // Adjust thickness if needed
                 
-                ForEach(orderData) { order in
+                ForEach(orders) { order in
                     NavigationLink(
-                        destination: SellerOrderDetail(
-                            orderNumber: order.number,
-                            customerName: order.name
-                        )
+                        destination: SellerOrderDetail(order: order)
                     ) {
                         HStack (spacing: 16){
-                            Text(order.number)
-                                .foregroundColor(order.status == "입금 미완료" ? .red : .primary)
+                            Text(order.ordernum)
+                                .foregroundColor(order.state == 0 ? .red : .primary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             
-                            Text(order.name)
-                                .foregroundColor(order.status == "입금 미완료" ? .red : .primary)
+                            Text(order.customername)
+                                .foregroundColor(order.state == 0 ? .red : .primary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             
-                            Text(order.status)
-                                .foregroundColor(order.status == "입금 미완료" ? .red : .primary)
+                            Text(order.stateDescription ?? "Unknown") // need to change
+                                .foregroundColor(order.state == 0 ? .red : .primary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
                         .padding(.vertical, 10)
@@ -79,6 +78,23 @@ struct SellerOrderList: View{
             .padding()
             
             Spacer()
+        }
+        .onAppear {
+            loadOrders()
+        }
+    }
+    
+    func loadOrders() {
+        Task {
+            do {
+                let fetchedOrders = try await firestoreManager.fetchOrders(for: brand.brandid)
+                DispatchQueue.main.async {
+                    self.orders = fetchedOrders
+                    print("Loaded orders: \(fetchedOrders.count)")
+                }
+            } catch {
+                print("Error fetching orders: \(error)")
+            }
         }
     }
 }
@@ -98,7 +114,9 @@ let orderData = [
     Order(number: "234234-5", name: "김바다", status: "배송완료")
 ]
 
+/*
 #Preview {
     let sampleBrand = Brand(name: "onbrix", logo: "onbrix")
     SellerOrderList(brand: sampleBrand)
 }
+*/
