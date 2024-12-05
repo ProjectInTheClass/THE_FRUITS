@@ -122,7 +122,7 @@ extension FireStoreManager{
                 }
 
                 // Add summary for this orderprod
-                var summary = OrderSummary(orderprodid: orderProd.orderprodid, products: productDetails, selected: orderProd.selected)
+                let summary = OrderSummary(orderprodid: orderProd.orderprodid, products: productDetails, selected: orderProd.selected)
                 orderSummaries.append(summary)
 
             }

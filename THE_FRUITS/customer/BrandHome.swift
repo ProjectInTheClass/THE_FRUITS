@@ -39,8 +39,11 @@ struct BrandHome: View {
     @State private var isReplaceCartModalPresented = false
     @State private var newBrandId: String = ""
     @State private var currentBrandId: String = ""
-
-    var body: some View {
+    @State private var alertMessage:String = ""
+    @State private var isAlertPresented: Bool = false // 알림 표시 상태
+    @State private var navigateToCustomerCart = false
+    
+    var body: some View{
         ZStack {
             // Scrollable content
             ScrollView {
@@ -64,7 +67,6 @@ struct BrandHome: View {
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(width: 90, height: 90)
-
                                     .background(Color.clear) // 배경을 투명하게 설정
                                     .cornerRadius(8)
                                     .padding(.bottom, 1)
@@ -147,18 +149,20 @@ struct BrandHome: View {
                             .frame(height:2)
                     }
                     .frame(height: 15) // 전체 높이 조정
-                    .clipped() // 추가된 패딩의 영향을 제거
+                    .clipped() // 추가된 패딩 영향을 제거
                     .padding(.bottom,10)
+                    
                     
                     HStack {
                         Button(action: {
                             let cartItems = products.getCartItems()
-                            guard !cartItems.isEmpty else {
-                                isModalPresented = false
-                                return
-                                //nil인 경우 모달 축
-                            }
                             
+                            if cartItems.isEmpty{
+                                isModalPresented = false
+                                alertMessage = "1개 이상의 상품을 담아주세요."
+                                isAlertPresented = true
+                                return
+                            }
                             // 현재 장바구니 상태 확인
                             firestoreManager.fetchCartBrandId { currentBrandId in
                                 if currentBrandId == nil || currentBrandId == brand.brandid {
@@ -182,7 +186,7 @@ struct BrandHome: View {
                                     isReplaceCartModalPresented = true
                                 }
                             }
-                        }){  Text("장바구니 추가")
+                        }){ Text("장바구니 추가")
                                 .font(.headline)
                                 .padding()
                                 .frame(maxWidth: .infinity)
@@ -190,10 +194,13 @@ struct BrandHome: View {
                                 .foregroundColor(.white)
                                 .cornerRadius(10)
                         }
+                        .alert(alertMessage, isPresented:$isAlertPresented){
+                            Button("확인" , role: .cancel) {}
+                        }
                         .alert(isPresented: $isReplaceCartModalPresented) {
                             Alert(
                                 title: Text("장바구니 브랜드 변경"),
-                                message: Text("현재 장바구니에는 '\(brand.name)' 브랜드 상품이 있습니다. '\(brand.name)' 브랜드 상품으로 변경하시겠습니까?"),
+                                message: Text("장바구니에는 같은 브랜드의 상품만 담을 수 있습니다. '\(brand.name)' 브랜드 상품으로 변경하시겠습니까?"),
                                 primaryButton: .destructive(Text("확인")) {
                                     Task {
                                         do {
@@ -238,25 +245,25 @@ struct BrandHome: View {
             }
             .frame(maxHeight: .infinity, alignment: .bottom) // 하단 고정
         }
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button(action: {
-                    isCartPresented = true
-                }) {
-                    Image(systemName: "cart")
-                        .font(.title3)
-                        .foregroundColor(.black)
-                }
+        .toolbar {//툴바를 누르면 장바구니 페이지로 이동
+            ToolbarItem(placement:.navigationBarTrailing){
+                CartToolbar(navigateToCart: $navigateToCustomerCart)
             }
         }
         .onAppear {
             Task{
                 await firestoreManager.fetchCart();
                 loadProducts()
-                
             }
 
         }
+        .background(
+            NavigationLink(
+                destination: CustomerCart(), // 이동할 뷰
+                isActive: $navigateToCustomerCart, // 상태 관리
+                label: { EmptyView() }
+            )
+        )
 
     }
 
@@ -271,33 +278,3 @@ struct BrandHome: View {
     }
 }
 
-struct ProductRow: View {
-    @ObservedObject var product: ProductItem
-
-    var body: some View {
-        HStack {
-            AsyncImage(url: URL(string: product.imageUrl)) { image in
-                image
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 170, height: 170)
-                    .cornerRadius(8)
-            } placeholder: {
-                Color.gray.opacity(0.2)
-                    .frame(width: 170, height: 170)
-                    .cornerRadius(8)
-            }
-
-            VStack(alignment: .leading) {
-                Text(product.name)
-                    .font(.headline)
-                Text("\(product.price)원")
-                    .font(.subheadline)
-                    .foregroundColor(.black)
-                CustomStepper(f_count: $product.f_count, width: 120, height: 20, strokeColor: .white)
-            }
-            Spacer()
-        }
-        .padding(.vertical, 8)
-    }
-}
