@@ -258,11 +258,12 @@ extension FireStoreManager{
         }
     }
     
-    func addOrder(brand: BrandModel, orderSummaries: [OrderSummary], totalPrice: Int) async throws {
+    func addOrder(brand: BrandModel, orderSummaries: [OrderSummary], totalPrice: Int) async throws -> [OrderSummary]{
         
-        let selectedOrderProdIds = orderSummaries
-            .filter { $0.selected } // selected가 true인 항목만 필터링
-            .map { $0.orderprodid } // 필터링된 항목에서 orderprodid만 추출
+        var orderList: [OrderSummary] = []
+        let selectedOrderSummary = orderSummaries.filter { $0.selected }
+        
+        let selectedOrderProdIds = selectedOrderSummary.map { $0.orderprodid }
         
         
         let order = OrderModel(
@@ -288,15 +289,21 @@ extension FireStoreManager{
         // Firestore에 데이터 저장
         try await addOrderToFirestore(order : order)
         // 각 orderprodid에 대해 deleteOrderProd 호출 -> 주문서 만들고 출력?
-        //        for orderprodId in selectedOrderProdIds {
-        //            try await deleteOrderProd(orderprodId: orderprodId)
-        //        }
+        for orderprodId in selectedOrderProdIds {
+            try await deleteOrderProd(orderprodId: orderprodId)
+        }
         print("All selected OrderProd IDs have been deleted.")
+        
+        
+        
+        for orderSummary in selectedOrderSummary {
+            orderList.append(orderSummary)
+        }
+        return orderList
     }
     
     // make order in cart
     func addOrderToFirestore(order: OrderModel) async throws {
-        
         do {
             // Codable 구조체를 딕셔너리로 변환
             let orderData = try JSONEncoder().encode(order)
