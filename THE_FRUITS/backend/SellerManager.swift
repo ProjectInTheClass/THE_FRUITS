@@ -154,10 +154,35 @@ extension FireStoreManager{
             "logo": brand.logo,
             "thumbnail": brand.thumbnail,
             "info": brand.info,
+            "sigtype": brand.sigtype,
             "bank": brand.bank,
             "account": brand.account,
             "address": brand.address
         ]
         try await Firestore.firestore().collection("brand").document(brand.brandid).setData(data, merge: true)
+    }
+    
+    func editSeller(updatedData: SellerEditModel) async throws -> String {
+        var dataDict: [String: Any] = [
+                "name": updatedData.name,
+                "username": updatedData.userid,
+                "phone": updatedData.phone
+            ]
+        
+        if !updatedData.password.isEmpty {
+                dataDict["password"] = updatedData.password
+            }
+        do {
+            try await db.collection("seller").document(sellerid).updateData(dataDict)
+            return """
+            입력하신 정보는 다음과 같습니다:
+            이름: \(updatedData.name)
+            아이디: \(updatedData.userid)
+            비밀번호: \(updatedData.password)
+            휴대폰: \(updatedData.phone)
+            """
+        } catch {
+            return "정보 수정 중 오류가 발생했습니다: \(error.localizedDescription)"
+        }
     }
 }

@@ -47,6 +47,8 @@ struct SellerProfileSection: View {
 }
 
 struct SellerMenuSection: View {
+    @State var selectedTab: Int = 1
+    
     var body: some View {
         RoundedRectangle(cornerRadius: 20)
             .fill(Color("beige"))
@@ -57,7 +59,8 @@ struct SellerMenuSection: View {
                    NavigationButton(
                        icon: nil,
                        title: "주문내역", // 글자 길이에 따라 영역을 차지하는 넓이가 달라짐 -> 수정필요?
-                       destination: SellerOrder()
+                       destination: SellerRootView(selectedTab: $selectedTab)
+                        .navigationBarBackButtonHidden(true)
                    )
                     Spacer()
                }
@@ -78,11 +81,11 @@ struct SellerMyPage: View {
         }
     }
 }
-
+/*
 #Preview {
     SellerMyPage()
 }
-
+*/
 
 
 

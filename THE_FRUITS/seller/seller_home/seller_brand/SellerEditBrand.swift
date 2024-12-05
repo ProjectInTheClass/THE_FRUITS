@@ -172,9 +172,9 @@ struct SellerEditBrand: View{
             }
             .padding()
         }
-        .sheet(isPresented: $isBankListPresented) { // bottom sheet with bank list
+        /*.sheet(isPresented: $isBankListPresented) { // bottom sheet with bank list
             BankListView(selectedBank: $brandBank)
-        }
+        }*/
         .onAppear {
             Task {
                 await loadBrandData()
@@ -225,9 +225,25 @@ struct SellerEditBrand: View{
     func updateBrandInFirebase() {
         Task {
             do {
-                // Step 1: Upload images first
-                let logoURL = try await uploadImageToFirebase(imageData: brandLogoData, fieldName: "logo")
-                let thumbnailURL = try await uploadImageToFirebase(imageData: brandThumbnailData, fieldName: "thumbnail")
+                var logoURL = brand.logo
+                var thumbnailURL = brand.thumbnail
+                print("in update brand in firebase")
+                
+                if let newLogoData = brandLogoData {
+                    print("Uploading new logo...")
+                    logoURL = try await uploadImageToFirebase(imageData: newLogoData, fieldName: "logo")
+                    print("Logo uploaded: \(logoURL)")
+                }
+                
+                if let newThumbnailData = brandThumbnailData {
+                    print("Uploading new thumbnail...")
+                    thumbnailURL = try await uploadImageToFirebase(imageData: newThumbnailData, fieldName: "thumbnail")
+                }
+                
+                print("pass images")
+                
+                /*let logoURL = try await uploadImageToFirebase(imageData: brandLogoData, fieldName: "logo")
+                 let thumbnailURL = try await uploadImageToFirebase(imageData: brandThumbnailData, fieldName: "thumbnail")*/
                 
                 // Step 2: Update Firestore with the new image URLs and brand data
                 let updatedBrand = BrandEditModel(
@@ -253,12 +269,26 @@ struct SellerEditBrand: View{
 }
 
 func uploadImageToFirebase(imageData: Data?, fieldName: String) async throws -> String {
-    guard let imageData = imageData else { throw NSError(domain: "No image data", code: 1) }
-
+    guard let imageData = imageData else {
+        print("No image data for \(fieldName)")
+        throw NSError(domain: "No image data", code: 1)
+    }
+    
+    print("Uploading image \(fieldName), size: \(imageData.count) bytes")
+    
     let storageRef = Storage.storage().reference().child("images/\(UUID().uuidString).jpg")
-    let _ = try await storageRef.putDataAsync(imageData)
-    let downloadURL = try await storageRef.downloadURL()
-    return downloadURL.absoluteString
+    do {
+        // Upload the image to Firebase Storage
+        let _ = try await storageRef.putDataAsync(imageData)
+        
+        // Retrieve the download URL for the uploaded image
+        let downloadURL = try await storageRef.downloadURL()
+        print("\(fieldName) uploaded successfully: \(downloadURL.absoluteString)")
+        return downloadURL.absoluteString
+    } catch {
+        print("Error uploading \(fieldName) image: \(error)")
+        throw error
+    }
 }
 
 struct UploadImageField: View {
@@ -276,12 +306,24 @@ struct UploadImageField: View {
                     .stroke(Color.gray, lineWidth: 1)
                     .frame(width: 100, height: 100)
                     .overlay(
-                        AsyncImage(url: URL(string: imageUrl)) { image in
-                            image.resizable().aspectRatio(contentMode: .fill)
-                        } placeholder: {
-                            Image(systemName: "plus")
-                                .font(.largeTitle)
-                                .foregroundColor(.gray)
+                        Group {
+                            if let data = imageData, let uiImage = UIImage(data: data) {
+                                Image(uiImage: uiImage)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                            } else if let url = URL(string: imageUrl) {
+                                AsyncImage(url: url) { image in
+                                    image.resizable().aspectRatio(contentMode: .fill)
+                                } placeholder: {
+                                    Image(systemName: "plus")
+                                        .font(.largeTitle)
+                                        .foregroundColor(.gray)
+                                }
+                            } else {
+                                Image(systemName: "plus")
+                                    .font(.largeTitle)
+                                    .foregroundColor(.gray)
+                            }
                         }
                     )
                     .clipped()
@@ -306,8 +348,13 @@ struct UploadImageField: View {
                 }
                 .onChange(of: selectedItem) { newItem in
                     Task {
-                        if let data = try? await newItem?.loadTransferable(type: Data.self) {
-                            self.imageData = data
+                        do {
+                            if let data = try await newItem?.loadTransferable(type: Data.self) {
+                                self.imageData = data
+                                print("input - Image selected, size: \(data.count) bytes")
+                            }
+                        } catch {
+                            print("Error loading image: \(error.localizedDescription)") // Debugging error message
                         }
                     }
                 }
