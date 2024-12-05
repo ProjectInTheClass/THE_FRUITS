@@ -49,10 +49,11 @@ struct BrandEditModel: Codable{
     var address: String
 }
 
-struct OrderModel: Codable{
+struct OrderModel: Codable, Identifiable{
+    var id: String { orderid }
     let orderid: String
     let orderdate: String
-    let brandid: Int
+    let brandid: String
     let products: [String]
     let totalprice: Int
     let delcost: Int
@@ -67,8 +68,21 @@ struct OrderModel: Codable{
     let state: Int
     let delnum: String
     let delname: String
+    let ordernum: String
 }
 
+extension OrderModel {
+    var stateDescription: String {
+        switch state {
+        case 0: return "주문확인중"
+        case 1: return "주문완료"
+        case 2: return "배송준비중"
+        case 3: return "배송중"
+        case 4: return "배송완료"
+        default: return "상태불명"
+        }
+    }
+}
 
 struct SellerModel: Codable{
     let sellerid: String
