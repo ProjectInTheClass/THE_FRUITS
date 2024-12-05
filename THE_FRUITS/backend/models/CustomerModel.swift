@@ -14,6 +14,7 @@ struct CustomerModel: Codable {
     let phone: String
     let username: String
     let name: String
+    let orders: [String]
 }
 
 struct CartModel: Codable {
@@ -45,13 +46,13 @@ struct ProductModel: Codable, Identifiable {
     var id: String { productid }
 }
 
-struct OrderSummary {
+struct OrderSummary: Equatable {
     var orderprodid: String
     var products: [ProductDetail]
     var selected: Bool
 }
 
-struct ProductDetail {
+struct ProductDetail : Equatable{
     var productid: String
     var productName: String
     var price: Int
