@@ -185,29 +185,28 @@ extension FireStoreManager{
         }
         
         return orders
+    }
+    func editSeller(updatedData: SellerEditModel) async throws -> String {
+        var dataDict: [String: Any] = [
+            "name": updatedData.name,
+            "username": updatedData.userid,
+            "phone": updatedData.phone
+        ]
         
-        func editSeller(updatedData: SellerEditModel) async throws -> String {
-            var dataDict: [String: Any] = [
-                "name": updatedData.name,
-                "username": updatedData.userid,
-                "phone": updatedData.phone
-            ]
-            
-            if !updatedData.password.isEmpty {
-                dataDict["password"] = updatedData.password
-            }
-            do {
-                try await db.collection("seller").document(sellerid).updateData(dataDict)
-                return """
+        if !updatedData.password.isEmpty {
+            dataDict["password"] = updatedData.password
+        }
+        do {
+            try await db.collection("seller").document(sellerid).updateData(dataDict)
+            return """
             입력하신 정보는 다음과 같습니다:
             이름: \(updatedData.name)
             아이디: \(updatedData.userid)
             비밀번호: \(updatedData.password)
             휴대폰: \(updatedData.phone)
             """
-            } catch {
-                return "정보 수정 중 오류가 발생했습니다: \(error.localizedDescription)"
-            }
+        } catch {
+            return "정보 수정 중 오류가 발생했습니다: \(error.localizedDescription)"
         }
     }
 }
