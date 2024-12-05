@@ -21,12 +21,15 @@ struct CustomerHome: View {
     @State private var fetchedBrandIDs: [String] = [] // 초기값 설정
     @State private var brands:[BrandModel]=[]
     @State private var brandItems: [BrandItem] = []
+    @State private var navigateToCustomerCart = false // 장바구니 화면 이동상태
+    @State private var brandLikes: [String: Bool] = [:] // 브랜드 ID별 좋아요 상태 관리
+
     //@State private var fruits:[Fruit]=[]
     var body: some View {
         NavigationView {
             VStack {
                 SearchBar(searchText: $searchText)
-                    .padding(.top, 45)
+                    .padding(.top, 5)
                     .padding(.bottom, 6)
                 HStack {
                     CustomButton(
@@ -47,24 +50,51 @@ struct CustomerHome: View {
                 }
                 .padding(.leading, 12)
                 .padding(.bottom, 10)
-
+                
                 ScrollView {
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 14) {
                         ForEach(brands, id: \.brandid) { brand in
-                            FruitCardView(brand: brand)
+                            FruitCardView(
+                                brand: brand,
+                                isLiked: Binding(
+                                    get: { self.brandLikes[brand.brandid] ?? false },
+                                    set: { self.brandLikes[brand.brandid] = $0 }
+                                )
+                            ) { newLikedStatus in
+                                updateLikeStatus(for: brand.brandid, isLiked: newLikedStatus)
+                            }
                         }
                     }
                     .padding(.horizontal, 4)
-                    
                 }
-
             }
+            
+//            .toolbar{
+//                ToolbarItem(placement: .navigationBarTrailing) {
+//                    CartToolbar(navigateToCart: $navigateToCustomerCart)
+//                }
+//            }
             .onAppear {
                 fetchBrandIDsAndDetails() // Firestore에서 브랜드 ID 가져오기
+                // 좋아요 여부 확인
+                fetchBrandsAndLikes()
+                
+                // 지연 후 brandLikes 확인
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                    print("brandLikes after fetch: \(self.brandLikes)")
+                }
             }
+            .background(
+                NavigationLink(
+                    destination: CustomerCart(), // 이동할 뷰
+                    isActive: $navigateToCustomerCart, // 상태 관리
+                    label: { EmptyView() }
+                )
+            )
+            
         }
     }
-
+    
     // Firestore에서 브랜드 ID 가져오기
     func fetchBrandIDs() {
         let firestoreManager = FireStoreManager()
@@ -78,7 +108,7 @@ struct CustomerHome: View {
     
     func fetchBrandIDsAndDetails() {
         let firestoreManager = FireStoreManager()
-
+        
         firestoreManager.fetchBrandIDs { brandIDs in
             DispatchQueue.main.async {
                 guard !brandIDs.isEmpty else {
@@ -123,6 +153,63 @@ struct CustomerHome: View {
                 likes: brand.likes
             )
         }
+    }
+    
+    //해당 브랜드가 brandlike 배열에 포함된 항목인지 아닌지 핀별하는 함수
+    func checkBrandIsLiked(brandid: String, completion: @escaping (Result<Bool, Error>) -> Void) {
+        let firestoreManager = FireStoreManager()
+        firestoreManager.fetchCustomerLikes { result in
+            switch result {
+            case .success(let brandLikes):
+                // brandlike 배열에 brandid가 포함되어 있는지 확인
+                let isLiked = brandLikes.contains(brandid)
+                completion(.success(isLiked))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+    
+    func fetchBrandsAndLikes() {
+        let firestoreManager = FireStoreManager()
+        firestoreManager.fetchBrandIDs { brandIDs in
+            guard !brandIDs.isEmpty else {
+                print("No Brand IDs found!")
+                return
+            }
+            let group = DispatchGroup()
+            var fetchedBrands: [BrandModel] = []
+
+            for brandID in brandIDs {
+                group.enter()
+                firestoreManager.fetchBrand(brandid: brandID) { brand in
+                    if let brand = brand {
+                        fetchedBrands.append(brand)
+                        group.enter() // 좋아요 상태 확인을 위한 enter
+                        self.checkBrandIsLiked(brandid: brandID) { result in
+                            if case .success(let isLiked) = result {
+                                DispatchQueue.main.async {
+                                    self.brandLikes[brandID] = isLiked
+                                }
+                            }
+                            group.leave() // 좋아요 상태 확인 후 leave
+                        }
+                    }
+                    group.leave() // 브랜드 정보 fetch 후 leave
+                }
+            }
+            group.notify(queue: .main) {
+                self.brands = fetchedBrands
+            }
+        }
+        //print("brandLikes: \(brandLikes)");
+        
+    }
+
+
+    func updateLikeStatus(for brandID: String, isLiked: Bool) {
+        let firestoreManager = FireStoreManager()
+        firestoreManager.updateCustomerLikes(brandid: brandID, add: isLiked)
     }
 }
 

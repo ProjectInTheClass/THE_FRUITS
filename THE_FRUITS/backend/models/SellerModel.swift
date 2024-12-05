@@ -12,7 +12,8 @@ struct Brand{ // used for seller home
     let logo: String
 }
 
-struct BrandModel: Codable {
+struct BrandModel: Codable, Identifiable{
+    var id: String { brandid }
     var brandid: String
     var sellerid: String
     let info: String

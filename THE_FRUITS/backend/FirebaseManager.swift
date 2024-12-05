@@ -8,6 +8,7 @@
 import SwiftUI
 import FirebaseCore
 import FirebaseFirestore
+import FirebaseAuth
 
 
 class FireStoreManager: ObservableObject {
@@ -23,12 +24,6 @@ class FireStoreManager: ObservableObject {
     @Published var orderprod: [OrderProdModel] = []
     @Published var seller: SellerModel?
     @Published var products: [ProductModel] = []
-    
-    
-    
-    /*init() {
-     fetchData()
-     }*/
     
     let db = Firestore.firestore()
     
@@ -397,6 +392,74 @@ class FireStoreManager: ObservableObject {
 
         return cart.orderprodid
     }
+
+    func uploadCurrentLikes(brand:BrandModel,currentLikes:Int){
+        let documentRef = db.collection("brand").document(brand.brandid)
+        
+        documentRef.updateData(["likes":currentLikes]){ error in
+            if let error=error{
+                print("Error updating likes: \(String(describing: error.localizedDescription))")
+            }
+        }
+        
+    }
+    
+    func updateCustomerLikes(brandid:String,add:Bool){
+        let userid = Auth.auth().currentUser?.uid ?? "anonymous"
+        let documentRef=db.collection("customer").document(userid)
+        
+        if add{
+            documentRef.updateData([
+                "likebrand":FieldValue.arrayUnion([brandid])
+            ]){
+                error in
+                if let error=error{
+                    print("Failed to add brand to likebrand: \(error.localizedDescription)")
+                }
+                else{
+                    print("Brand added to likes")
+                }
+            }
+        }else{
+            documentRef.updateData([
+                "likebrand":FieldValue.arrayRemove([brandid])
+            ]){
+                error in
+                if let error=error{
+                    print("Failed to remove brand from likebrand: \(error.localizedDescription)")
+                }
+                else{
+                    print("Brand removed from likes")
+                }
+            }
+        }
+    }
+    
+    func fetchCustomerLikes(completion: @escaping (Result<[String], Error>) -> Void) {
+        let useriD = Auth.auth().currentUser?.uid ?? "anonymous" // 현재 사용자 ID 가져오기
+
+        db.collection("customer").document(useriD).getDocument { document, error in
+            if let error = error {
+                completion(.failure(error))
+                return
+            }
+            guard let document = document, document.exists,
+                  let data = document.data(),
+                  let brandLikes = data["likebrand"] as? [String] else {
+                completion(.success([])) // 데이터가 없으면 빈 배열 반환
+                return
+            }
+
+            completion(.success(brandLikes))
+        }
+    
+    }
+    
+    
+
     
 }
+
+
+
     
