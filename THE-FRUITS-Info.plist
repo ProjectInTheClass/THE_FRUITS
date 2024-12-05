@@ -11,6 +11,6 @@
 		<string>Magnolia Script.otf</string>
 	</array>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>We need access to your photo library to upload images.</string>
+        <string>We need access to your photo library to upload images.</string>
 </dict>
 </plist>

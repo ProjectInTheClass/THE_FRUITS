@@ -185,17 +185,17 @@ extension FireStoreManager{
         }
         
         return orders
-
+    }
     func editSeller(updatedData: SellerEditModel) async throws -> String {
         var dataDict: [String: Any] = [
-                "name": updatedData.name,
-                "username": updatedData.userid,
-                "phone": updatedData.phone
-            ]
+            "name": updatedData.name,
+            "username": updatedData.userid,
+            "phone": updatedData.phone
+        ]
         
         if !updatedData.password.isEmpty {
-                dataDict["password"] = updatedData.password
-            }
+            dataDict["password"] = updatedData.password
+        }
         do {
             try await db.collection("seller").document(sellerid).updateData(dataDict)
             return """
