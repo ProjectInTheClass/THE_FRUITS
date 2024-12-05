@@ -9,8 +9,8 @@ struct CartSummaryView: View {
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 8)
-                .fill(Color("lightGray"))
-
+                .fill(Color(UIColor.systemGray6))
+                .frame(width: UIScreen.main.bounds.width - 30)
             VStack {
                 if isLoading {
                     Text("Loading cart details...")
@@ -163,44 +163,6 @@ struct CartSummaryView: View {
         }
     }
 }
-struct BrandButton: View {
-    @EnvironmentObject var firestoreManager: FireStoreManager
-    @Binding var brand: BrandModel?
-    //@State private var navigateToBrandHome = false
-    var body: some View {
-        VStack {
-            if let brand {
-//                NavigationLink(
-//                    destination: BrandHome(brand: brand, storeLikes: 0), // BrandHomeView로 이동
-//                    isActive: $navigateToBrandHome // 상태에 따라 네비게이션 실행
-//                ) {
-//                    EmptyView() // NavigationLink를 숨기기 위해 사용
-//                }
-//                .hidden()
-                CustomButton(
-                    title: "\(brand.name)",
-                    background: Color("darkGreen"),
-                    foregroundColor: .white,
-                    width: 80,
-                    height: 33,
-                    size: 14,
-                    cornerRadius: 3,
-                    action: {
-                        print("브랜드 페이지 이동")
-                    }
-                )
-            } else {
-                Text("Loading brand name...")
-                    .onAppear {
-                        Task {
-                            brand = await firestoreManager.getCartBrand()
-                        }
-                    }
-            }
-        }
-    }
-}
-
 struct PriceSection: View {
     @Binding var orderAmount: Int // 주문 금액
     @EnvironmentObject var firestoreManager: FireStoreManager
@@ -211,8 +173,8 @@ struct PriceSection: View {
     
     var body: some View {
         RoundedRectangle(cornerRadius: 8)
-            .fill(Color("lightGray"))
-            .frame(width: 360, height: 200)
+            .fill(Color(UIColor.systemGray6))
+            .frame(width: UIScreen.main.bounds.width - 30, height: 200)
             .overlay(
                 VStack(spacing: 10) {
                     Text("결제 금액")
@@ -263,53 +225,14 @@ struct PriceSection: View {
     }
 }
 
-
-struct CustomNavigationButton<Destination: View>: View {
-    var title: String
-    var background: Color?
-    var foregroundColor: Color
-    var width: CGFloat?
-    var height: CGFloat?
-    var size: CGFloat
-    var cornerRadius: CGFloat = 0
-    var icon: Image?
-    var iconWidth: CGFloat?
-    var iconHeight: CGFloat?
-    var action: () -> Void
-    let destination: Destination
-
-    var body: some View {
-        NavigationLink(destination: destination) {
-            HStack(spacing: 1) {
-                if let icon = icon, let iconWidth = iconWidth, let iconHeight = iconHeight {
-                    icon
-                        .resizable()
-                        .frame(width: iconWidth, height: iconHeight)
-                        .foregroundColor(foregroundColor)
-                        .padding(.leading, 13)
-                }
-                Text(title)
-                    .font(.custom("Pretendard-SemiBold", size: size))
-                    .frame(width: width, height: height)
-                    .foregroundColor(foregroundColor)
-            }
-            .background(background ?? Color.clear)
-            .cornerRadius(cornerRadius)
-        }
-        .simultaneousGesture(TapGesture().onEnded {
-            action()
-        })
-    }
-}
-
-
 struct CustomerCart: View {
     @EnvironmentObject var firestoreManager: FireStoreManager
     @State private var isLoading: Bool = true
     @State private var selectedTotal: Int = 0
     @State private var orderSummaries: [OrderSummary] = []
     @State private var brand: BrandModel?
-    @State private var orderList: [OrderSummary] = [] // 주문 리스트 상태 추가
+    @State private var orderList: [OrderSummary] = []
+    @State private var order: OrderModel?
     @State private var navigateToOrder = false // 네비게이션 상태 추가
     
     var body: some View {
@@ -322,7 +245,7 @@ struct CustomerCart: View {
             } else {
                 ScrollView {
                     VStack(spacing: 15) {
-                        BrandButton(brand: $brand)
+                        BrandButton(brand: brand)
                             .frame(maxWidth: .infinity, alignment: .leading)
                         CartSummaryView(
                             selectedTotal: $selectedTotal,
@@ -340,12 +263,12 @@ struct CustomerCart: View {
                             action: {
                                 Task {
                                     do {
-                                        let fetchedOrderList = try await firestoreManager.addOrder(
-                                            brand: brand!,
-                                            orderSummaries: orderSummaries,
-                                            totalPrice: selectedTotal
-                                        )
-                                        orderList = fetchedOrderList
+                                        (order, orderList) = try await firestoreManager.addOrder(
+                                                    brand: brand!,
+                                                    orderSummaries: orderSummaries,
+                                                    totalPrice: selectedTotal
+                                            )
+                                        
                                         navigateToOrder = true
                                     } catch {
                                         print("Error deleting OrderProd: \(error.localizedDescription)")
@@ -354,7 +277,7 @@ struct CustomerCart: View {
                             }
                         )
                         .navigationDestination(isPresented: $navigateToOrder) {
-                            CustomerOrder(orderList: orderList)
+                            CustomerOrder(orderList: orderList, order: order)
                         }
                     }
                     .padding(.horizontal, 20)
@@ -365,6 +288,7 @@ struct CustomerCart: View {
             Task {
                 isLoading = true
                 await firestoreManager.fetchCart()
+                brand = await firestoreManager.getCartBrand()
                 isLoading = false
             }
         }

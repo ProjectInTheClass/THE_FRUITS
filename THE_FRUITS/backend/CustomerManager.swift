@@ -258,16 +258,15 @@ extension FireStoreManager{
         }
     }
     
-    func addOrder(brand: BrandModel, orderSummaries: [OrderSummary], totalPrice: Int) async throws -> [OrderSummary]{
-        
+    func addOrder(brand: BrandModel, orderSummaries: [OrderSummary], totalPrice: Int) async throws -> (OrderModel, [OrderSummary]) {
         var orderList: [OrderSummary] = []
         let selectedOrderSummary = orderSummaries.filter { $0.selected }
         
         let selectedOrderProdIds = selectedOrderSummary.map { $0.orderprodid }
-        
+        let orderRef = db.collection("order").document()
         
         let order = OrderModel(
-            orderid: UUID().uuidString,
+            orderid: orderRef.documentID,
             orderdate: dateToString(Date()),
             brandid: brand.brandid,
             products: selectedOrderProdIds,
@@ -277,44 +276,40 @@ extension FireStoreManager{
             bank: brand.bank,
             sellername: try await fetchSellerName(sellerId: brand.sellerid)!,
             customername: self.customer?.name ?? "Unknown Customer",
-            customerphone:  self.customer?.phone ?? "Unknown Phone",
+            customerphone: self.customer?.phone ?? "Unknown Phone",
             recaddress: self.customer?.address ?? "",
             recname: self.customer?.name ?? "",
-            recphone:  self.customer?.phone ?? "",
+            recphone: self.customer?.phone ?? "",
             state: 0,
             delnum: "0",
-            delname: ""
+            delname: "",
+            ordernum:"12345"
         )
         
         // Firestore에 데이터 저장
-        try await addOrderToFirestore(order : order)
-        // 각 orderprodid에 대해 deleteOrderProd 호출 -> 주문서 만들고 출력?
+        try await addOrderToFirestore(orderRef: orderRef, order: order)
+        
+        // 각 orderprodid에 대해 deleteOrderProd 호출
         for orderprodId in selectedOrderProdIds {
             try await deleteOrderProd(orderprodId: orderprodId)
         }
         print("All selected OrderProd IDs have been deleted.")
         
+        // 선택된 주문 요약 목록 반환 준비
+        orderList = selectedOrderSummary
         
-        
-        for orderSummary in selectedOrderSummary {
-            orderList.append(orderSummary)
-        }
-        return orderList
+        // OrderModel과 [OrderSummary]를 튜플로 반환
+        return (order, orderList)
     }
-    
+
     // make order in cart
-    func addOrderToFirestore(order: OrderModel) async throws {
+    func addOrderToFirestore(orderRef: DocumentReference, order: OrderModel) async throws {
         do {
             // Codable 구조체를 딕셔너리로 변환
             let orderData = try JSONEncoder().encode(order)
             if let dictionary = try JSONSerialization.jsonObject(with: orderData, options: []) as? [String: Any] {
-                db.collection("order").document(order.orderid).setData(dictionary) { error in
-                    if let error = error {
-                        print("Error adding order: \(error.localizedDescription)")
-                    } else {
-                        print("Order successfully added!")
-                    }
-                }
+                try await orderRef.setData(dictionary) // DocumentReference를 사용하여 데이터 설정
+                print("Order successfully added!")
             }
         } catch {
             print("Error encoding order: \(error.localizedDescription)")
