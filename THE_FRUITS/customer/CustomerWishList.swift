@@ -6,6 +6,7 @@ struct CustomerWishList: View {
     @State private var likeBrands: [String] = [] // 좋아요한 브랜드 ID 배열
     @State private var brandDetails: [BrandModel] = [] // 브랜드 상세 정보 저장
     @State private var isLoading: Bool = false // 로딩 상태 표시
+    @State private var storeLikes: Int = 0
 
     var body: some View {
         NavigationView {
@@ -18,13 +19,16 @@ struct CustomerWishList: View {
                         .foregroundColor(.gray)
                 } else {
                     List(brandDetails, id: \.brandid) { brand in
-                        BrandRowView(brand: brand)
-                            .padding(.vertical, 8)
+                        //let storeLikes = brand.likes
+                        NavigationLink(destination: BrandHome(brand: brand, storeLikes: .constant(brand.likes))) {
+                            BrandRowView(brand: brand)
+                                .padding(.vertical, 8)
+                        }
                     }
                     .listStyle(PlainListStyle())
                 }
             }
-            .navigationTitle("찜한 브랜드 \(brandDetails.count)")
+            .navigationTitle("찜한 브랜드")
             .onAppear {
                 fetchBrandLikesItems()
             }
@@ -67,6 +71,7 @@ struct CustomerWishList: View {
 
 struct BrandRowView: View {
     let brand: BrandModel
+    //let storeLikes: Int
 
     var body: some View {
         HStack(alignment: .top, spacing: 16) {
@@ -76,11 +81,11 @@ struct BrandRowView: View {
                     image
                         .resizable()
                         .scaledToFill()
-                        .frame(width: 90, height: 90)
+                        .frame(width: 100, height: 100)
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                 } placeholder: {
                     ProgressView()
-                        .frame(width: 90, height: 90)
+                        .frame(width: 100, height: 100)
                 }
             }
 

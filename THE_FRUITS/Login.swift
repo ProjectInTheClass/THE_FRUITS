@@ -22,6 +22,7 @@ struct Login: View {
     @State private var selectedTab: Int = 0
     @State private var navigationPath = NavigationPath() // path depending on seller or customer
     @State private var destination: Destination? = nil
+    @State private var keyboardOffset: CGFloat = 0 // 키보드에 맞춘 뷰 이동
     
     @EnvironmentObject var firestoreManager: FireStoreManager // StateObject 대신 EnvironmentObject를 써서 로그인 후에도 해당 유저에 대한 데이터가 저장되도록 한다
     
@@ -76,13 +77,6 @@ struct Login: View {
                                     .frame(width: 250) //텍스트를 포함한 전체 너비 설정
                                     
                                     Spacer().frame(height: 20)
-                                    
-                                    /*CustomButton(title: "로그인",background:Color(red: 26/255, green: 50/255, blue: 27/255), foregroundColor:.white,width:300,height:60,size:14, cornerRadius:10){
-                                     signInUser()
-                                     print("로그인 클릭")
-                                     print("user type: ", userType)
-                                     }*/
-                                    
                                     // 로그인 클릭 시 userType에 따라 화면 전환
                                     NavigationLink(destination: destinationView, tag: .seller, selection: $destination) { EmptyView() }
                                     NavigationLink(destination: destinationView, tag: .customer, selection: $destination) { EmptyView() }
@@ -108,10 +102,20 @@ struct Login: View {
                         // 로그인 박스 표시 애니메이션 시작
                         showLoginBox = true
                     }
+                    Spacer()
+                }
+                .offset(y: -keyboardOffset) // 키보드 높이에 따라 뷰 이동
+                    .animation(.easeInOut(duration: 0.3), value: keyboardOffset) // 애니메이션 추가
                 }
             }
-        }
+            .onAppear {
+                setupKeyboardNotifications()
+            }
+            .onDisappear {
+                removeKeyboardNotifications()
+            }
     }
+    
     @ViewBuilder
     private var destinationView: some View { // 유저에 따라 맞는 화면 전환
         if destination == .seller {
@@ -151,6 +155,29 @@ struct Login: View {
             }
         }
     }
+    
+/// 키보드 이벤트 리스너 추가
+   func setupKeyboardNotifications() {
+       NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillShowNotification, object: nil, queue: .main) { notification in
+           if let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect {
+               withAnimation {
+                   keyboardOffset = keyboardFrame.height
+               }
+           }
+       }
+       
+       NotificationCenter.default.addObserver(forName: UIResponder.keyboardWillHideNotification, object: nil, queue: .main) { _ in
+           withAnimation {
+               keyboardOffset = 0
+           }
+       }
+   }
+   
+   /// 키보드 이벤트 리스너 제거
+   func removeKeyboardNotifications() {
+       NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillShowNotification, object: nil)
+       NotificationCenter.default.removeObserver(self, name: UIResponder.keyboardWillHideNotification, object: nil)
+   }
 }
 
 #Preview {

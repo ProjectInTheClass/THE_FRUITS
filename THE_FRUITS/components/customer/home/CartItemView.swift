@@ -25,8 +25,7 @@ struct CartItemView: View {
                     .font(.subheadline)
             Text("\(f_count)개")
                     .font(.subheadline)
-
-            CustomStepper(f_count:$f_count, width: 40, height: 20,strokeColor: Color("darkGreen"))
+            CustomStepper(f_count:$f_count, width: 40, height: 20, strokeColor: Color("darkGreen"))
             Spacer()
                 //CustomStepper(f_count: $quantity) // 수량 조정
             
