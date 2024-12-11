@@ -8,6 +8,7 @@
 import SwiftUI
 import Firebase
 import FirebaseFirestore
+import FirebaseStorage
 
 struct SellerAddBrand: View{
     var body: some View{
@@ -104,6 +105,12 @@ struct SellerBrandInfo: View{
     @State private var brandAccount: String = ""
     @State private var brandAddress: String = ""
     @State private var brandPhone: String = ""
+    @State private var brandNotification: String = ""
+    @State private var brandPurchaseNotice: String = ""
+    @State private var brandReturnPolicy: String = ""
+    
+    @State private var brandLogoImageData: Data? = nil
+    @State private var brandThumbnailImageData: Data? = nil
     
     @State private var selectedTab = 0
     @State private var isBankListPresented = false // bottom sheet for bank
@@ -153,7 +160,7 @@ struct SellerBrandInfo: View{
                 
                 // brand logo & thubmnail image
                 HStack(spacing: 50) {
-                    VStack {
+                    /*VStack {
                         Text("브랜드 로고 이미지")
                         RoundedRectangle(cornerRadius: 10)
                             .stroke(Color.gray, lineWidth: 1)
@@ -163,9 +170,9 @@ struct SellerBrandInfo: View{
                                     .font(.largeTitle)
                                     .foregroundColor(.gray)
                             )
-                    }
+                    }*/
                     
-                    VStack {
+                    /*VStack {
                         Text("브랜드 배경 이미지")
                         RoundedRectangle(cornerRadius: 10)
                             .stroke(Color.gray, lineWidth: 1)
@@ -175,9 +182,19 @@ struct SellerBrandInfo: View{
                                     .font(.largeTitle)
                                     .foregroundColor(.gray)
                             )
-                    }
+                    }*/
+                    UploadImageField(title: "브랜드 로고 이미지", imageUrl: $brandLogo, imageData: $brandLogoImageData, id: "logo")
+                    UploadImageField(title: "브랜드 배경 이미지", imageUrl: $brandThumbnail, imageData: $brandThumbnailImageData, id: "thumbnail")
                 }
                 .frame(maxWidth: .infinity, alignment: .center)
+                
+                VStack(alignment: .leading) {
+                    Text("브랜드 슬로건")
+                    TextField("브랜드 슬로건을 써주세요!", text: $brandSlogan)
+                        .padding()
+                        .frame(height: 100)
+                        .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
+                }
                 
                 // brand info
                 VStack(alignment: .leading) {
@@ -228,6 +245,28 @@ struct SellerBrandInfo: View{
                 
                 InputField(title: "거래 계좌 등록", placeholder: "계좌번호를 입력해주세요.", text: $brandAccount)
                 InputField(title: "주소 입력", placeholder: "발송지 주소를 입력해주세요.", text: $brandAddress)
+                
+                VStack(alignment: .leading) {
+                    Text("상품고시정보")
+                    TextField("상품고시정보를 입력해주세요!", text: $brandNotification)
+                        .padding()
+                        .frame(height: 100)
+                        .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
+                }
+                VStack(alignment: .leading) {
+                    Text("교환/반품/환불 안내 사항")
+                    TextField("교환/반품/환불 안내 사항을 써주세요!", text: $brandReturnPolicy)
+                        .padding()
+                        .frame(height: 100)
+                        .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
+                }
+                VStack(alignment: .leading) {
+                    Text("구매 시 주의사항")
+                    TextField("구매 시 주의사항을 써주세요!", text: $brandPurchaseNotice)
+                        .padding()
+                        .frame(height: 100)
+                        .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
+                }
                 
                 Spacer()
                 
@@ -291,37 +330,57 @@ struct SellerBrandInfo: View{
     }
     
     func saveBrand() async {
-        let brandModel = BrandModel(
-            brandid: "0",
-            sellerid: FireStoreManager().sellerid,
-            info: brandInfo,
-            name: brandName,
-            logo: brandLogo,
-            thumbnail: brandThumbnail,
-            slogan: brandSlogan,
-            likes: 0,
-            orders: [],
-            createdAt: Timestamp(date: Date()),
-            productid: [],
-            account: brandAccount,
-            bank: brandBank,
-            deliverycost: 0,
-            sigtype: nil,
-            phone: brandPhone,
-            address: brandAddress,
-            businessnum: businessNum,
-            notification: "",
-            purchase_notice: "",
-            return_policy: ""
-        )
-        
-        do {
+        // Upload logo if selected
+        do{
+            if let logoData = brandLogoImageData {
+                brandLogo = try await uploadImage(imageData: logoData, path: "images/logos/\(UUID().uuidString).jpg")
+            }
+            
+            // Upload thumbnail if selected
+            if let thumbnailData = brandThumbnailImageData {
+                brandThumbnail = try await uploadImage(imageData: thumbnailData, path: "images/thumbnails/\(UUID().uuidString).jpg")
+            }
+            let brandModel = BrandModel(
+                brandid: "0",
+                sellerid: FireStoreManager().sellerid,
+                info: brandInfo,
+                name: brandName,
+                logo: brandLogo,
+                thumbnail: brandThumbnail,
+                slogan: brandSlogan,
+                likes: 0,
+                orders: [],
+                createdAt: Timestamp(date: Date()),
+                productid: [],
+                account: brandAccount,
+                bank: brandBank,
+                deliverycost: 0,
+                sigtype: brandFruits,
+                phone: brandPhone,
+                address: brandAddress,
+                businessnum: businessNum,
+                notification: brandNotification,
+                purchase_notice: brandPurchaseNotice,
+                return_policy: brandReturnPolicy
+            )
+            
             try await firestoreManager.addBrand(brand: brandModel)
+            isModalPresented = true
+            
         } catch {
             // Handle error (you can print the error or show an alert)
             print("Error saving brand: \(error)")
         }
     }
+}
+
+func uploadImage(imageData: Data, path: String) async throws -> String {
+    let storageRef = Storage.storage().reference().child(path)
+    
+    _ = try await storageRef.putDataAsync(imageData)
+    let downloadURL = try await storageRef.downloadURL()
+    print("uploaded image!")
+    return downloadURL.absoluteString
     
 }
 

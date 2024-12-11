@@ -20,41 +20,43 @@ struct SellerOrder: View{
     
     var body: some View {
         NavigationView{
-            VStack{
-                Text("내 브랜드")
-                    .font(.headline)
-                    .padding(.leading)
-                
-                Spacer().frame(height: 50)
-                
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 20){
-                    ForEach(brands, id: \.brandid){ brand in
-                        NavigationLink(destination: SellerOrderList(brand: brand)){
-                            VStack{
-                                AsyncImage(url: URL(string: brand.logo)) { image in
-                                    image
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 150, height: 150)
-                                        .cornerRadius(10)
-                                } placeholder: {
-                                    Color.gray
-                                        .frame(width: 150, height: 150)
-                                        .cornerRadius(10)
+            ScrollView{
+                VStack{
+                    Text("내 브랜드")
+                        .font(.headline)
+                        .padding(.leading)
+                    
+                    Spacer().frame(height: 50)
+                    
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 20){
+                        ForEach(brands, id: \.brandid){ brand in
+                            NavigationLink(destination: SellerOrderList(brand: brand)){
+                                VStack{
+                                    AsyncImage(url: URL(string: brand.logo)) { image in
+                                        image
+                                            .resizable()
+                                            .scaledToFit()
+                                            .frame(width: 150, height: 150)
+                                            .cornerRadius(10)
+                                    } placeholder: {
+                                        Color.gray
+                                            .frame(width: 150, height: 150)
+                                            .cornerRadius(10)
+                                    }
+                                    Text(brand.name)
+                                        .font(.caption)
+                                        .foregroundColor(.gray)
                                 }
-                                Text(brand.name)
-                                    .font(.caption)
-                                    .foregroundColor(.gray)
                             }
                         }
                     }
+                    
+                    Spacer()
                 }
-                
-                Spacer()
-            }
-            .padding(.leading,12)
-            .onAppear{
-                loadBrands()
+                .padding(.leading,12)
+                .onAppear{
+                    loadBrands()
+                }
             }
             
             Spacer()//위로 슉 올리기

@@ -9,13 +9,16 @@ import SwiftUI
 import FirebaseFirestore
 
 struct SellerOrderDetail: View {
+    @EnvironmentObject var firestoreManager: FireStoreManager
     @State var order: OrderModel
     @State private var brands: [BrandModel] = []
+    @State private var orderSummaries: [OrderSummary] = []
     
     @State private var selectedStatus: String = "" // 초기값을 빈 문자열로 설정
     @State private var isFirstLoad: Bool = true // 첫 로드 여부를 확인하기 위한 변수
     @State private var showModal :Bool=false
     @State private var trakingNumber:String=""
+    @State private var deliveryCompany:String = ""
     let statuses = ["주문완료", "배송준비중", "배송중", "배송완료"]
     var body: some View {
         ScrollView{
@@ -72,27 +75,22 @@ struct SellerOrderDetail: View {
                                 .font(.headline)
                             Divider()
                                 .background(Color("darkGreen"))
-                            HStack {
-                                Text("애플망고")
-                                Spacer()
-                                Text("8,000원 | 3개")
-                            }
-                            HStack {
-                                Text("수박")
-                                Spacer()
-                                Text("10,000원 | 2개")
-                            }
-                            HStack {
-                                Text("사과")
-                                Spacer()
-                                Text("1,000원 | 3개")
-                            }
                             
+                            ForEach(orderSummaries, id: \.orderprodid) { orderSummary in
+                                ForEach(orderSummary.products, id: \.productid) { product in
+                                    HStack {
+                                        Text(product.productName)
+                                        Spacer()
+                                        Text("\(product.price)원 | \(product.num)개")
+                                    }
+                                    Divider()
+                                }
+                            }
                         }
                         .padding()
-                        .frame(width:360,height:140)
                         .background(Color.gray.opacity(0.2))
                         .cornerRadius(8)
+                        .frame(width:360)
                         
                         .padding(.horizontal)
                         .frame(maxWidth: .infinity, alignment: .center)
@@ -122,12 +120,14 @@ struct SellerOrderDetail: View {
                         .frame(maxWidth: .infinity, alignment: .center)
                         
                         
-                        VStack(alignment: .leading,spacing:8) {
+                        /*VStack(alignment: .leading,spacing:8) {
                             Text("배송지 정보")
                                 .font(.headline)
                             Divider()
                                 .background(Color("darkGreen"))
                             Text(order.recaddress)
+                                .multilineTextAlignment(.leading)
+                                .frame(maxWidth: .infinity, alignment: .leading)
                             HStack {
                                 Text("\(order.recname) | \(order.recphone)")
                                     .font(.custom("Pretendard-SemiBold", size: 13))
@@ -137,7 +137,35 @@ struct SellerOrderDetail: View {
                         .frame(width:360)
                         .background(Color.gray.opacity(0.2))
                         .cornerRadius(8)
+                        .frame(maxWidth: .infinity, alignment: .center)*/
+                        
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color.gray.opacity(0.2))
+                                .frame(width: 360)
+
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("배송지 정보")
+                                    .font(.headline)
+                                
+                                Divider()
+                                    .background(Color("darkGreen"))
+                                
+                                Text(order.recaddress)
+                                    .multilineTextAlignment(.leading)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                                    .fixedSize(horizontal: false, vertical: true) // Allow multiline wrapping
+                                
+                                HStack {
+                                    Text("\(order.recname) | \(order.recphone)")
+                                        .font(.custom("Pretendard-SemiBold", size: 13))
+                                }
+                            }
+                            .padding()
+                            .frame(width: 360, alignment: .leading)
+                        }
                         .frame(maxWidth: .infinity, alignment: .center)
+                        
                         
                         VStack(alignment: .leading,spacing: 8) {
                             Text("결제 금액")
@@ -182,7 +210,7 @@ struct SellerOrderDetail: View {
                     Color.black.opacity(0.4)
                         .edgesIgnoringSafeArea(.all)
                     
-                    DeliveryInputModal(showModal: $showModal,trackingNumber: $trakingNumber, orderId: order.orderid)
+                    DeliveryInputModal(showModal: $showModal,trackingNumber: $trakingNumber, deliveryCompany: $deliveryCompany, orderId: order.orderid)
                         .transition(.scale)
                 }
             }
@@ -190,6 +218,14 @@ struct SellerOrderDetail: View {
         }
         .onAppear {
             selectedStatus = order.stateDescription // Load the initial state from order
+            Task{
+                do{
+                    orderSummaries = try await firestoreManager.fetchOrderProdDetails(order: order)
+                }
+                catch {
+                    print("Error fetching order products: \(error)")
+                }
+            }
         }
         .onDisappear {
             if selectedStatus != order.stateDescription {
@@ -244,12 +280,17 @@ struct StatusButton: View {
 struct DeliveryInputModal: View{
     @Binding var showModal:Bool
     @Binding var trackingNumber : String
+    @Binding var deliveryCompany : String
     var orderId: String
     
     var body:some View{
         VStack(spacing: 20){
-            Text("송장번호를 입력해주세요")
+            Text("택배사 및 송장번호를 입력해주세요")
                 .font(.headline)
+            
+            TextField("택배사", text: $deliveryCompany)
+                .font(.custom("Pretendard-SemiBold", size: 13))
+                .padding()
             
             TextField("송장번호", text: $trackingNumber)
                 .font(.custom("Pretendard-SemiBold", size: 13))
@@ -264,11 +305,11 @@ struct DeliveryInputModal: View{
                     .background(Color("lightGray"))
                     .foregroundColor(.white)
                     .cornerRadius(8)
-                
             }
+            Spacer()
         }
         .padding()
-        .frame(width: 300,height:200)
+        .frame(width: 320)
         .background(Color.white)
         .cornerRadius(20)
         .shadow(radius: 10)
@@ -278,7 +319,7 @@ struct DeliveryInputModal: View{
         let db = Firestore.firestore()
         db.collection("order")
             .document(orderId) // Use the order ID to find the correct document
-            .updateData(["delnum": trackingNumber]) { error in
+            .updateData(["delnum": trackingNumber, "delname": deliveryCompany]) { error in
                 if let error = error {
                     print("Error updating document: \(error)")
                 } else {

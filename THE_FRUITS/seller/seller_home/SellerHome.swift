@@ -15,43 +15,45 @@ struct SellerHome: View {
     
     var body: some View {
         NavigationView{
-            VStack{
-                Text("내 브랜드")
-                    .font(.headline)
-                    .padding(.leading)
-                
-                Spacer().frame(height: 50)
-                
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 20){
-                    ForEach(brands, id: \.brandid) { brand in                     NavigationLink(destination: SellerBrandMainPage(brand: brand)) {
-                        VStack{
-                            AsyncImage(url: URL(string: brand.logo)) { image in
-                                image
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 150, height: 150)
-                                    .cornerRadius(10)
-                            } placeholder: {
-                                Color.gray
-                                    .frame(width: 150, height: 150)
-                                    .cornerRadius(10)
+            ScrollView{
+                VStack{
+                    Text("내 브랜드")
+                        .font(.headline)
+                        .padding(.leading)
+                    
+                    Spacer().frame(height: 50)
+                    
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 20){
+                        ForEach(brands, id: \.brandid) { brand in                     NavigationLink(destination: SellerBrandMainPage(brand: brand)) {
+                            VStack{
+                                AsyncImage(url: URL(string: brand.logo)) { image in
+                                    image
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 150, height: 150)
+                                        .cornerRadius(10)
+                                } placeholder: {
+                                    Color.gray
+                                        .frame(width: 150, height: 150)
+                                        .cornerRadius(10)
+                                }
+                                
+                                Text(brand.name)
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
                             }
-                            
-                            Text(brand.name)
-                                .font(.caption)
-                                .foregroundColor(.gray)
                         }
-                    }
+                        }
+                        
+                        addButton
                     }
                     
-                    addButton
+                    .task { // Fetch brands when the view appears
+                        await loadBrands()
+                    }
+                    
+                    Spacer()
                 }
-                
-                .task { // Fetch brands when the view appears
-                    await loadBrands()
-                }
-                
-                Spacer()
             }
             
             Spacer()//위로 슉 올리기
