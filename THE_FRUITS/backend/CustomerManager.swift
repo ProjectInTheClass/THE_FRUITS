@@ -9,7 +9,27 @@ import Firebase
 import Foundation
 
 extension FireStoreManager{
-    
+    func fetchOrders() async throws -> [String] {
+        do {
+            // Firestore에서 customer 문서 가져오기
+            let customerDoc = try await db.collection("customer").document(self.customerid).getDocument()
+            
+            // orders 배열 필드 가져오기
+            guard let customerData = customerDoc.data(),
+                  let orderIds = customerData["orders"] as? [String] else {
+                print("No orders found for customer.")
+                return []
+            }
+            
+            // orders 배열 반환
+            return orderIds
+        } catch {
+            print("Error fetching customer orders: \(error.localizedDescription)")
+            throw error // 에러를 상위로 전달
+        }
+    }
+
+
     func fetchCart() async {
         do {
             let cartDocuments = try await db.collection("customer").document(self.customerid).collection("cart").getDocuments()
@@ -263,6 +283,8 @@ extension FireStoreManager{
         let selectedOrderProdIds = selectedOrderSummary.map { $0.orderprodid }
         let orderRef = db.collection("order").document()
         
+        let cartCollection = db.collection("customer").document(self.customerid).collection("cart")
+        
         let order = OrderModel(
             orderid: orderRef.documentID,
             orderdate: dateToString(Date()),
@@ -288,10 +310,37 @@ extension FireStoreManager{
         try await addOrderToFirestore(orderRef: orderRef, order: order)
         
         // 각 orderprodid에 대해 deleteOrderProd 호출
-        for orderprodId in selectedOrderProdIds {
-            try await deleteOrderProd(orderprodId: orderprodId)
+//        for orderprodId in selectedOrderProdIds {
+//            try await deleteOrderProd(orderprodId: orderprodId)
+//        }
+//        print("All selected OrderProd IDs have been deleted.")
+        
+        // cart 에서만 삭제되도록
+        let cartSnapshot = try await cartCollection
+            .whereField("cartid", isEqualTo: self.cart?.cartid)
+            .getDocuments()
+        
+        guard let cartDocument = cartSnapshot.documents.first else {
+            throw NSError(domain: "", code: 404, userInfo: [NSLocalizedDescriptionKey: "Cart document not found."])
         }
-        print("All selected OrderProd IDs have been deleted.")
+        for orderprodId in selectedOrderProdIds {
+            try await cartDocument.reference.updateData([
+                "orderprodid": FieldValue.arrayRemove([orderprodId]) // 배열에서 ID 삭제
+            ])
+            
+            print("Successfully deleted orderprodid \(orderprodId) from both orderprod and cart.")
+        }
+        
+        // Firestore의 customer의 orders 배열에 orderid 추가
+        if let customerId = self.customer?.customerid {
+            let customerRef = db.collection("customer").document(customerId)
+            try await customerRef.updateData([
+                "orders": FieldValue.arrayUnion([order.orderid])
+            ])
+            print("Order ID \(order.orderid) successfully added to customer's orders.")
+        } else {
+            print("Customer ID not found. Unable to update orders.")
+        }
         
         // 선택된 주문 요약 목록 반환 준비
         orderList = selectedOrderSummary
@@ -300,6 +349,7 @@ extension FireStoreManager{
         return (order, orderList)
     }
 
+    
     // make order in cart
     func addOrderToFirestore(orderRef: DocumentReference, order: OrderModel) async throws {
         do {
@@ -314,14 +364,83 @@ extension FireStoreManager{
         }
     }
     
-    func dateToString(_ date: Date, format: String = "MM-dd-yyyy") -> String {
+    func dateToString(_ date: Date, format: String = "yyyy-MM-dd HH:mm:ss") -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = format
         dateFormatter.locale = Locale(identifier: "en_US") // 영어 형식으로 설정
         return dateFormatter.string(from: date)
     }
+
+    func fetchOrder(orderId: String) async throws -> (OrderModel, [OrderSummary], BrandModel) {
+        let orderRef = db.collection("order").document(orderId)
+        let orderDocument = try await orderRef.getDocument()
+        
+        guard let orderData = try orderDocument.data(as: OrderModel?.self) else {
+            throw NSError(domain: "FetchError", code: 404, userInfo: [NSLocalizedDescriptionKey: "Order not found for id: \(orderId)"])
+        }
+        
+        let order = orderData
+        var orderSummaries: [OrderSummary] = []
+        
+        
+        for orderprodId in order.products {
+        
+            let orderProd = try await fetchOrderProd(orderprodId: orderprodId)
+            
+        
+            var productDetails: [ProductDetail] = []
+            for products in orderProd.products {
+                let product = try await fetchProduct(productId: products.productid)
+                let productDetail = ProductDetail(
+                    productid: product.id,
+                    productName: product.prodtitle,
+                    price: product.price,
+                    num: products.num
+                )
+                productDetails.append(productDetail)
+            }
+            
+            let orderSummary = OrderSummary(
+                orderprodid: orderprodId,
+                products: productDetails,
+                selected: true
+            )
+            
+            orderSummaries.append(orderSummary)
+        }
+        
+        
+        let brand: BrandModel = try await asyncFetchBrand(brandId: order.brandid)!
+        
+        return (order, orderSummaries, brand)
+    }
+    
+    func updateOrderAddress(orderId: String, newAddress: String, newName: String, newPhone: String) async throws {
+        
+        let orderRef = db.collection("order").document(orderId)
+        
+        do {
+            
+            try await orderRef.updateData([
+                "recaddress": newAddress,
+                "recname": newName,
+                "recphone": newPhone
+            ])
+            print("Order \(orderId) successfully updated with new details.")
+        } catch {
+            print("Error updating order \(orderId): \(error.localizedDescription)")
+            throw error
+        }
+    }
+
     
     
+    
+    
+
+
 }
+
+
 
 
