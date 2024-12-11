@@ -80,11 +80,11 @@ struct SellerInfoSetting: View {
     }
     
     private func loadSellerInfo() async {
-        await firestoreManager.fetchSeller()
+        firestoreManager.fetchSeller()
         if let seller = firestoreManager.seller {
-            userName = seller.name ?? ""
-            userId = seller.username ?? ""
-            userPhone = seller.phone ?? ""
+            userName = seller.name
+            userId = seller.username
+            userPhone = seller.phone
         }
     }
     

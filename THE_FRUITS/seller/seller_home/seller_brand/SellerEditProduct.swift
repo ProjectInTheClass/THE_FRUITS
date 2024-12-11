@@ -18,10 +18,11 @@ struct SellerEditProduct: View{
     @State private var productInfo: String
     @State private var productPrice: Int
     @State private var productType: String
+    @State private var isUpdated = false
     
     @State private var selectedTab = 0
     
-    @Environment(\.presentationMode) var presentationMode: Binding<PresentationMode>
+    @Environment(\.dismiss) var dismiss
     
     init(product: Binding<ProductModel>) {
         _product = product
@@ -38,30 +39,19 @@ struct SellerEditProduct: View{
                 // product name
                 Text("상품 이름")
                 HStack {
-                    TextField(product.prodtitle.isEmpty ? "상품 입력" : product.prodtitle, text: $productTitle)
+                    TextField("상품 입력", text: $productTitle)
                         .padding()
                         .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
                     
                 }
                 
                 // product image
-                /*VStack {
-                    Text("상품 이미지")
-                    RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color.gray, lineWidth: 1)
-                        .frame(width: 100, height: 100)
-                        .overlay(
-                            Image(systemName: "plus")
-                                .font(.largeTitle)
-                                .foregroundColor(.gray)
-                        )
-                }*/
-                UploadImageField(title: "상품 이미지", imageUrl: $productImage, imageData: $imageData, id: product.productid)
+                UploadImageField(title: "상품 이미지", imageUrl: $productImage, imageData: $imageData, id: "product")
                 
                 // product info
                 VStack(alignment: .leading) {
                     Text("상품 소개")
-                    TextField(product.info.isEmpty ? "상품을 소개해주세요!" : product.info, text: $productInfo)
+                    TextField("상품을 소개해주세요!", text: $productInfo)
                         .padding()
                         .frame(height: 100)
                         .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
@@ -69,7 +59,7 @@ struct SellerEditProduct: View{
                 // product price
                 VStack(alignment: .leading) {
                     Text("상품 가격")
-                    TextField(productPrice == 0 ? "상품 가격을 입력해주세요." : "\(productPrice)", value: $productPrice, formatter: NumberFormatter())
+                    TextField("상품 가격을 입력해주세요.", value: $productPrice, formatter: NumberFormatter())
                         .keyboardType(.numberPad)  // To ensure only number input
                         .padding()
                         .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
@@ -79,33 +69,17 @@ struct SellerEditProduct: View{
                 
                 Spacer()
                 
+                if isUpdated {
+                    ProgressView("Updating...")
+                }
                 Button(action: {
                     Task {
-                        do {
-                            var imageURL = product.imageUrl
-                            
-                            if let newImageData = imageData {
-                                print("Uploading new logo...")
-                                imageURL = try await uploadImageToFirebase(imageData: newImageData, fieldName: "image")
-                                print("Logo uploaded: \(imageURL)")
-                            }
-                            
-                            // Update product in Firestore
-                            product.prodtitle = productTitle
-                            product.imageUrl = imageURL
-                            product.info = productInfo
-                            product.price = productPrice
-                            product.type = productType
-                            
-                            // Call FirestoreManager to update the product
-                            try await firestoreManager.editProduct(product: product)
-                            print("Product updated successfully.")
-                            
-                            // Navigate back after updating
-                            self.presentationMode.wrappedValue.dismiss()
-                        } catch {
-                            print("Error updating product: \(error)")
-                        }
+                        await updateProductInFirebase()
+                        //isUpdated = true
+                        
+                        // Navigate back after updating
+                        //presentationMode.wrappedValue.dismiss()
+                        
                     }
                 }) {
                     Text("수정하기")
@@ -118,6 +92,56 @@ struct SellerEditProduct: View{
                 .padding(.top)
             }
             .padding()
+        }
+    }
+    
+    func updateProductInFirebase() async{
+        isUpdated = true
+        defer { isUpdated = false }
+        do {
+            //var imageURL = product.imageUrl
+            print("in update product in firebase")
+            
+            if let newImageData = imageData, !productImage.isEmpty {
+                try await deleteImageFromFirebaseStorage(urlString: product.imageUrl)
+            }
+            
+            if let newImageData = imageData {
+                print("Uploading new logo...")
+                if let uploadedImageURL = try await uploadImageIfNeeded(data: newImageData, path: "images/products/\(UUID().uuidString).jpg"){
+                    productImage = uploadedImageURL ?? ""
+                    print("Image uploaded: \(productImage)")
+                }
+            }
+            
+            // Update product in Firestore
+            product.prodtitle = productTitle
+            product.imageUrl = productImage
+            product.info = productInfo
+            product.price = productPrice
+            product.type = productType
+            
+            let updatedProduct = ProductModel(
+                productid: product.productid,
+                prodtitle: productTitle,
+                price: productPrice,
+                info: productInfo,
+                imageUrl: productImage,
+                type: productType,
+                soldout: product.soldout
+            )
+            
+            // Call FirestoreManager to update the product
+            try await firestoreManager.editProduct(product: updatedProduct)
+            print("Product updated successfully.")
+            
+            // Navigate back after updating
+            //isUpdated = true
+            dismiss()
+            //presentationMode.wrappedValue.dismiss()
+        }
+        catch{
+            print("Error updating product: \(error)")
         }
     }
 }

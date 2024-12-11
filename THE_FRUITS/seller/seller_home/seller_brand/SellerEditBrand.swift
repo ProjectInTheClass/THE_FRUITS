@@ -15,6 +15,7 @@ import PhotosUI
 struct SellerEditBrand: View{
     @State var brand: BrandModel
     @EnvironmentObject var firestoreManager: FireStoreManager
+    @Environment(\.dismiss) var dismiss
     
     @State private var brandName: String = ""
     @State private var brandLogo: String = ""
@@ -24,6 +25,10 @@ struct SellerEditBrand: View{
     @State private var brandBank: String = ""
     @State private var brandAccount: String = ""
     @State private var brandAddress: String = ""
+    @State private var brandSlogan: String = ""
+    @State private var brandNotification: String = ""
+    @State private var brandReturnPolicy: String = ""
+    @State private var brandPurchaseNotice: String = ""
     
     @State private var brandLogoData: Data? = nil
     @State private var brandThumbnailData: Data? = nil
@@ -33,6 +38,7 @@ struct SellerEditBrand: View{
     
     @State private var isBrandNameDuplicate = false
     @State private var showDuplicateAlert = false
+    @State private var isUpdated = false
     
     var body: some View{
         ScrollView {
@@ -69,40 +75,20 @@ struct SellerEditBrand: View{
                 }
                 
                 // brand logo & thubmnail image
-                /*HStack(spacing: 50) {
-                 VStack {
-                 Text("브랜드 로고 이미지")
-                 RoundedRectangle(cornerRadius: 10)
-                 .stroke(Color.gray, lineWidth: 1)
-                 .frame(width: 100, height: 100)
-                 .overlay(
-                 Image(systemName: "plus")
-                 .font(.largeTitle)
-                 .foregroundColor(.gray)
-                 )
-                 }
-                 
-                 VStack {
-                 Text("브랜드 배경 이미지")
-                 RoundedRectangle(cornerRadius: 10)
-                 .stroke(Color.gray, lineWidth: 1)
-                 .frame(width: 100, height: 100)
-                 .overlay(
-                 Image(systemName: "plus")
-                 .font(.largeTitle)
-                 .foregroundColor(.gray)
-                 )
-                 }
-                 }
-                 .frame(maxWidth: .infinity, alignment: .center)*/
-                
                 HStack(spacing: 50) {
-                    UploadImageField(title: "브랜드 로고 이미지", imageUrl: $brandLogo, imageData: $brandLogoData, id: brand.brandid)
-                    UploadImageField(title: "브랜드 배경 이미지", imageUrl: $brandThumbnail, imageData: $brandThumbnailData, id: brand.brandid)
+                    UploadImageField(title: "브랜드 로고 이미지", imageUrl: $brandLogo, imageData: $brandLogoData, id: "logo")
+                    UploadImageField(title: "브랜드 배경 이미지", imageUrl: $brandThumbnail, imageData: $brandThumbnailData, id: "thumbnail")
                 }
                 .frame(maxWidth: .infinity, alignment: .center)
                 
                 // brand info
+                VStack(alignment: .leading) {
+                    Text("브랜드 슬로건")
+                    TextField("브랜드 슬로건을 써주세요!", text: $brandSlogan)
+                        .padding()
+                        .frame(height: 100)
+                        .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
+                }
                 VStack(alignment: .leading) {
                     Text("브랜드 소개")
                     TextField("브랜드를 소개해주세요!", text: $brandInfo)
@@ -150,9 +136,31 @@ struct SellerEditBrand: View{
                 InputField(title: "거래 계좌 등록", placeholder: "계좌번호를 입력해주세요.", text: $brandAccount)
                 InputField(title: "주소 입력", placeholder: "발송지 주소를 입력해주세요.", text: $brandAddress)
                 
+                VStack(alignment: .leading) {
+                    Text("상품고시정보")
+                    TextField("상품고시정보를 입력해주세요!", text: $brandNotification)
+                        .padding()
+                        .frame(height: 100)
+                        .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
+                }
+                VStack(alignment: .leading) {
+                    Text("교환/반품/환불 안내 사항")
+                    TextField("교환/반품/환불 안내 사항을 써주세요!", text: $brandReturnPolicy)
+                        .padding()
+                        .frame(height: 100)
+                        .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
+                }
+                VStack(alignment: .leading) {
+                    Text("구매 시 주의사항")
+                    TextField("구매 시 주의사항을 써주세요!", text: $brandPurchaseNotice)
+                        .padding()
+                        .frame(height: 100)
+                        .background(RoundedRectangle(cornerRadius: 10).stroke(Color.gray, lineWidth: 1))
+                }
+                
                 Spacer()
                 
-                Button(action: {
+                /*Button(action: {
                     updateBrandInFirebase()
                     // Navigate after the action
                     selectedTab = 1 // Set the tab you want to navigate to, if applicable
@@ -168,7 +176,28 @@ struct SellerEditBrand: View{
                             .foregroundColor(.white)
                             .cornerRadius(10)
                     }
+                }*/
+                
+                if isUpdated {
+                    ProgressView("Updating...")
                 }
+                Button(action: {
+                    Task {
+                        await updateBrandInFirebase()
+                        //isUpdated = true
+                    }
+                }) {
+                    Text("수정하기")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color("darkGreen"))
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                }
+                /*.navigationDestination(isPresented: $isUpdated) {
+                    SellerBrandMainPage(brand: brand)
+                        .navigationBarBackButtonHidden(true)
+                }*/
             }
             .padding()
         }
@@ -217,27 +246,44 @@ struct SellerEditBrand: View{
             brandBank = brand.bank
             brandAccount = brand.account
             brandAddress = brand.address
+            brandSlogan = brand.slogan
+            brandPurchaseNotice = brand.purchase_notice
+            brandReturnPolicy = brand.return_policy
+            brandNotification = brand.notification
+            
         } catch {
             print("Error loading brand data: \(error)")
         }
     }
     
-    func updateBrandInFirebase() {
+    func updateBrandInFirebase() async {
+        isUpdated = true
+        defer { isUpdated = false }
         Task {
             do {
-                var logoURL = brand.logo
-                var thumbnailURL = brand.thumbnail
                 print("in update brand in firebase")
+                
+                // Delete existing logo if a new logo is being uploaded
+                if let newLogoData = brandLogoData, !brandLogo.isEmpty {
+                    try await deleteImageFromFirebaseStorage(urlString: brand.logo)
+                }
+                            
+                            // Delete existing thumbnail if a new thumbnail is being uploaded
+                if let newThumbnailData = brandThumbnailData, !brandThumbnail.isEmpty {
+                    try await deleteImageFromFirebaseStorage(urlString: brand.thumbnail)
+                }
                 
                 if let newLogoData = brandLogoData {
                     print("Uploading new logo...")
-                    logoURL = try await uploadImageToFirebase(imageData: newLogoData, fieldName: "logo")
-                    print("Logo uploaded: \(logoURL)")
+                    let uploadedLogo = try await uploadImageIfNeeded(data: newLogoData, path: "images/logos/\(UUID().uuidString).jpg")
+                    brandLogo = uploadedLogo as? String ?? ""
+                    print("Logo uploaded: \(brandLogo)")
                 }
                 
                 if let newThumbnailData = brandThumbnailData {
                     print("Uploading new thumbnail...")
-                    thumbnailURL = try await uploadImageToFirebase(imageData: newThumbnailData, fieldName: "thumbnail")
+                    let uploadedThumbnail = try await uploadImageIfNeeded(data: newThumbnailData, path: "images/thumbnails/\(UUID().uuidString).jpg")
+                    brandThumbnail = uploadedThumbnail as? String ?? ""
                 }
                 
                 print("pass images")
@@ -249,17 +295,36 @@ struct SellerEditBrand: View{
                 let updatedBrand = BrandEditModel(
                     brandid: brand.brandid,
                     name: brandName,
-                    logo: logoURL,
-                    thumbnail: thumbnailURL,
+                    logo: brandLogo,
+                    thumbnail: brandThumbnail,
                     info: brandInfo,
                     sigtype: brandFruits,
                     bank: brandBank,
                     account: brandAccount,
-                    address: brandAddress
+                    address: brandAddress,
+                    slogan: brandSlogan,
+                    notification: brandNotification,
+                    purchase_notice:brandPurchaseNotice,
+                    return_policy: brandReturnPolicy
                 )
+                
+                brand.name = brandName
+                brand.thumbnail = brandThumbnail
+                brand.logo = brandLogo
+                brand.info = brandInfo
+                brand.sigtype = brandFruits
+                brand.bank = brandBank
+                brand.account = brandAccount
+                brand.address = brandAddress
+                brand.slogan = brandSlogan
+                brand.notification = brandNotification
+                brand.purchase_notice = brandPurchaseNotice
+                brand.return_policy = brandReturnPolicy
+                
                 
                 try await firestoreManager.updateBrand(brand: updatedBrand)
                 print("Brand updated successfully")
+                dismiss()
                 
             } catch {
                 print("Error updating brand: \(error)")
@@ -268,26 +333,26 @@ struct SellerEditBrand: View{
     }
 }
 
-func uploadImageToFirebase(imageData: Data?, fieldName: String) async throws -> String {
-    guard let imageData = imageData else {
-        print("No image data for \(fieldName)")
-        throw NSError(domain: "No image data", code: 1)
+func uploadImageIfNeeded(data: Data?, path: String) async throws -> String? {
+    guard let imageData = data else { return nil }
+    return try await uploadImage(imageData: imageData, path: path)
+}
+
+func deleteImageFromFirebaseStorage(urlString: String) async throws {
+    guard let url = URL(string: urlString) else {
+        print("Invalid URL for image deletion")
+        return
     }
     
-    print("Uploading image \(fieldName), size: \(imageData.count) bytes")
+    // Extract the file path from the download URL
+    let storage = Storage.storage()
+    let storageRef = storage.reference(forURL: urlString)
     
-    let storageRef = Storage.storage().reference().child("images/\(UUID().uuidString).jpg")
     do {
-        // Upload the image to Firebase Storage
-        let _ = try await storageRef.putDataAsync(imageData)
-        
-        // Retrieve the download URL for the uploaded image
-        let downloadURL = try await storageRef.downloadURL()
-        print("\(fieldName) uploaded successfully: \(downloadURL.absoluteString)")
-        return downloadURL.absoluteString
+        try await storageRef.delete()
+        print("Successfully deleted image: \(urlString)")
     } catch {
-        print("Error uploading \(fieldName) image: \(error)")
-        throw error
+        print("Error deleting image: \(error)")
     }
 }
 
