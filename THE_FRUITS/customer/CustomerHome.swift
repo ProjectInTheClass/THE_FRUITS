@@ -25,6 +25,21 @@ struct CustomerHome: View {
     @State private var brandLikes: [String: Bool] = [:] // 브랜드 ID별 좋아요 상태 관리
 
     //@State private var fruits:[Fruit]=[]
+    
+    // 필터링 로직을 computed property로 분리
+    var filteredBrands: [BrandModel] {
+        if searchText.isEmpty {
+            return brands
+        } else {
+            let lowercasedSearchText = searchText.lowercased()
+            return brands.filter { brand in
+                let nameContains = brand.name.lowercased().contains(lowercasedSearchText)
+                let sigtypeContains = brand.sigtype?.contains(where: { $0.lowercased().contains(lowercasedSearchText) }) ?? false
+                return nameContains || sigtypeContains
+            }
+        }
+    }
+    
     var body: some View {
         NavigationView {
             VStack {
@@ -53,7 +68,7 @@ struct CustomerHome: View {
                 
                 ScrollView {
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 14) {
-                        ForEach(brands, id: \.brandid) { brand in
+                        ForEach(filteredBrands, id: \.brandid) { brand in
                             FruitCardView(
                                 brand: brand,
                                 isLiked: Binding(
@@ -69,11 +84,11 @@ struct CustomerHome: View {
                 }
             }
             
-//            .toolbar{
-//                ToolbarItem(placement: .navigationBarTrailing) {
-//                    CartToolbar(navigateToCart: $navigateToCustomerCart)
-//                }
-//            }
+            .toolbar{
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    CartToolbar(navigateToCart: $navigateToCustomerCart)
+                }
+            }
             .onAppear {
                 fetchBrandIDsAndDetails() // Firestore에서 브랜드 ID 가져오기
                 // 좋아요 여부 확인
