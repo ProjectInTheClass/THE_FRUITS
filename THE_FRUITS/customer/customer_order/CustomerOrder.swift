@@ -75,14 +75,14 @@ struct CustomerInfoView: View {
                         Text("보내는 분")
                             .foregroundColor(.black)
                         Spacer()
-                        Text(order?.recname ?? "정보 없음")
+                        Text(order?.customername ?? "정보 없음")
                             .foregroundColor(.black)
                     }
                     HStack {
                         Text("휴대폰")
                             .foregroundColor(.black)
                         Spacer()
-                        Text(order?.recphone ?? "정보 없음")
+                        Text(order?.customerphone ?? "정보 없음")
                             .foregroundColor(.black)
                     }
                 }
