@@ -15,7 +15,6 @@ struct CustomerInputBox: View {
     var isPwd: Bool = false
     
     var body: some View {
-        // "주소" 텍스트를 왼쪽으로 정렬
         Text(title)
             .padding(.top,10)
             .font(.custom("Pretendard-SemiBold", size: 16)) // 폰트 조정 가능

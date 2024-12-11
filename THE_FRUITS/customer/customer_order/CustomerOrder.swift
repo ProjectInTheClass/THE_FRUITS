@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct OrderProdcutSection: View {
-    var orderList: [OrderSummary] // 주문 상품 목록
+    var orderList: [OrderSummary]
     var order: OrderModel?
     
     var body: some View {
@@ -35,7 +35,7 @@ struct OrderProdcutSection: View {
                             .padding(.vertical, 5)
                         }
                         if orderSummary != orderList.last {
-                            Divider() 
+                            Divider()
                                 .background(Color.gray)
                                 .padding(.vertical, 5)
                         }
@@ -43,7 +43,7 @@ struct OrderProdcutSection: View {
                 }
             }
             .padding(.vertical, 15)
-            .frame(maxWidth: UIScreen.main.bounds.width - 48) // VStack 너비 제한
+            .frame(maxWidth: UIScreen.main.bounds.width - 48)
         }
     }
 }
@@ -94,25 +94,36 @@ struct CustomerInfoView: View {
 }
 
 struct ShippingInfoView: View {
-    var order: OrderModel?
+    @Binding var order: OrderModel? // 상위에서 관리되는 `order`를 바인딩으로 전달
+    @EnvironmentObject var firestoreManager: FireStoreManager
 
     var body: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 8)
-                .fill(Color(UIColor.systemGray6)) // 배경색
-                .frame(width: UIScreen.main.bounds.width - 30) // 너비 조정
+                .fill(Color(UIColor.systemGray6))
+                .frame(width: UIScreen.main.bounds.width - 30)
             
             VStack(alignment: .leading, spacing: 10) {
-                // 제목과 변경 버튼
                 HStack {
                     Text("배송지 정보")
-                        
                     Spacer()
-                    Button(action: {
-                        print("배송지 변경 클릭")
-                    }) {
+                    NavigationLink(
+                        destination: CustomerOrderEditAddress(order: order)
+                            .onDisappear {
+                                Task {
+                                    // Firestore에서 최신 데이터를 가져오기
+                                    if let orderId = order?.orderid {
+                                        do {
+                                            let (updatedOrder, _, _) = try await firestoreManager.fetchOrder(orderId: orderId)
+                                            self.order = updatedOrder
+                                        } catch {
+                                            print("Error fetching updated order: \(error.localizedDescription)")
+                                        }
+                                    }
+                                }
+                            }
+                    ) {
                         Text("변경")
-                            
                             .foregroundColor(Color.blue)
                     }
                 }
@@ -121,20 +132,36 @@ struct ShippingInfoView: View {
                     .frame(height: 1)
                     .overlay(Color.black)
 
-                // 배송지 상세 정보
+                // 배송지 정보 표시
                 VStack(alignment: .leading, spacing: 5) {
-                    Text(order?.recaddress ?? "정보 없음") // 주소
+                    Text(order?.recaddress ?? "정보 없음")
                         .foregroundColor(.black)
+                        .font(.system(size: 16))
 
-                    Text("\(order?.recname ?? "정보 없음") | \(order?.recphone ?? "정보 없음")") // 이름 및 연락처
+                    Text("\(order?.recname ?? "정보 없음") | \(order?.recphone ?? "정보 없음")")
                         .foregroundColor(.black)
+                        .font(.system(size: 14))
                 }
             }
             .padding(.vertical, 15)
-            .frame(maxWidth: UIScreen.main.bounds.width - 48) // VStack 너비 제한
+            .frame(maxWidth: UIScreen.main.bounds.width - 48)
+        }
+        .onAppear {
+            Task {
+                if let orderId = order?.orderid {
+                    do {
+                        let (updatedOrder, _, _) = try await firestoreManager.fetchOrder(orderId: orderId)
+                        self.order = updatedOrder
+                    } catch {
+                        print("Error fetching order on appear: \(error.localizedDescription)")
+                    }
+                }
+            }
         }
     }
 }
+
+
 
 struct PaymentInfoView: View {
     var order: OrderModel?
@@ -242,7 +269,7 @@ struct PaymentAmountView: View {
 
 struct CustomerOrder: View {
     var orderList: [OrderSummary] // 주문 상품 목록
-    var order: OrderModel?
+    @State var order: OrderModel?
     
     @EnvironmentObject var firestoreManager: FireStoreManager
     @State private var brand: BrandModel?
@@ -251,16 +278,20 @@ struct CustomerOrder: View {
         ScrollView {
             VStack(spacing: 20) {
                 // 브랜드 정보
-                if let brand = brand {
-                    BrandButton(brand: brand)
-                } else {
-                    Text("Loading brand information...")
+                HStack{
+                    if let brand = brand {
+                        BrandButton(brand: brand)
+                    } else {
+                        Text("Loading brand information...")
+                    }
+                    Spacer()
                 }
+                .frame(width: UIScreen.main.bounds.width - 30)
                 
                 // 컴포넌트 섹션들
                 OrderProdcutSection(orderList: orderList, order: order)
                 CustomerInfoView(order: order)
-                ShippingInfoView(order: order)
+                ShippingInfoView(order: $order)
                 PaymentInfoView(order: order)
                 PaymentAmountView(order: order)
             }
@@ -281,5 +312,3 @@ struct CustomerOrder: View {
         }
     }
 }
-
-
