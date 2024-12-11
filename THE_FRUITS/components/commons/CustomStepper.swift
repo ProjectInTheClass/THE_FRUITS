@@ -8,7 +8,6 @@ struct CustomStepper: View {
     var strokeColor: Color // stroke 컬러를 전달받을 변수 추가
 
 
-
     var body: some View {
         HStack(spacing: 0) { // 간격을 완전히 없앰
             // Minus Button
@@ -45,10 +44,10 @@ struct CustomStepper: View {
         }
         .padding(8)
         .frame(width: width + height * 2, height: height) // 텍스트와 버튼을 포함하는 크기 설정
-        .background(
+        //.background(Color.white.opacity(0.7)) // 배경색 적용
+        .overlay(
             RoundedRectangle(cornerRadius: height / 2)
-                .stroke(strokeColor, lineWidth: 2)
-                .fill(Color.white.opacity(0.7)) // 배경에 하얀색과 투명도 적용
+                .stroke(strokeColor, lineWidth: 1.5) // 테두리 스타일
         )
         .accessibilityElement(children: .combine)
     }

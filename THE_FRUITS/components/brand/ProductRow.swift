@@ -30,7 +30,7 @@ struct ProductRow: View {
                 Text("\(product.price)원")
                     .font(.subheadline)
                     .foregroundColor(.black)
-                CustomStepper(f_count: $product.f_count, width: 120, height: 20, strokeColor: .white)
+                CustomStepper(f_count: $product.f_count, width: 110, height: 22, strokeColor: Color("darkGreen"))
             }
             Spacer()
         }
