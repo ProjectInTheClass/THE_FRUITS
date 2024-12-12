@@ -6,12 +6,12 @@
 //
 import SwiftUI
 struct CustomerOrderList: View {
-    @State private var orders: [(OrderModel, [OrderSummary], BrandModel)] = [] // 주문 데이터
-    @State private var isLoading: Bool = true // 로딩 상태
-    @State private var showModal: Bool = false // 모달 표시 여부
-    @State private var selectedDeliveryInfo: String = "" // 선택된 배송 정보
-    @State private var selectedDeliveryCompany: String = "" // 선택된 택배 회사
-    @EnvironmentObject var firestoreManager: FireStoreManager // Firestore 매니저
+    @State private var orders: [(OrderModel, [OrderSummary], BrandModel)] = []
+    @State private var isLoading: Bool = true
+    @State private var showModal: Bool = false
+    @State private var selectedDeliveryInfo: String = ""
+    @State private var selectedDeliveryCompany: String = ""
+    @EnvironmentObject var firestoreManager: FireStoreManager
 
     var body: some View {
         ZStack {
@@ -143,12 +143,14 @@ struct OrderCardView: View {
                     }
                 }
             }
-            .frame(width: 360)
+            //.frame(width: 360)
             .padding(.horizontal)
 
             RoundedRectangle(cornerRadius: 8)
                 .fill(Color("beige"))
-                .frame(width: 360, height: 120)
+                //.frame(width: 360, height: 120)
+                .frame(maxWidth: UIScreen.main.bounds.width - 48)
+                .frame(height: 120)
                 .overlay(
                     VStack(spacing: 10) {
                         HStack {
@@ -179,7 +181,7 @@ struct OrderCardView: View {
                         HStack {
                             Spacer()
                             NavigationLink(
-                                destination: CustomerOrder(orderList: orderList, order: order)
+                                destination: CustomerReceipt(orderList: orderList, order: order)
                             ) {
                                 Text("주문상세")
                                     .font(.system(size: 12))
@@ -190,10 +192,11 @@ struct OrderCardView: View {
                             }
                         }
                         .padding(.trailing, 16)
-                        .padding(.bottom, 10)
+                        .padding(.bottom, 15)
                     }
                 )
         }
+        //.frame(maxWidth: UIScreen.main.bounds.width - 48)
     }
 }
 
@@ -235,17 +238,17 @@ struct ProgressBarView: View {
 struct DeliveryInfoModal: View {
     var deliveryInfo: String
     var deliveryCompany: String
-    @Binding var isPresented: Bool // 모달 표시 여부
-    @State private var showAlert: Bool = false // 알림 표시 여부
+    @Binding var isPresented: Bool
+    @State private var showAlert: Bool = false
     
     var body: some View {
         if isPresented {
             ZStack {
-                // 흐린 배경
+                
                 Color.black.opacity(0.5)
                     .edgesIgnoringSafeArea(.all)
                     .onTapGesture {
-                        isPresented = false // 배경을 클릭하면 닫힘
+                        isPresented = false
                     }
                 
                 // 모달 내용
@@ -256,7 +259,7 @@ struct DeliveryInfoModal: View {
                             .foregroundColor(.white)
                         Spacer()
                         Button(action: {
-                            isPresented = false // 닫기 버튼 클릭 시 닫힘
+                            isPresented = false
                         }) {
                             Image(systemName: "xmark")
                                 .foregroundColor(.white)
@@ -295,7 +298,8 @@ struct DeliveryInfoModal: View {
                     .cornerRadius(8)
                 }
                 .padding()
-                .frame(width: 300) // 고정된 너비
+                //.frame(width: 300) // 고정된 너비
+                .frame(maxWidth: UIScreen.main.bounds.width - 48)
                 .background(Color("darkGreen")) // 전체 배경색
                 .cornerRadius(12)
             }
