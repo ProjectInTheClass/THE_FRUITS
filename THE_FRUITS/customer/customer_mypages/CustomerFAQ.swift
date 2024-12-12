@@ -18,7 +18,6 @@ struct CustomerFAQ: View {
     
     let faqItems = [
         FAQItem(question: "주문을 취소하려면 어떻게 해야 하나요?", answer: "주문 취소는 가게로 직접 문의하세요."),
-        FAQItem(question: "리뷰 작성은 어떻게 하나요?", answer: "주문이 완료된 후 리뷰 작성이 가능합니다."),
         FAQItem(question: "주문 후 시간이 한참 뒤에 취소되었다는 문자를 받았습니다. 왜 그런거죠?", answer: "상품 재고 부족으로 가게에서 주문을 취소할 수 있습니다.")
     ]
     

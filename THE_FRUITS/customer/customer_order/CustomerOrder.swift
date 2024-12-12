@@ -304,6 +304,8 @@ struct CustomerOrder: View {
     @State private var showAlert = false
     @State private var alertMessage = ""
 
+    @Environment(\.dismiss) var dismiss
+    
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
@@ -362,7 +364,11 @@ struct CustomerOrder: View {
                     Alert(
                         title: Text("알림"),
                         message: Text(alertMessage),
-                        dismissButton: .default(Text("확인"))
+                        dismissButton: .default(Text("확인"), action: {
+                            if alertMessage == "주문이 성공적으로 완료되었습니다." {
+                                dismiss() // 이전 페이지로 이동
+                            }
+                        })
                     )
                 }
             }
