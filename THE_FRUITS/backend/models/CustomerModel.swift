@@ -20,7 +20,7 @@ struct CustomerModel: Codable {
 struct CartModel: Codable {
     let cartid: String
     let orderprodid: [String]
-    let brandid: String
+    var brandid: String
 }
 
 struct OrderProductsModel: Codable {

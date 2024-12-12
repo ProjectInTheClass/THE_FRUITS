@@ -97,7 +97,7 @@ class FireStoreManager: ObservableObject {
     
     
     // fetch customer data
-    func fetchCustomer() {
+    func fetchCustomer()  {
         db.collection("customer").document(self.customerid).getDocument{ (document, error) in
             //            if let error = error {
             //                print("Error fetching customer data document")

@@ -1,6 +1,12 @@
+//
+//  CustomerReceipt.swift
+//  THE_FRUITS
+//
+//  Created by 박지은 on 12/12/24.
+//
 import SwiftUI
 
-struct OrderProdcutSection: View {
+struct OrderProdcutSectionRec: View {
     var orderList: [OrderSummary]
     var order: OrderModel?
     
@@ -47,10 +53,8 @@ struct OrderProdcutSection: View {
         }
     }
 }
-
-struct CustomerInfoView: View {
-    @Binding var order: OrderModel? // 상위에서 관리되는 `order`를 바인딩으로 전달
-    @EnvironmentObject var firestoreManager: FireStoreManager
+struct CustomerInfoViewRec: View {
+    var order: OrderModel?
 
     var body: some View {
         ZStack {
@@ -62,25 +66,7 @@ struct CustomerInfoView: View {
                 HStack {
                     Text("주문자 정보")
                     Spacer()
-                    NavigationLink(
-                        destination: CustomerOrderEditInfo(order: order)
-                            .onDisappear {
-                                Task {
-                                    // Firestore에서 최신 데이터를 가져오기
-                                    if let orderId = order?.orderid {
-                                        do {
-                                            let (updatedOrder, _, _) = try await firestoreManager.fetchOrder(orderId: orderId)
-                                            self.order = updatedOrder
-                                        } catch {
-                                            print("Error fetching updated order: \(error.localizedDescription)")
-                                        }
-                                    }
-                                }
-                            }
-                    ) {
-                        Text("변경")
-                            .foregroundColor(Color.blue)
-                    }
+                    
                 }
                 Divider()
                     .frame(height: 1)
@@ -106,25 +92,11 @@ struct CustomerInfoView: View {
             .padding(.vertical, 15)
             .frame(maxWidth: UIScreen.main.bounds.width - 48) // VStack 너비 제한
         }
-        .onAppear {
-            Task {
-                if let orderId = order?.orderid {
-                    do {
-                        let (updatedOrder, _, _) = try await firestoreManager.fetchOrder(orderId: orderId)
-                        self.order = updatedOrder
-                    } catch {
-                        print("Error fetching order on appear: \(error.localizedDescription)")
-                    }
-                }
-            }
-        }
     }
 }
 
-
-struct ShippingInfoView: View {
-    @Binding var order: OrderModel? // 상위에서 관리되는 `order`를 바인딩으로 전달
-    @EnvironmentObject var firestoreManager: FireStoreManager
+struct ShippingInfoViewRec: View {
+    var order: OrderModel?
 
     var body: some View {
         ZStack {
@@ -136,32 +108,13 @@ struct ShippingInfoView: View {
                 HStack {
                     Text("배송지 정보")
                     Spacer()
-                    NavigationLink(
-                        destination: CustomerOrderEditAddress(order: order)
-                            .onDisappear {
-                                Task {
-                                    // Firestore에서 최신 데이터를 가져오기
-                                    if let orderId = order?.orderid {
-                                        do {
-                                            let (updatedOrder, _, _) = try await firestoreManager.fetchOrder(orderId: orderId)
-                                            self.order = updatedOrder
-                                        } catch {
-                                            print("Error fetching updated order: \(error.localizedDescription)")
-                                        }
-                                    }
-                                }
-                            }
-                    ) {
-                        Text("변경")
-                            .foregroundColor(Color.blue)
-                    }
+                    
                 }
 
                 Divider()
                     .frame(height: 1)
                     .overlay(Color.black)
 
-                // 배송지 정보 표시
                 VStack(alignment: .leading, spacing: 5) {
                     Text(order?.recaddress ?? "정보 없음")
                         .foregroundColor(.black)
@@ -175,24 +128,13 @@ struct ShippingInfoView: View {
             .padding(.vertical, 15)
             .frame(maxWidth: UIScreen.main.bounds.width - 48)
         }
-        .onAppear {
-            Task {
-                if let orderId = order?.orderid {
-                    do {
-                        let (updatedOrder, _, _) = try await firestoreManager.fetchOrder(orderId: orderId)
-                        self.order = updatedOrder
-                    } catch {
-                        print("Error fetching order on appear: \(error.localizedDescription)")
-                    }
-                }
-            }
-        }
     }
 }
 
 
 
-struct PaymentInfoView: View {
+
+struct PaymentInfoViewRec: View {
     var order: OrderModel?
 
     var body: some View {
@@ -227,7 +169,7 @@ struct PaymentInfoView: View {
     }
 }
 
-struct PaymentAmountView: View {
+struct PaymentAmountViewRec: View {
     var order: OrderModel?
 
     var body: some View {
@@ -296,7 +238,7 @@ struct PaymentAmountView: View {
 }
 
 
-struct CustomerOrder: View {
+struct CustomerReceipt: View {
     var orderList: [OrderSummary] // 주문 상품 목록
     @State var order: OrderModel?
     
@@ -322,11 +264,11 @@ struct CustomerOrder: View {
                 .frame(width: UIScreen.main.bounds.width - 30)
                 
                 // 컴포넌트 섹션들
-                OrderProdcutSection(orderList: orderList, order: order)
-                CustomerInfoView(order: $order)
-                ShippingInfoView(order: $order)
-                PaymentInfoView(order: order)
-                PaymentAmountView(order: order)
+                OrderProdcutSectionRec(orderList: orderList, order: order)
+                CustomerInfoViewRec(order: order)
+                ShippingInfoViewRec(order: order)
+                PaymentInfoViewRec(order: order)
+                PaymentAmountViewRec(order: order)
             }
             .padding()
             .onAppear {

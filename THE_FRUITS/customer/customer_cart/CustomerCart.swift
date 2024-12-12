@@ -44,11 +44,9 @@ struct CartSummaryView: View {
                                 }
                                 Spacer()
 
-                                // 삭제 버튼 추가
                                 Button(action: {
                                     Task {
                                         do {
-                                            // Firestore에서 삭제
                                             try await firestoreManager.deleteOrderProd(orderprodId: orderSummaries[summaryIndex].orderprodid)
 
                                             // 로컬 데이터에서 삭제
@@ -225,6 +223,89 @@ struct PriceSection: View {
     }
 }
 
+//struct CustomerCart: View {
+//    @EnvironmentObject var firestoreManager: FireStoreManager
+//    @State private var isLoading: Bool = true
+//    @State private var selectedTotal: Int = 0
+//    @State private var orderSummaries: [OrderSummary] = []
+//    @State private var brand: BrandModel?
+//    @State private var orderList: [OrderSummary] = []
+//    @State private var order: OrderModel?
+//    @State private var navigateToOrder = false // 네비게이션 상태 추가
+//
+//    var body: some View {
+//        Group {
+//            if isLoading {
+//                VStack {
+//                    ProgressView("Loading Cart...")
+//                        .padding()
+//                }
+//            } else {
+//                if let brand = brand {
+//                    ScrollView {
+//                        VStack(spacing: 15) {
+//                            BrandButton(brand: brand)
+//                                .frame(maxWidth: .infinity, alignment: .leading)
+//                            CartSummaryView(
+//                                selectedTotal: $selectedTotal,
+//                                orderSummaries: $orderSummaries
+//                            )
+//                            PriceSection(orderAmount: $selectedTotal)
+//                            CustomButton(
+//                                title: "주문하기",
+//                                background: Color("darkGreen"),
+//                                foregroundColor: .white,
+//                                width: 140,
+//                                height: 33,
+//                                size: 14,
+//                                cornerRadius: 15,
+//                                action: {
+//                                    Task {
+//                                        do {
+//                                            (order, orderList) = try await firestoreManager.addOrder(
+//                                                brand: brand,
+//                                                orderSummaries: orderSummaries,
+//                                                totalPrice: selectedTotal
+//                                            )
+//                                            
+//                                            navigateToOrder = true
+//                                        } catch {
+//                                            print("Error deleting OrderProd: \(error.localizedDescription)")
+//                                        }
+//                                    }
+//                                }
+//                            )
+//                            .navigationDestination(isPresented: $navigateToOrder) {
+//                                CustomerOrder(orderList: orderList, order: order)
+//                            }
+//                        }
+//                        .padding(.horizontal, 20)
+//                    }
+//                } else {
+//                    VStack {
+//                        Text("장바구니가 비었습니다.")
+//                            .font(.title)
+//                            .foregroundColor(.gray)
+//                            .padding()
+//                    }
+//                }
+//            }
+//        }
+//        .onAppear {
+//            Task {
+//                isLoading = true
+//                await firestoreManager.fetchCart()
+//                
+//                if await firestoreManager.isCartBrandAvailable() {
+//                    brand = await firestoreManager.getCartBrand()
+//                }
+//                
+//                isLoading = false
+//            }
+//        }
+//    }
+//}
+
 struct CustomerCart: View {
     @EnvironmentObject var firestoreManager: FireStoreManager
     @State private var isLoading: Bool = true
@@ -234,7 +315,7 @@ struct CustomerCart: View {
     @State private var orderList: [OrderSummary] = []
     @State private var order: OrderModel?
     @State private var navigateToOrder = false // 네비게이션 상태 추가
-    
+
     var body: some View {
         Group {
             if isLoading {
@@ -243,54 +324,106 @@ struct CustomerCart: View {
                         .padding()
                 }
             } else {
-                ScrollView {
-                    VStack(spacing: 15) {
-                        BrandButton(brand: brand)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        CartSummaryView(
-                            selectedTotal: $selectedTotal,
-                            orderSummaries: $orderSummaries
-                        )
-                        PriceSection(orderAmount: $selectedTotal)
-                        CustomButton(
-                            title: "주문하기",
-                            background: Color("darkGreen"),
-                            foregroundColor: .white,
-                            width: 140,
-                            height: 33,
-                            size: 14,
-                            cornerRadius: 15,
-                            action: {
-                                Task {
-                                    do {
-                                        (order, orderList) = try await firestoreManager.addOrder(
-                                                    brand: brand!,
-                                                    orderSummaries: orderSummaries,
-                                                    totalPrice: selectedTotal
+                if let brand = brand {
+                    ScrollView {
+                        VStack(spacing: 15) {
+                            BrandButton(brand: brand)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            CartSummaryView(
+                                selectedTotal: $selectedTotal,
+                                orderSummaries: $orderSummaries
+                            )
+                            PriceSection(orderAmount: $selectedTotal)
+                            CustomButton(
+                                title: "주문하기",
+                                background: Color("darkGreen"),
+                                foregroundColor: .white,
+                                width: 140,
+                                height: 33,
+                                size: 14,
+                                cornerRadius: 15,
+                                action: {
+                                    Task {
+                                        do {
+                                            (order, orderList) = try await firestoreManager.addOrder(
+                                                brand: brand,
+                                                orderSummaries: orderSummaries,
+                                                totalPrice: selectedTotal
                                             )
-                                        
-                                        navigateToOrder = true
-                                    } catch {
-                                        print("Error deleting OrderProd: \(error.localizedDescription)")
+                                            
+                                            navigateToOrder = true
+                                        } catch {
+                                            print("Error adding order: \(error.localizedDescription)")
+                                        }
                                     }
                                 }
+                            )
+                            .navigationDestination(isPresented: $navigateToOrder) {
+                                CustomerOrder(orderList: orderList, order: order)
                             }
-                        )
-                        .navigationDestination(isPresented: $navigateToOrder) {
-                            CustomerOrder(orderList: orderList, order: order)
                         }
+                        .padding(.horizontal, 20)
                     }
-                    .padding(.horizontal, 20)
+                } else {
+                    // 장바구니가 비었을 때 UI
+                    VStack {
+                        Image(systemName: "cart.badge.plus")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 100, height: 100)
+                            .foregroundColor(.gray)
+                        
+                        Text("장바구니가 비었습니다.")
+                            .font(.title)
+                            .foregroundColor(.gray)
+                            .padding()
+                    }
+                    .padding(.vertical, 50)
                 }
             }
         }
         .onAppear {
             Task {
-                isLoading = true
-                await firestoreManager.fetchCart()
-                brand = await firestoreManager.getCartBrand()
-                isLoading = false
+                // 상태 재검증 및 초기화
+                await reloadCartState()
             }
+        }
+    }
+    
+    /// 장바구니 상태를 다시 로드하는 함수
+    private func reloadCartState() async {
+        isLoading = true
+        do {
+            await firestoreManager.fetchCart()
+            
+            if await firestoreManager.isCartBrandAvailable() {
+                brand = await firestoreManager.getCartBrand()
+                orderSummaries = try await firestoreManager.fetchCartDetails()
+                updateSelectedTotal()
+            } else {
+                // 브랜드와 장바구니 데이터 초기화
+                brand = nil
+                orderSummaries = []
+                selectedTotal = 0
+            }
+        } catch {
+            print("Error reloading cart state: \(error.localizedDescription)")
+            // 오류가 발생하면 기본 상태로 초기화
+            brand = nil
+            orderSummaries = []
+            selectedTotal = 0
+        }
+        isLoading = false
+    }
+    
+    /// 선택된 총합 업데이트 함수
+    private func updateSelectedTotal() {
+        selectedTotal = orderSummaries.reduce(0) { total, summary in
+            if summary.selected {
+                let productTotal = summary.products.reduce(0) { $0 + ($1.price * $1.num) }
+                return total + productTotal
+            }
+            return total
         }
     }
 }

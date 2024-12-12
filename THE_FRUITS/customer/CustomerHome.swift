@@ -43,8 +43,11 @@ struct CustomerHome: View {
     var body: some View {
         NavigationView {
             VStack {
+                Text("The Fruits")
+                    .font(.custom("Magnolia Script", size: 40))
+                    .foregroundColor( Color("darkGreen"))
                 SearchBar(searchText: $searchText)
-                    .padding(.top, 5)
+                    //.padding(.top, 5)
                     .padding(.bottom, 6)
                 HStack {
                     CustomButton(
@@ -89,7 +92,7 @@ struct CustomerHome: View {
                     CartToolbar(navigateToCart: $navigateToCustomerCart)
                 }
             }
-            .navigationTitle("TheFruits")
+            //.navigationTitle("TheFruits")
             .navigationBarTitleDisplayMode(.inline)
             
             .onAppear {
