@@ -91,16 +91,16 @@ struct BrandRowView: View {
 
             VStack(alignment: .leading, spacing: 8) {
                 // 브랜드 이름
-                Text("[\(brand.name)]")
-                    .font(.headline)
+                Text((brand.name))
+                    .font(.custom("Pretendard-SemiBold", size: 20)) // 원하는 폰트 이름과 크기 설정
                     .fontWeight(.bold)
-
+                    
                 // 태그 목록
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack {
                         ForEach(brand.sigtype?.filter { !$0.isEmpty } ?? [], id: \.self) { tag in // 빈 문자열 필터링
                             Text(tag)
-                                .font(.custom("Pretendard-SemiBold", size: 10))
+                                .font(.custom("Pretendard-SemiBold", size: 13))
                                 .padding(.vertical, 5)
                                 .padding(.horizontal, 8)
                                 .background(Color.gray.opacity(0.2))

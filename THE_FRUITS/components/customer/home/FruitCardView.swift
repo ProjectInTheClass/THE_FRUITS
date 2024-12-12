@@ -9,13 +9,13 @@ struct FruitCardView: View {
     @EnvironmentObject var firestoreManager: FireStoreManager
     //현재 과일이 선호하는 브랜드 과일인지 확인하는 prop을 받음
     @Binding var isLiked: Bool // 부모 뷰와 상태 동기화
-    var onLikeChanged: (Bool) -> Void // 부모 뷰에서 좋아요 상태 변경을 처리하는 클로저
+    //var onLikeChanged: (Bool) -> Void // 부모 뷰에서 좋아요 상태 변경을 처리하는 클로저
     
     init(brand: BrandModel, isLiked: Binding<Bool>, onLikeChanged: @escaping (Bool) -> Void) {
           self.brand = brand
           _currentLikes = State(initialValue: brand.likes)
           _isLiked = isLiked
-          self.onLikeChanged = onLikeChanged
+          //self.onLikeChanged = onLikeChanged
       }
 
     var body: some View {
@@ -40,7 +40,7 @@ struct FruitCardView: View {
                 }
 
                 // 상점 이름
-                Text("[\(brand.name)]")
+                Text(brand.name)
                     .font(.headline)
                     .foregroundColor(Color.gray)
 
@@ -86,19 +86,21 @@ struct FruitCardView: View {
     }
 
     private func toggleLike() {
-        print("isLiked: \(isLiked)")
-        if isLiked {
-            currentLikes -= 1
-            firestoreManager.updateCustomerLikes(brandid: brand.brandid, add:false)
- 
+        if isLiked {//현재 좋아하는 상태이면
+            if(currentLikes>0){
+                currentLikes -= 1
+                firestoreManager.updateCustomerLikes(brandid: brand.brandid, add:false)
+            }
+            
         } else {
             currentLikes += 1
             firestoreManager.updateCustomerLikes(brandid: brand.brandid, add:true)
         }
-        hasLiked.toggle()
+        //hasLiked.toggle()
         isLiked.toggle()
+        print("isLiked: \(isLiked)")
         
-        onLikeChanged(hasLiked) // 부모 뷰에 좋아요 상태 전달
+        //onLikeChanged(hasLiked) // 부모 뷰에 좋아요 상태 전달
         firestoreManager.uploadCurrentLikes(brand: brand, currentLikes:currentLikes)
     }
     
