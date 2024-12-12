@@ -43,11 +43,8 @@ struct CustomerHome: View {
     var body: some View {
         NavigationView {
             VStack {
-                Text("The Fruits")
-                    .font(.custom("Magnolia Script", size: 40))
-                    .foregroundColor( Color("darkGreen"))
                 SearchBar(searchText: $searchText)
-                    //.padding(.top, 5)
+                    .padding(.top, 25)
                     .padding(.bottom, 6)
                 HStack {
                     CustomButton(
@@ -87,7 +84,16 @@ struct CustomerHome: View {
                 }
             }
             
-            .toolbar{
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    HStack {
+                        Text("TheFruits")
+                            .font(.custom("Magnolia Script", size: 40))
+                            .foregroundColor(Color("darkGreen"))
+                            .padding(.top, 10)
+                        
+                    }
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     CartToolbar(navigateToCart: $navigateToCustomerCart)
                 }
