@@ -53,14 +53,20 @@ extension FireStoreManager{
     
     
     func asyncFetchBrand(brandId: String) async throws -> BrandModel? {
+        guard !brandId.isEmpty else {
+            print("Invalid brandId: Empty string")
+            return nil
+        }
+
         let document = try await db.collection("brand").document(brandId).getDocument()
         if document.exists {
             return try document.data(as: BrandModel.self)
         } else {
-            print("Document does not exist")
+            print("Document does not exist for brandId: \(brandId)")
             return nil
         }
     }
+
     
     
     func getCartBrand() async -> BrandModel? {
@@ -255,6 +261,12 @@ extension FireStoreManager{
             "orderprodid": FieldValue.arrayRemove([orderprodId]) // 배열에서 ID 삭제
         ])
         
+        do {
+                try await deleteCartBrandIfOrderProdIsEmpty()
+        } catch {
+            print("Error clearing brandid: \(error.localizedDescription)")
+        }
+        
         print("Successfully deleted orderprodid \(orderprodId) from both orderprod and cart.")
     }
     
@@ -284,6 +296,7 @@ extension FireStoreManager{
         let orderRef = db.collection("order").document()
         
         let cartCollection = db.collection("customer").document(self.customerid).collection("cart")
+        let orderNum = UUID().uuidString.prefix(8)
         
         let order = OrderModel(
             orderid: orderRef.documentID,
@@ -303,7 +316,7 @@ extension FireStoreManager{
             state: 0,
             delnum: "0",
             delname: "",
-            ordernum:"12345"
+            ordernum: String(orderNum)
         )
         
         // Firestore에 데이터 저장
@@ -329,6 +342,13 @@ extension FireStoreManager{
             ])
             
             print("Successfully deleted orderprodid \(orderprodId) from both orderprod and cart.")
+        }
+        
+        // cart 가 비어있다면, brandid 삭제
+        do {
+                try await deleteCartBrandIfOrderProdIsEmpty()
+        } catch {
+            print("Error clearing brandid: \(error.localizedDescription)")
         }
         
         // Firestore의 customer의 orders 배열에 orderid 추가
@@ -433,12 +453,105 @@ extension FireStoreManager{
         }
     }
 
+    func updateOrderInfo(orderId: String, newName: String, newPhone: String) async throws {
+        
+        let orderRef = db.collection("order").document(orderId)
+        
+        do {
+            try await orderRef.updateData([
+                "customername": newName,
+                "customerphone": newPhone
+            ])
+            print("Order \(orderId) successfully updated with new details.")
+        } catch {
+            print("Error updating order \(orderId): \(error.localizedDescription)")
+            throw error
+        }
+    }
     
+    func deleteCartBrandIfOrderProdIsEmpty() async throws {
+        do {
+            let cartDocuments = try await db.collection("customer").document(self.customerid).collection("cart").getDocuments()
+            
+            guard let document = cartDocuments.documents.first else {
+                print("No cart documents found")
+                return
+            }
+            
+            var cart = try document.data(as: CartModel.self)
+            
+            // `orderprodid`가 비어있는지 확인
+            if cart.orderprodid.isEmpty {
+                // `brandid` 값을 비움
+                cart.brandid = ""
+                
+                // Firestore에 업데이트된 cart 저장
+                try await db.collection("customer").document(self.customerid).collection("cart").document(cart.cartid).setData(from: cart)
+                
+                // 업데이트된 cart를 로컬 상태에 반영
+                await MainActor.run {
+                    self.cart = cart
+                    print("Cart brandid cleared for cart id \(cart.cartid)")
+                }
+            } else {
+                print("Orderprodid is not empty, no changes made.")
+            }
+        } catch {
+            print("deleteCartBrandIfOrderProdIsEmpty error: \(error.localizedDescription)")
+        }
+    }
     
+    func isCartBrandAvailable() async -> Bool {
+        do {
+            // Firestore에서 cart 데이터를 가져옴
+            let cartDocuments = try await db.collection("customer").document(self.customerid).collection("cart").getDocuments()
+            
+            guard let document = cartDocuments.documents.first else {
+                print("No cart documents found")
+                return false
+            }
+            
+            // CartModel로 디코딩
+            let cart = try document.data(as: CartModel.self)
+            
+            // cart의 brandid가 비어 있지 않은지 확인
+            return !cart.brandid.isEmpty
+        } catch {
+            print("Error checking cart brand availability: \(error.localizedDescription)")
+            return false
+        }
+    }
     
+   
+    func updateCustomerInfo(customerId: String, name: String, phone: String, password: String) async throws {
+        let db = Firestore.firestore()
+        let customerRef = db.collection("customer").document(customerId)
+        
+        do {
+            try await customerRef.updateData([
+                "name": name,
+                "phone": phone,
+                "password": password
+            ])
+        } catch {
+            throw error
+        }
+        self.fetchCustomer()
+    }
     
-
-
+    func updateCustomerAddress(customerId: String, address: String) async throws {
+        let db = Firestore.firestore()
+        let customerRef = db.collection("customer").document(customerId)
+        
+        do {
+            try await customerRef.updateData([
+                "address": address
+            ])
+        } catch {
+            throw error
+        }
+        self.fetchCustomer()
+    }
 }
 
 

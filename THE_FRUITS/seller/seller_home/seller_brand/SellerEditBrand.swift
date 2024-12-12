@@ -403,13 +403,6 @@ struct UploadImageField: View {
                                 .font(.system(size: 60))
                                 .foregroundColor(Color.black)
                         )
-                    /*Text("이미지 선택")
-                        .foregroundColor(.black)
-                        .font(.caption)
-                        .padding(.vertical, 4)
-                        .padding(.horizontal, 6)
-                        .background(Color.lightGray)
-                        .cornerRadius(8)*/
                 }
                 .onChange(of: selectedItem) { newItem in
                     Task {

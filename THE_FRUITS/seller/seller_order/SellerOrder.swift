@@ -13,11 +13,6 @@ struct SellerOrder: View{
     
     @State private var sellerid = "troY2ZvhHxGfrSDCIggI"
     
-    /*let brands = [
-     Brand(name: "onbrix", logo: "onbrix"),
-     Brand(name: "Orange", logo: "orange")
-     ]*/
-    
     var body: some View {
         NavigationView{
             ScrollView{

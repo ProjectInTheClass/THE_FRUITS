@@ -7,6 +7,7 @@ struct CustomerChangeAddress: View {
     @State private var showAlert = false // 모달창을 띄우기 위한 상태관리 변수
     @State private var alertMessage:String=""
 //    @Environment(\.dismiss) var dismiss // 현재 뷰를 닫고 이전 뷰로 돌아가기 위한 dismiss 환경 변수
+    @EnvironmentObject var firestoreManager: FireStoreManager
     
     var body: some View {
             VStack {
@@ -64,21 +65,32 @@ struct CustomerChangeAddress: View {
         }
 
 
-    func submitAddress(){
-        if newAddress.isEmpty {
-            print("주소를 입력하세요")
-            alertMessage = "주소를 입력해주세요"
+    func submitAddress() {
+            if newAddress.isEmpty {
+                alertMessage = "주소를 입력해주세요."
+                showAlert = true
+            } else {
+                Task {
+                    do {
+                        guard let customerId = firestoreManager.customer?.customerid else {
+                            alertMessage = "고객 정보를 불러올 수 없습니다."
+                            showAlert = true
+                            return
+                        }
+                        
+                        // Firestore에 주소 업데이트
+                        try await firestoreManager.updateCustomerAddress(customerId: customerId, address: newAddress)
+                        
+                        alertMessage = "주소가 성공적으로 수정되었습니다."
+                        showAlert = true
+                    } catch {
+                        alertMessage = "주소 수정 중 오류가 발생했습니다: \(error.localizedDescription)"
+                        showAlert = true
+                    }
+                }
+            }
         }
-        else{
-            alertMessage = "수정되었습니다."
-            //제출되면 '수정되었습니다' 모달창뜨고
-            //DeliverySetting 페이지로 가기(그럼 업데이트된 주소가 되어
-            //만약에 모달창에서 확인을 누르면 다시 DeliversySetting으로 가는 게 자연스럽지 않을까,,
-            //new Address가 DeliverySetting으로 보내져야 한다.
-        }
-        showAlert=true
     }
-}
 
 #Preview {
 
