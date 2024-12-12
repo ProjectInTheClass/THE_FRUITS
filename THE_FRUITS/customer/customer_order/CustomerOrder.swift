@@ -391,19 +391,3 @@ struct CustomerOrder: View {
 }
 
     
-//    private func saveOrderToFirestore() async {
-//        guard let order = order else {
-//            alertMessage = "주문 정보가 없습니다."
-//            showAlert = true
-//            return
-//        }
-//
-//        do {
-//            try await firestoreManager.addOrderToFirestore(order: order)
-//            alertMessage = "주문이 성공적으로 저장되었습니다."
-//        } catch {
-//            alertMessage = "주문 저장 중 오류가 발생했습니다: \(error.localizedDescription)"
-//        }
-//        showAlert = true
-//    }
-

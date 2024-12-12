@@ -12,6 +12,8 @@
 //
 
 import SwiftUI
+import FirebaseAuth
+
 
 struct ProfileSection: View {
     @EnvironmentObject var firestoreManager: FireStoreManager
@@ -121,17 +123,67 @@ struct ServiceSection : View {
     }
 }
 
+struct LogoutButton: View {
+    var onLogout: () -> Void
+    @State private var showAlert: Bool = false 
+
+    var body: some View {
+        Button(action: {
+            showAlert = true
+        }) {
+            Text("로그아웃")
+                .foregroundColor(.white)
+                .font(.system(size: 16, weight: .bold))
+                .padding(.vertical, 10)
+                .padding(.horizontal, 20)
+                .background(Color("darkGreen"))
+                .cornerRadius(25)
+        }
+        .buttonStyle(PlainButtonStyle())
+        
+        .alert(isPresented: $showAlert) {
+            Alert(
+                title: Text("로그아웃"),
+                message: Text("로그아웃 하시겠습니까?"),
+                primaryButton: .destructive(Text("확인")) {
+                    
+                    do {
+                        try Auth.auth().signOut()
+                        print("로그아웃 성공")
+                        onLogout()
+                    } catch let signOutError as NSError {
+                        print("로그아웃 실패: \(signOutError.localizedDescription)")
+                    }
+                },
+                secondaryButton: .cancel(Text("취소"))
+            )
+        }
+    }
+}
+
+
+
 struct CustomerMyPage: View {
+    @State private var isLoggedIn: Bool = true // 로그인 상태 관리
+
     var body: some View {
         NavigationStack {
-            VStack() {
-                ProfileSection()
-                    .padding(.top, 40)
-                    .padding(.bottom, 15)
-                MenuSection()
-                    .padding(.bottom, 15)
-                ServiceSection()
-                Spacer()
+            if isLoggedIn {
+                VStack {
+                    ProfileSection()
+                        .padding(.top, 40)
+                        .padding(.bottom, 15)
+                    MenuSection()
+                        .padding(.bottom, 15)
+                    ServiceSection()
+                    LogoutButton {
+                        isLoggedIn = false // 로그아웃 후 상태 업데이트
+                    }
+                    .padding(.top, 25)
+                    Spacer()
+                }
+            } else {
+                OnBoarding() // 로그아웃 후 Onboarding 화면으로 전환
             }
         }
     }
