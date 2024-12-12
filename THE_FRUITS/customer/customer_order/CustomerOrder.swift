@@ -63,7 +63,7 @@ struct CustomerInfoView: View {
                     Text("주문자 정보")
                     Spacer()
                     NavigationLink(
-                        destination: CustomerOrderEditInfo(order: order)
+                        destination: CustomerOrderEditInfo(order: $order)
                             .onDisappear {
                                 Task {
                                     // Firestore에서 최신 데이터를 가져오기
@@ -137,7 +137,7 @@ struct ShippingInfoView: View {
                     Text("배송지 정보")
                     Spacer()
                     NavigationLink(
-                        destination: CustomerOrderEditAddress(order: order)
+                        destination: CustomerOrderEditAddress(order: $order)
                             .onDisappear {
                                 Task {
                                     // Firestore에서 최신 데이터를 가져오기
@@ -297,17 +297,18 @@ struct PaymentAmountView: View {
 
 
 struct CustomerOrder: View {
-    var orderList: [OrderSummary] // 주문 상품 목록
+    var orderList: [OrderSummary]
     @State var order: OrderModel?
-    
     @EnvironmentObject var firestoreManager: FireStoreManager
     @State private var brand: BrandModel?
-    
+    @State private var showAlert = false
+    @State private var alertMessage = ""
+
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
                 // 브랜드 정보
-                HStack{
+                HStack {
                     if let brand = brand {
                         BrandButton(brand: brand)
                     } else {
@@ -320,13 +321,50 @@ struct CustomerOrder: View {
                         .padding(.trailing, 10)
                 }
                 .frame(width: UIScreen.main.bounds.width - 30)
-                
+
                 // 컴포넌트 섹션들
                 OrderProdcutSection(orderList: orderList, order: order)
                 CustomerInfoView(order: $order)
                 ShippingInfoView(order: $order)
                 PaymentInfoView(order: order)
                 PaymentAmountView(order: order)
+
+                // Firestore 저장 버튼
+                Button(action: {
+                    Task {
+                        guard let order = order else {
+                            alertMessage = "주문 정보가 없습니다."
+                            showAlert = true
+                            return
+                        }
+                        do {
+                            // Firestore에 데이터 저장
+                            try await firestoreManager.saveOrderToFirestore(order: order)
+                            alertMessage = "주문이 성공적으로 완료되었습니다."
+                        } catch {
+                            alertMessage = "주문 저장 중 오류가 발생했습니다: \(error.localizedDescription)"
+                        }
+
+                        // Alert 창 표시
+                        showAlert = true
+                    }
+                }) {
+                    Text("주문 완료하기")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 50)
+                        .background(Color("darkGreen"))
+                        .cornerRadius(8)
+                }
+                .padding(.horizontal)
+                .alert(isPresented: $showAlert) { // Alert 창
+                    Alert(
+                        title: Text("알림"),
+                        message: Text(alertMessage),
+                        dismissButton: .default(Text("확인"))
+                    )
+                }
             }
             .padding()
             .onAppear {
@@ -345,3 +383,21 @@ struct CustomerOrder: View {
         }
     }
 }
+
+    
+//    private func saveOrderToFirestore() async {
+//        guard let order = order else {
+//            alertMessage = "주문 정보가 없습니다."
+//            showAlert = true
+//            return
+//        }
+//
+//        do {
+//            try await firestoreManager.addOrderToFirestore(order: order)
+//            alertMessage = "주문이 성공적으로 저장되었습니다."
+//        } catch {
+//            alertMessage = "주문 저장 중 오류가 발생했습니다: \(error.localizedDescription)"
+//        }
+//        showAlert = true
+//    }
+
