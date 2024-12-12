@@ -61,11 +61,11 @@ struct CustomerRootView: View {
         }) {
             ZStack {
                 Circle()
-                    .fill(selectedTab == tabIndex ? Color(hex: "#1A321B") : .clear)
+                    .fill(selectedTab == tabIndex ? Color("darkGreen") : .clear)
                     .frame(width: 60, height: 60)
                 
                 Image(systemName: icon)
-                    .foregroundColor(selectedTab == tabIndex ? .white : Color(hex: "#1A321B"))
+                    .foregroundColor(selectedTab == tabIndex ? .white : Color("darkGreen"))
                     .font(.system(size: 24))
             }
             
