@@ -309,7 +309,7 @@ struct DeliveryInputModal: View{
             Spacer()
         }
         .padding()
-        .frame(width: 320)
+        .frame(width: 320, height: 280)
         .background(Color.white)
         .cornerRadius(20)
         .shadow(radius: 10)
