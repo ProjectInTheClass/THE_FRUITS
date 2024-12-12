@@ -6,6 +6,8 @@
 //
 
 import SwiftUI
+import Firebase
+import FirebaseStorage
 
 struct SellerAddProduct: View{
     @EnvironmentObject var firestoreManager: FireStoreManager
@@ -20,6 +22,8 @@ struct SellerAddProduct: View{
     
     @State private var selectedTab = 0
     @State private var sellerid: String = ""
+    
+    @State private var productImageData: Data? = nil
     
     // for modal sheet
     @State private var isModalPresented = false
@@ -37,7 +41,7 @@ struct SellerAddProduct: View{
                 }
                 
                 // product image
-                VStack {
+                /*VStack {
                     Text("상품 이미지")
                     RoundedRectangle(cornerRadius: 10)
                         .stroke(Color.gray, lineWidth: 1)
@@ -47,7 +51,9 @@ struct SellerAddProduct: View{
                                 .font(.largeTitle)
                                 .foregroundColor(.gray)
                         )
-                }
+                }*/
+                UploadImageField(title: "상품 이미지", imageUrl: $productImage, imageData: $productImageData, id: "products")
+
                 
                 // product info
                 VStack(alignment: .leading) {
@@ -90,7 +96,22 @@ struct SellerAddProduct: View{
         }
     }
     
+/*    func uploadImage(imageData: Data, path: String) async throws -> String {
+        let storageRef = Storage.storage().reference().child(path)
+        
+        _ = try await storageRef.putDataAsync(imageData)
+        let downloadURL = try await storageRef.downloadURL()
+        
+        return downloadURL.absoluteString
+        
+    }*/
+    
     func saveProduct() async {
+        do{
+        if let imageData = productImageData {
+            productImage = try await uploadImage(imageData: imageData, path: "images/products/\(UUID().uuidString).jpg")
+        }
+        
         let productModel = ProductModel(
             productid: "0",
             prodtitle: productName,
@@ -101,7 +122,7 @@ struct SellerAddProduct: View{
             soldout: false
         )
         
-        do {
+
             try await firestoreManager.addProduct(product: productModel, brandid: brandid)
         } catch {
             // Handle error (you can print the error or show an alert)

@@ -7,7 +7,9 @@
 import SwiftUI
 
 struct SellerProfileSection: View {
-    let name: String = "김철수"
+    @EnvironmentObject var firestoreManager: FireStoreManager
+    @State private var userName: String = ""
+    
     var body: some View {
         RoundedRectangle(cornerRadius: 20)
             .fill(Color("beige"))
@@ -20,11 +22,16 @@ struct SellerProfileSection: View {
                             .frame(width: 50, height: 50)
                             .clipShape(Circle())
                         
-                        Text(name)
+                        Text(userName)
                             .font(.custom("Pretendard-SemiBold", size: 18))
                             .padding(.leading, 10)
                             .padding(.top, 10)
                         Spacer()
+                    }
+                    .onAppear{
+                        Task {
+                            await loadSellerInfo()
+                        }
                     }
                     .padding(.leading, 20)
                     .padding(.bottom, 10)
@@ -43,6 +50,13 @@ struct SellerProfileSection: View {
                     }
                 }
             )
+    }
+    
+    private func loadSellerInfo() async {
+        firestoreManager.fetchSeller()
+        if let seller = firestoreManager.seller {
+            userName = seller.name
+        }
     }
 }
 

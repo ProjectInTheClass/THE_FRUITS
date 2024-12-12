@@ -16,25 +16,25 @@ struct BrandModel: Codable, Identifiable{
     var id: String { brandid }
     var brandid: String
     var sellerid: String
-    let info: String
-    let name: String
-    let logo: String
-    let thumbnail: String
-    let slogan: String
+    var info: String
+    var name: String
+    var logo: String
+    var thumbnail: String
+    var slogan: String
     let likes: Int
     let orders: [String]
     let createdAt: Timestamp
     let productid: [String]
-    let account: String
-    let bank: String
+    var account: String
+    var bank: String
     let deliverycost: Int
-    let sigtype: [String]?
+    var sigtype: [String]?
     let phone: String
-    let address: String
+    var address: String
     let businessnum: String
-    let notification: String//추가
-    let purchase_notice: String
-    let return_policy: String
+    var notification: String//추가
+    var purchase_notice: String
+    var return_policy: String
     //let imageUrl:String
 }
 
@@ -48,6 +48,10 @@ struct BrandEditModel: Codable{
     var bank: String
     var account: String
     var address: String
+    var slogan: String
+    var notification: String
+    var purchase_notice: String
+    var return_policy: String
 }
 
 struct OrderModel: Codable, Identifiable{

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		EF3CBB0A2D080008001FFF2A /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = EF3CBB092D080008001FFF2A /* FirebaseCrashlytics */; };
 		EF9C82A32CD08C81002A8422 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = EF9C82A22CD08C81002A8422 /* FirebaseAnalytics */; };
 		EF9C82A52CD08C81002A8422 /* FirebaseAnalyticsOnDeviceConversion in Frameworks */ = {isa = PBXBuildFile; productRef = EF9C82A42CD08C81002A8422 /* FirebaseAnalyticsOnDeviceConversion */; };
 		EF9C82A72CD08C81002A8422 /* FirebaseAnalyticsWithoutAdIdSupport in Frameworks */ = {isa = PBXBuildFile; productRef = EF9C82A62CD08C81002A8422 /* FirebaseAnalyticsWithoutAdIdSupport */; };
@@ -75,6 +76,7 @@
 				EF9C82AD2CD08C81002A8422 /* FirebaseCore in Frameworks */,
 				EF9C82B12CD08C81002A8422 /* FirebaseFirestore in Frameworks */,
 				EF9C82AF2CD08C81002A8422 /* FirebaseDatabase in Frameworks */,
+				EF3CBB0A2D080008001FFF2A /* FirebaseCrashlytics in Frameworks */,
 				EFF49CCD2CF865EC008876AB /* FirebaseAppDistribution-Beta in Frameworks */,
 				EF9C82A52CD08C81002A8422 /* FirebaseAnalyticsOnDeviceConversion in Frameworks */,
 			);
@@ -148,6 +150,7 @@
 				EF9C82B22CD08C81002A8422 /* FirebaseFirestoreCombine-Community */,
 				EF9C82B42CD08C81002A8422 /* FirebaseStorage */,
 				EFF49CCC2CF865EC008876AB /* FirebaseAppDistribution-Beta */,
+				EF3CBB092D080008001FFF2A /* FirebaseCrashlytics */,
 			);
 			productName = THE_FRUITS;
 			productReference = EF0D15012CBBE1A1007CAABD /* THE_FRUITS.app */;
@@ -434,12 +437,13 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = THE_FRUITS/THE_FRUITS.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"THE_FRUITS/Preview Content\"";
 				DEVELOPMENT_TEAM = 4QG3GC35LA;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "THE-FRUITS-Info.plist";
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We need access to your photo library to upload images.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -451,11 +455,14 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = "DWARF with dSYM File";
 				PRODUCT_BUNDLE_IDENTIFIER = com.codershigh.hyu2024.TheFruits;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -466,12 +473,13 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = THE_FRUITS/THE_FRUITS.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"THE_FRUITS/Preview Content\"";
 				DEVELOPMENT_TEAM = 4QG3GC35LA;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "THE-FRUITS-Info.plist";
+				INFOPLIST_KEY_LSApplicationCategoryType = "";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We need access to your photo library to upload images.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -483,11 +491,14 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = "DWARF with dSYM File";
 				PRODUCT_BUNDLE_IDENTIFIER = com.codershigh.hyu2024.TheFruits;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -612,6 +623,10 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		EF3CBB092D080008001FFF2A /* FirebaseCrashlytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FirebaseCrashlytics;
+		};
 		EF9C82A22CD08C81002A8422 /* FirebaseAnalytics */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = EF9C82A12CD08BE5002A8422 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;

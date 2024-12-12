@@ -16,6 +16,8 @@ struct SellerBrandMainPage: View{
     @State private var showDeleteConfirmation = false
     @State private var selectedProduct: ProductModel?
     
+    @State private var isRefreshing = false
+    
     let storeDesc: String = "Whatever Your Pick!"
     
     init(brand: BrandModel) {
@@ -60,7 +62,7 @@ struct SellerBrandMainPage: View{
                                 Text("\(brand.name)")
                                     .font(.title)
                                     .fontWeight(.bold)
-                                Text(storeDesc)
+                                Text("\(brand.slogan)")
                                     .font(.custom("Pretendard-SemiBold", size: 16))
                                     .foregroundColor(Color("darkGreen"))
                             }
@@ -180,9 +182,12 @@ struct SellerBrandMainPage: View{
             }
         }
         .padding()
+        .refreshable {
+            await reloadBrandData()
+        }
         .onAppear {
             Task {
-                await loadProducts()
+                await reloadBrandData()
             }
         }
     }
@@ -191,6 +196,30 @@ struct SellerBrandMainPage: View{
             products = try await firestoreManager.fetchBrandProducts(for: brand.brandid)
         } catch {
             print("Error fetching products: \(error)")
+        }
+    }
+    
+    func reloadBrandData() async {
+        do {
+            // Fetch the most up-to-date brand information
+            let updatedBrand = try await firestoreManager.fetchBrandDetails(brandId: brand.brandid)
+            
+            brand.name = updatedBrand.name
+            brand.logo = updatedBrand.logo
+            brand.thumbnail = updatedBrand.thumbnail
+            brand.info = updatedBrand.info
+            brand.sigtype = updatedBrand.sigtype
+            brand.bank = updatedBrand.bank
+            brand.account = updatedBrand.account
+            brand.address = updatedBrand.address
+            brand.slogan = updatedBrand.slogan
+            brand.notification = updatedBrand.notification
+            brand.purchase_notice = updatedBrand.purchase_notice
+            brand.return_policy = updatedBrand.return_policy
+            
+            await loadProducts() // Reload products if needed
+        } catch {
+            print("Error reloading brand data: \(error)")
         }
     }
 }

@@ -44,7 +44,7 @@ struct BrandHome: View {
     @State private var navigateToCustomerCart = false
     
     var body: some View{
-        ZStack {
+        VStack(spacing:0) {
             // Scrollable content
             ScrollView {
                 VStack(alignment: .leading) {
@@ -97,13 +97,13 @@ struct BrandHome: View {
                                         .background(Color.yellow)
                                         .cornerRadius(15)
                                 }
-                                HStack(spacing: 8) {
+                               /* HStack(spacing: 8) {
                                     Image(systemName: "heart.fill")
                                         .foregroundColor(.red)
                                     Text("\(storeLikes)")
                                         .font(.subheadline)
                                         .foregroundColor(.gray)
-                                }
+                                }*/
                             }
                         }
                         .background(Color.clear) // HStack 전체 배경 투명화
@@ -130,8 +130,10 @@ struct BrandHome: View {
                  })
                 .navigationTitle(brand.name)
                 .navigationBarTitleDisplayMode(.inline)
-
             }
+            .padding()
+            .padding(.bottom,10) // Sticky Footer 높이만큼 추가
+
 
             // Sticky Footer
             VStack(spacing: 0) {
@@ -146,12 +148,11 @@ struct BrandHome: View {
                             .background(Color("lightGreen"))
                             .foregroundColor(.black)
                             .cornerRadius(5)
-                            .frame(height:2)
+                            .frame(height:4)
                     }
-                    .frame(height: 15) // 전체 높이 조정
+                    .frame(height: 20) // 전체 높이 조정
                     .clipped() // 추가된 패딩 영향을 제거
                     .padding(.bottom,10)
-                    
                     
                     HStack {
                         Button(action: {
@@ -165,7 +166,7 @@ struct BrandHome: View {
                             }
                             // 현재 장바구니 상태 확인
                             firestoreManager.fetchCartBrandId { currentBrandId in
-                                if currentBrandId == nil || currentBrandId == brand.brandid {
+                                if currentBrandId == nil || currentBrandId == brand.brandid||currentBrandId == "" {
                                     // 같은 브랜드거나, 장바구니가 비어 있으면 바로 추가
                                     firestoreManager.uploadCartItems(brandid: brand.brandid, cartItems: cartItems) { result in
                                         switch result {
@@ -176,7 +177,6 @@ struct BrandHome: View {
                                             }
                                         case .failure(let error):
                                             print("Error uploading cart items: \(error.localizedDescription)")
-                                            
                                         }
                                     }
                                 } else {
@@ -243,19 +243,20 @@ struct BrandHome: View {
                 .background(Color.white)
                 .shadow(radius: 2)
             }
-            .frame(maxHeight: .infinity, alignment: .bottom) // 하단 고정
+            .frame(height: 100) // 고정된 Footer 높이
+            //.frame(maxHeight: .infinity, alignment: .bottom) // 하단 고정
         }
         .toolbar {//툴바를 누르면 장바구니 페이지로 이동
             ToolbarItem(placement:.navigationBarTrailing){
                 CartToolbar(navigateToCart: $navigateToCustomerCart)
             }
         }
+        
         .onAppear {
             Task{
                 await firestoreManager.fetchCart();
                 loadProducts()
             }
-
         }
         .background(
             NavigationLink(
