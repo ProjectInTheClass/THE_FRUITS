@@ -101,7 +101,7 @@
 | ------ | :----: | -------------------------------------- |
 | 👧🏻 [김진주](https://github.com/jinjukimink)  |  FE,BE  |   
 | 👧🏻 [박지은](https://github.com/jieunpark626) |  FE,BE  |                   
-| 👧🏻 [홍바다](https://github.com/ddu2ni)       |  FE,BE  |
+| 👧🏻 [홍바다](https://github.com/BadaHong)       |  FE,BE  |
 
 </br></br>
 
