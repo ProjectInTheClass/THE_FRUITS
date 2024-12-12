@@ -9,6 +9,7 @@ import SwiftUI
 import Firebase
 import FirebaseFirestore
 import FirebaseStorage
+import Foundation
 
 struct SellerAddBrand: View{
     var body: some View{
@@ -107,8 +108,11 @@ struct SellerInsertBusinessNum: View{
     
     func verifyBusinessNum() {
         guard !businessNum.isEmpty else { return }
-        let apikey = dotenv("API_KEY")
-        guard let apiUrl = URL(string: "https://api.odcloud.kr/api/nts-businessman/v1/status?serviceKey=\(apikey)") else {
+        guard let apiKey = loadAPIKey() else {
+            print("API Key not found.")
+            return
+        }
+        guard let apiUrl = URL(string: "https://api.odcloud.kr/api/nts-businessman/v1/status?serviceKey=\(apiKey)") else {
             print("Invalid URL")
             return
         }
@@ -167,15 +171,34 @@ struct SellerInsertBusinessNum: View{
         }
     }
 }
+
 struct VerificationResponse: Codable {
     let request_cnt: Int
     let status_code: String
-    let data: [BusinessData]
+    let data: [BusinessInfo]
 }
 
-struct BusinessData: Codable {
+struct BusinessInfo: Codable {
     let b_no: String
     let tax_type: String
+}
+
+func loadAPIKey() -> String? {
+    if let filePath = Bundle.main.path(forResource: ".env", ofType: "") {
+        do {
+            let contents = try String(contentsOfFile: filePath)
+            let lines = contents.split(whereSeparator: \.isNewline)
+            for line in lines {
+                let keyValue = line.split(separator: "=")
+                if keyValue.count == 2, keyValue[0] == "API_KEY" {
+                    return String(keyValue[1])
+                }
+            }
+        } catch {
+            print("Error reading .env file: \(error.localizedDescription)")
+        }
+    }
+    return nil
 }
 
 struct SellerBrandInfo: View{
