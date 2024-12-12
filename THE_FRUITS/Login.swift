@@ -23,6 +23,8 @@ struct Login: View {
     @State private var navigationPath = NavigationPath()
     @State private var destination: Destination? = nil
     @State private var keyboardOffset: CGFloat = 0 // 키보드에 맞춘 뷰 이동
+    @State private var showAlert: Bool = false // ⚠️ Alert 표시 상태 추가
+    @State private var alertMessage: String = "" // ⚠️ Alert 메시지 추가
 
     @EnvironmentObject var firestoreManager: FireStoreManager
 
@@ -107,6 +109,14 @@ struct Login: View {
         .onDisappear {
             removeKeyboardNotifications()
         }
+        
+        .alert(isPresented: $showAlert) { // ⚠️ Alert 추가
+            Alert(
+                title: Text("로그인 실패"),
+                message: Text(alertMessage),
+                dismissButton: .default(Text("확인"))
+            )
+        }
     }
     
     @ViewBuilder
@@ -146,6 +156,8 @@ struct Login: View {
         Auth.auth().signIn(withEmail: user_id, password: password) { authResult, error in
             if let error = error {
                 print("Error logging in: \(error.localizedDescription)")
+                alertMessage = "잘못된 로그인 또는 비밀번호를 입력하셨습니다. 다시 입력하세요." // ⚠️ Alert 메시지 설정
+                showAlert = true // ⚠️ Alert 표시
             } else if let user = authResult?.user {
                 print("User logged in: \(user.uid)")
                 firestoreManager.validateLogin(userType: userType, userId: user.uid) { isValid in
@@ -164,6 +176,8 @@ struct Login: View {
                     }
                     else {
                         print("Login failed. Invalid \(userType). Logging out.")
+                        alertMessage = "잘못된 로그인 또는 비밀번호를 입력하셨습니다. 다시 입력하세요." // ⚠️ Alert 메시지 설정
+                        showAlert = true // ⚠️ Alert 표시
                         try? Auth.auth().signOut()
                     }
                     
