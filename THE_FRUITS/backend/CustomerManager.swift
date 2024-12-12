@@ -149,7 +149,7 @@ extension FireStoreManager{
         return orderSummaries
     }
     
-    private func fetchOrderProd(orderprodId: String) async throws -> OrderProdModel {
+    func fetchOrderProd(orderprodId: String) async throws -> OrderProdModel {
         let document = try await db.collection("orderprod").document(orderprodId).getDocument()
         guard let orderProd = try document.data(as: OrderProdModel?.self) else {
             throw NSError(domain: "OrderProdError", code: 0, userInfo: [NSLocalizedDescriptionKey: "OrderProd not found for id: \(orderprodId)"])
@@ -157,7 +157,7 @@ extension FireStoreManager{
         return orderProd
     }
     
-    private func fetchProduct(productId: String) async throws -> ProductModel {
+    func fetchProduct(productId: String) async throws -> ProductModel {
         let document = try await db.collection("product").document(productId).getDocument()
         guard let product = try document.data(as: ProductModel?.self) else {
             throw NSError(domain: "ProductError", code: 0, userInfo: [NSLocalizedDescriptionKey: "Product not found for id: \(productId)"])

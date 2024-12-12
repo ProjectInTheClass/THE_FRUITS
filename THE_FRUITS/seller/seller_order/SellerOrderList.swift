@@ -89,7 +89,7 @@ struct SellerOrderList: View{
             do {
                 let fetchedOrders = try await firestoreManager.fetchOrders(for: brand.brandid)
                 DispatchQueue.main.async {
-                    self.orders = fetchedOrders
+                    self.orders = fetchedOrders.sorted(by: { $0.orderdate > $1.orderdate })
                     print("Loaded orders: \(fetchedOrders.count)")
                 }
             } catch {

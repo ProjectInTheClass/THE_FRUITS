@@ -79,14 +79,20 @@ extension FireStoreManager{
         let productRef = db.collection("product").document(product.productid)
         
         // Update the product document with the new information
-        try await productRef.setData([
-            "prodtitle": product.prodtitle,
-            "imageUrl": product.imageUrl,
-            "info": product.info,
-            "price": product.price,
-            "type": product.type
-        ])
-        print("Product updated successfully.")
+        do{
+            try await productRef.updateData([
+                "prodtitle": product.prodtitle,
+                "imageUrl": product.imageUrl,
+                "info": product.info,
+                "price": product.price,
+                "type": product.type
+            ])
+            print("Product updated successfully.")
+        }
+        catch {
+            print("Error updating product: \(error)")
+            throw error
+        }
     }
     
     func addBrand(brand: BrandModel) async throws {
@@ -144,7 +150,11 @@ extension FireStoreManager{
             sigtype: data["sigtype"] as? [String] ?? ["", "", ""],
             bank: data["bank"] as? String ?? "",
             account: data["account"] as? String ?? "",
-            address: data["address"] as? String ?? ""
+            address: data["address"] as? String ?? "",
+            slogan: data["slogan"] as? String ?? "",
+            notification: data["notification"] as? String ?? "",
+            purchase_notice: data["purchase_notice"] as? String ?? "",
+            return_policy: data["return_policy"] as? String ?? ""
         )
     }
     
@@ -157,9 +167,12 @@ extension FireStoreManager{
             "sigtype": brand.sigtype,
             "bank": brand.bank,
             "account": brand.account,
-            "address": brand.address
+            "address": brand.address,
+            "notification": brand.notification,
+            "purchase_notice": brand.purchase_notice,
+            "return_policy": brand.purchase_notice
         ]
-        try await Firestore.firestore().collection("brand").document(brand.brandid).setData(data, merge: true)
+        try await Firestore.firestore().collection("brand").document(brand.brandid).updateData(data)
     }
     
     func fetchOrders(for brandID: String) async throws -> [OrderModel] {
@@ -186,6 +199,7 @@ extension FireStoreManager{
         
         return orders
     }
+    
     func editSeller(updatedData: SellerEditModel) async throws -> String {
         var dataDict: [String: Any] = [
             "name": updatedData.name,
@@ -209,4 +223,38 @@ extension FireStoreManager{
             return "정보 수정 중 오류가 발생했습니다: \(error.localizedDescription)"
         }
     }
+    
+    func fetchOrderProdDetails(order: OrderModel) async throws -> ([OrderSummary]) {
+            var orderSummaries: [OrderSummary] = []
+            
+            // order.products에 있는 모든 OrderProductsModel 순회
+            for orderprodId in order.products {
+                // OrderProd 가져오기
+                let orderProd = try await fetchOrderProd(orderprodId: orderprodId)
+                
+                // OrderProd에 저장된 productId를 기반으로 ProductDetail 생성
+                var productDetails: [ProductDetail] = []
+                for products in orderProd.products {
+                    let product = try await fetchProduct(productId: products.productid)
+                    let productDetail = ProductDetail(
+                        productid: product.id,
+                        productName: product.prodtitle,
+                        price: product.price,
+                        num: products.num
+                    )
+                    productDetails.append(productDetail)
+                }
+                
+                let orderSummary = OrderSummary(
+                    orderprodid: orderprodId,
+                    products: productDetails,
+                    selected: true // 기본값 할당
+                )
+                
+                orderSummaries.append(orderSummary)
+            }
+            
+            return (orderSummaries)
+        }
+
 }

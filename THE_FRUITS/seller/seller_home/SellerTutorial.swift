@@ -21,7 +21,7 @@ struct SellerTutorial: View{
         VStack{
             Spacer()
             HStack{
-                BackArrowButton(title: "")
+                //BackArrowButton(title: "")
                 Spacer()
                 Button(action: {
                     // Open the Hometax application
@@ -74,7 +74,7 @@ struct SellerTutorial: View{
             .padding(.top, 10) // Padding for the indicator
             Spacer()
             
-            NavigationLink(destination: SellerInsertBusinessNum().navigationBarBackButtonHidden(true)){
+            NavigationLink(destination: SellerInsertBusinessNum()){
                 HStack{
                     Spacer()
                     Text("사업자 번호 입력하기")
