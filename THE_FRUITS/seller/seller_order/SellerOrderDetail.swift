@@ -83,8 +83,8 @@ struct SellerOrderDetail: View {
                                         Spacer()
                                         Text("\(product.price)원 | \(product.num)개")
                                     }
-                                    Divider()
                                 }
+                                Divider()
                             }
                         }
                         .padding()
@@ -118,26 +118,6 @@ struct SellerOrderDetail: View {
                         .background(Color.gray.opacity(0.2))
                         .cornerRadius(8)
                         .frame(maxWidth: .infinity, alignment: .center)
-                        
-                        
-                        /*VStack(alignment: .leading,spacing:8) {
-                            Text("배송지 정보")
-                                .font(.headline)
-                            Divider()
-                                .background(Color("darkGreen"))
-                            Text(order.recaddress)
-                                .multilineTextAlignment(.leading)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            HStack {
-                                Text("\(order.recname) | \(order.recphone)")
-                                    .font(.custom("Pretendard-SemiBold", size: 13))
-                            }
-                        }
-                        .padding()
-                        .frame(width:360)
-                        .background(Color.gray.opacity(0.2))
-                        .cornerRadius(8)
-                        .frame(maxWidth: .infinity, alignment: .center)*/
                         
                         ZStack {
                             RoundedRectangle(cornerRadius: 8)
