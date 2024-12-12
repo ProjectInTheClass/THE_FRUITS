@@ -21,7 +21,7 @@ struct SellerAddBrand: View{
             
             Spacer().frame(height: 30)
             
-            NavigationLink(destination: SellerInsertBusinessNum().navigationBarBackButtonHidden(true)){
+            NavigationLink(destination: SellerInsertBusinessNum()){
                 RoundedRectangle(cornerRadius: 50)
                     .foregroundColor(.black)
                     .frame(width: 350, height: 60)
@@ -33,7 +33,7 @@ struct SellerAddBrand: View{
             
             Spacer().frame(height: 20)
             
-            NavigationLink(destination: SellerTutorial().navigationBarBackButtonHidden(true)){
+            NavigationLink(destination: SellerTutorial()){
                 RoundedRectangle(cornerRadius: 50)
                     .stroke(Color.black, lineWidth: 1)
                     .frame(width: 350, height: 60)
@@ -50,46 +50,132 @@ struct SellerAddBrand: View{
 struct SellerInsertBusinessNum: View{
     @State private var businessNum: String = ""
     @State private var selectedTab = 0
-        
+    @State private var isValid: Bool? = nil
+    @State private var navigateToNextView = false
+    
     var body: some View{
-            VStack{
-                BackArrowButton(title: "")
-                Spacer()
-                Text("사업자 등록번호를 입력해주세요!")
-                    .font(.system(size: 25))
-                    .bold()
-                    .padding()
-                
-                HStack{
-                    TextField("사업자 등록번호", text: $businessNum)
-                        .padding()
-                        .frame(width: 300)
-                        .background(
-                            RoundedRectangle(cornerRadius: 50)
-                                .stroke(Color.gray, lineWidth: 1) // Border for the rounded rectangle
-                        )
-                        //.padding() // Padding around the TextField
-                        .textFieldStyle(PlainTextFieldStyle())
-                    
-                    /*NavigationLink(destination: SellerRootView(selectedTab: $selectedTab).navigationBarBackButtonHidden(true)) {
-                        Image(systemName: "arrow.right") // Arrow icon
-                            .font(.title2) // Adjust size as needed
-                            .foregroundColor(.black) // Color of the icon
-                            .frame(width: 40, height: 40)
-                    }*/
-                    NavigationLink(destination: SellerBrandInfo(businessNum: $businessNum)){
-                        Image(systemName: "arrow.right") // Arrow icon
-                            .font(.title2) // Adjust size as needed
-                            .foregroundColor(.black) // Color of the icon
-                            .frame(width: 40, height: 40)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                }
+        VStack{
+            //BackArrowButton(title: "")
+            Spacer()
+            Text("사업자 등록번호를 입력해주세요!")
+                .font(.system(size: 25))
+                .bold()
                 .padding()
-                Spacer()
+            
+            HStack{
+                TextField("사업자 등록번호", text: $businessNum)
+                    .padding()
+                    .frame(width: 300)
+                    .background(
+                        RoundedRectangle(cornerRadius: 50)
+                            .stroke(Color.gray, lineWidth: 1) // Border for the rounded rectangle
+                    )
+                //.padding() // Padding around the TextField
+                    .keyboardType(.numberPad)
+                
+                /*NavigationLink(destination: SellerRootView(selectedTab: $selectedTab).navigationBarBackButtonHidden(true)) {
+                 Image(systemName: "arrow.right") // Arrow icon
+                 .font(.title2) // Adjust size as needed
+                 .foregroundColor(.black) // Color of the icon
+                 .frame(width: 40, height: 40)
+                 }*/
+                Button (action: verifyBusinessNum){
+                    Image(systemName: "arrow.right") // Arrow icon
+                        .font(.title2) // Adjust size as needed
+                        .foregroundColor(.black) // Color of the icon
+                        .frame(width: 40, height: 40)
+                }
+                .buttonStyle(PlainButtonStyle())
             }
             .padding()
+            if let valid = isValid {
+                Text(valid ? "유효한 사업자 등록번호입니다." : "유효하지 않은 사업자 등록번호입니다.")
+                    .foregroundColor(valid ? .green : .red)
+                    .bold()
+            }
+            Spacer()
+            
+            NavigationLink(
+                destination: SellerBrandInfo(businessNum: $businessNum),
+                isActive: $navigateToNextView,
+                label: { EmptyView() }
+            )
+            
+        }
+        .padding()
     }
+    
+    func verifyBusinessNum() {
+        guard !businessNum.isEmpty else { return }
+        let apikey = dotenv("API_KEY")
+        guard let apiUrl = URL(string: "https://api.odcloud.kr/api/nts-businessman/v1/status?serviceKey=\(apikey)") else {
+            print("Invalid URL")
+            return
+        }
+        
+        let requestBody: [String: [String]] = [
+            "b_no": [businessNum]
+        ]
+        
+        do {
+            // Encode the request body to JSON
+            let jsonData = try JSONSerialization.data(withJSONObject: requestBody, options: [])
+            
+            // Create the request
+            var request = URLRequest(url: apiUrl)
+            request.httpMethod = "POST"
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.httpBody = jsonData
+            
+            // Send the request
+            URLSession.shared.dataTask(with: request) { data, response, error in
+                if let error = error {
+                    print("Network error: \(error.localizedDescription)")
+                    return
+                }
+                
+                guard let data = data else {
+                    print("No response data")
+                    return
+                }
+                
+                do {
+                    let result = try JSONDecoder().decode(VerificationResponse.self, from: data)
+                    DispatchQueue.main.async {
+                        if let firstEntry = result.data.first {
+                            print("Business Number: \(firstEntry.b_no)")
+                                        print("Tax Type: \(firstEntry.tax_type)")
+                            
+                            isValid = firstEntry.tax_type != "국세청에 등록되지 않은 사업자등록번호입니다."
+                            if isValid! {
+                                navigateToNextView = true
+                            }
+                        } else {
+                            print("No business number data found.")
+                        }
+                    }
+                    if let jsonString = String(data: data, encoding: .utf8) {
+                        print("Response JSON: \(jsonString)")
+                    }
+                } catch {
+                    print("Decoding error: \(error.localizedDescription)")
+                }
+            }.resume()
+            
+        } catch {
+            print("Failed to encode request body: \(error.localizedDescription)")
+        }
+    }
+}
+struct VerificationResponse: Codable {
+    let request_cnt: Int
+    let status_code: String
+    let data: [BusinessData]
+}
+
+struct BusinessData: Codable {
+    let b_no: String
+    let tax_type: String
 }
 
 struct SellerBrandInfo: View{
