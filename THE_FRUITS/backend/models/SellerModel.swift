@@ -65,11 +65,11 @@ struct OrderModel: Codable, Identifiable{
     let account: String
     let bank: String
     let sellername: String
-    let customername: String
-    let customerphone: String
-    let recaddress: String
-    let recname: String
-    let recphone: String
+    var customername: String
+    var customerphone: String
+    var recaddress: String
+    var recname: String
+    var recphone: String
     let state: Int
     let delnum: String
     let delname: String

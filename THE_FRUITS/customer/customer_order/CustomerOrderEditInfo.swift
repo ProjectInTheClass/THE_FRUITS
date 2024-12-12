@@ -1,16 +1,14 @@
 import SwiftUI
 
 struct CustomerOrderEditInfo: View {
-    @EnvironmentObject var firestoreManager: FireStoreManager
     @Environment(\.dismiss) var dismiss
-    var order: OrderModel?
+    @Binding var order: OrderModel? // 상위에서 관리되는 OrderModel
     @State private var customerName: String = ""
     @State private var phoneNumber: String = ""
 
     @State private var showAlert = false
     @State private var alertMessage = ""
 
-    
     var body: some View {
         VStack(spacing: 10) {
             HStack {
@@ -23,16 +21,12 @@ struct CustomerOrderEditInfo: View {
             Divider()
                 .padding(.horizontal)
             
-            
             VStack(spacing: 10) {
-                
                 CustomerInputBox(
                     inputText: $customerName,
                     title: "보내는 분",
                     placeholder: "이름을 입력하세요"
                 )
-                
-                
                 CustomerInputBox(
                     inputText: $phoneNumber,
                     title: "휴대폰",
@@ -42,24 +36,8 @@ struct CustomerOrderEditInfo: View {
             
             Spacer()
             
-            
             Button(action: {
-                Task {
-                    do {
-                        
-                        try await firestoreManager.updateOrderInfo(
-                            orderId: order?.orderid ?? "",
-                            newName: customerName,
-                            newPhone: phoneNumber
-                        )
-                        alertMessage = "주문자 정보가 변경되었습니다."
-                        showAlert = true
-                        
-                        
-                    } catch {
-                        print("주소 정보 업데이트 중 에러 발생: \(error.localizedDescription)")
-                    }
-                }
+                updateOrderDetails()
             }) {
                 Text("확인")
                     .font(.system(size: 16, weight: .bold))
@@ -70,7 +48,7 @@ struct CustomerOrderEditInfo: View {
                     .cornerRadius(8)
             }
             .padding(.horizontal)
-            .alert(isPresented: $showAlert) { // 알림 창
+            .alert(isPresented: $showAlert) {
                 Alert(
                     title: Text("알림"),
                     message: Text(alertMessage),
@@ -82,16 +60,28 @@ struct CustomerOrderEditInfo: View {
                 )
             }
         }
-        
         .padding(.top)
         .onAppear {
-
             if let name = order?.customername {
                 customerName = name
             }
-            if let phone = order?.recphone {
+            if let phone = order?.customerphone {
                 phoneNumber = phone
             }
         }
+    }
+
+    /// `OrderModel`의 값을 업데이트하는 함수
+    private func updateOrderDetails() {
+        guard var order = order else { return }
+
+        // `OrderModel` 값 업데이트
+        order.customername = customerName
+        order.customerphone = phoneNumber
+        self.order = order
+
+        // 알림 메시지 설정
+        alertMessage = "주문자 정보가 변경되었습니다."
+        showAlert = true
     }
 }

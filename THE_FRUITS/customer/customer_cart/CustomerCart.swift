@@ -263,7 +263,7 @@ struct CustomerCart: View {
                                 action: {
                                     Task {
                                         do {
-                                            (order, orderList) = try await firestoreManager.addOrder(
+                                            (order, orderList) = try await firestoreManager.createOrderModel(
                                                 brand: brand,
                                                 orderSummaries: orderSummaries,
                                                 totalPrice: selectedTotal
