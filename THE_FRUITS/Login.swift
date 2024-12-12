@@ -25,6 +25,7 @@ struct Login: View {
     @State private var keyboardOffset: CGFloat = 0 // 키보드에 맞춘 뷰 이동
     @State private var showAlert: Bool = false // ⚠️ Alert 표시 상태 추가
     @State private var alertMessage: String = "" // ⚠️ Alert 메시지 추가
+    @State private var navigateToSignUp: Bool = false
 
     @EnvironmentObject var firestoreManager: FireStoreManager
 
@@ -73,9 +74,13 @@ struct Login: View {
                                         Spacer()
                                         // 회원가입 버튼
                                         CustomButton(title: "회원가입", foregroundColor: Color(red:6/255, green: 50/255, blue: 27/255), size: 14) {
-                                            joinButtonClicked = true
+                                            navigateToSignUp = true
                                         }
                                         .padding(.top, 10)
+                                        NavigationLink(
+                                            destination: signUpView,
+                                            isActive: $navigateToSignUp
+                                        ) { EmptyView() }
                                     }
                                     .frame(width: 250)
                                     
@@ -116,6 +121,15 @@ struct Login: View {
                 message: Text(alertMessage),
                 dismissButton: .default(Text("확인"))
             )
+        }
+    }
+    
+    @ViewBuilder
+    private var signUpView: some View {
+        if userType == "seller" {
+            SignUpSeller()
+        } else if userType == "customer" {
+            SignUpCustomer()
         }
     }
     
