@@ -89,6 +89,9 @@ struct CustomerHome: View {
                     CartToolbar(navigateToCart: $navigateToCustomerCart)
                 }
             }
+            .navigationTitle("TheFruits")
+            .navigationBarTitleDisplayMode(.inline)
+            
             .onAppear {
                 fetchBrandIDsAndDetails() // Firestore에서 브랜드 ID 가져오기
                 // 좋아요 여부 확인

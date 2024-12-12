@@ -166,7 +166,7 @@ struct BrandHome: View {
                             }
                             // 현재 장바구니 상태 확인
                             firestoreManager.fetchCartBrandId { currentBrandId in
-                                if currentBrandId == nil || currentBrandId == brand.brandid {
+                                if currentBrandId == nil || currentBrandId == brand.brandid||currentBrandId == "" {
                                     // 같은 브랜드거나, 장바구니가 비어 있으면 바로 추가
                                     firestoreManager.uploadCartItems(brandid: brand.brandid, cartItems: cartItems) { result in
                                         switch result {
@@ -251,6 +251,7 @@ struct BrandHome: View {
                 CartToolbar(navigateToCart: $navigateToCustomerCart)
             }
         }
+        
         .onAppear {
             Task{
                 await firestoreManager.fetchCart();
