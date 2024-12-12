@@ -83,18 +83,31 @@ struct SellerMenuSection: View {
 }
 
 struct SellerMyPage: View {
+    @State private var isLoggedIn: Bool = true
     var body: some View {
-        NavigationStack {
-            VStack() {
-                SellerProfileSection()
-                    .padding(.top, 40)
-                    .padding(.bottom, 15)
-                SellerMenuSection()
-                Spacer()
+        if isLoggedIn {
+            NavigationStack {
+                VStack() {
+                    SellerProfileSection()
+                        .padding(.top, 40)
+                        .padding(.bottom, 15)
+                    SellerMenuSection()
+                    LogoutButton{
+                        isLoggedIn = false // 로그아웃 후 상태 업데이트
+                    }
+                    .padding(.top, 25)
+                    Spacer()
+                }
             }
+            
+        } else {
+            OnBoarding() // 로그아웃 후 Onboarding 화면으로 전환
         }
     }
 }
+
+
+    
 /*
 #Preview {
     SellerMyPage()
