@@ -407,7 +407,7 @@ class FireStoreManager: ObservableObject {
     func updateCustomerLikes(brandid:String,add:Bool){
         let userid = Auth.auth().currentUser?.uid ?? "anonymous"
         let documentRef=db.collection("customer").document(userid)
-        
+        print("add: \(add)")
         if add{
             documentRef.updateData([
                 "likebrand":FieldValue.arrayUnion([brandid])

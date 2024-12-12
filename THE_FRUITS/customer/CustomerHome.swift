@@ -98,7 +98,7 @@ struct CustomerHome: View {
                 fetchBrandsAndLikes()
                 
                 // 지연 후 brandLikes 확인
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                DispatchQueue.main.asyncAfter(deadline: .now()) {
                     print("brandLikes after fetch: \(self.brandLikes)")
                 }
             }
