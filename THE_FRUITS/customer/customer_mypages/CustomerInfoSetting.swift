@@ -18,10 +18,31 @@ struct CustomerInfoSetting: View {
     @EnvironmentObject var firestoreManager: FireStoreManager
     @State private var customer: CustomerModel? // 기존 고객 데이터를 저장
     
+    @Environment(\.dismiss) var dismiss
+    
     var body: some View {
         VStack {
+            Text("아이디")
+                .padding(.top,10)
+                .font(.custom("Pretendard-SemiBold", size: 16)) // 폰트 조정 가능
+                .frame(maxWidth: .infinity, alignment: .leading) // 왼쪽 정렬
+                .padding(.leading, 17) // 왼쪽에 패딩 추가
+                .padding(.bottom, -15)
+            ZStack {
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(Color.gray, lineWidth: 1)
+                    .frame(height: 50)
+                TextField(userId, text: .constant(userId))
+                    .foregroundColor(.gray)
+                    .padding(.leading, 10)
+                    .frame(height: 50)
+                    .disabled(true)
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 20)
+            .padding(.bottom, 10)
+            
             CustomerInputBox(inputText: $userName, title: "이름", placeholder: customer?.name ?? "이름")
-            CustomerInputBox(inputText: $userId, title: "아이디", placeholder: customer?.username ?? "아이디")
             CustomerInputBox(inputText: $userPwd, title: "비밀번호", placeholder: "비밀번호", isPwd: true)
             CustomerInputBox(inputText: $userPwdConfirm, title: "비밀번호 확인", placeholder: "비밀번호 확인", isPwd: true)
             
@@ -59,6 +80,7 @@ struct CustomerInfoSetting: View {
                 message: Text(alertMessage),
                 dismissButton: .default(Text("확인")) {
                     showAlert = false
+                    dismiss()
                 }
             )
         }
@@ -82,6 +104,11 @@ struct CustomerInfoSetting: View {
             showAlert = true
             return
         }
+        if userPwd.count < 6 {
+            alertMessage = "비밀번호를 6자 이상 입력해주세요."
+            showAlert = true
+            return
+        }
         
         Task {
             do {
@@ -91,6 +118,10 @@ struct CustomerInfoSetting: View {
                     phone: updatedPhone,
                     password: updatedPwd
                 )
+                
+                if !userPwd.isEmpty {
+                    try await updateFirebasePassword(newPassword: userPwd)
+                }
                 
                 alertMessage = """
                 입력하신 정보가 성공적으로 업데이트되었습니다:

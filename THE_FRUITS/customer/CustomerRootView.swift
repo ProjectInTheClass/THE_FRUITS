@@ -1,10 +1,10 @@
 import SwiftUI
 
 struct CustomerRootView: View {
-
-    @Binding var selectedTab : Int 
+    @Binding var selectedTab : Int
 
     @State private var isOnRootView=true
+    @EnvironmentObject var firestoreManager: FireStoreManager // 공유 객체
     
     var body: some View {
         NavigationStack{
@@ -48,6 +48,7 @@ struct CustomerRootView: View {
         }
         .onAppear{
             isOnRootView=true
+            
         }
         .onDisappear{
             isOnRootView=false
@@ -73,10 +74,10 @@ struct CustomerRootView: View {
     }
 }
 
-#Preview {
-    @Previewable @State var selectedTab = 0
-    CustomerRootView(selectedTab: $selectedTab)
-}
+//#Preview {
+//    @Previewable @State var selectedTab = 0
+//    CustomerRootView(selectedTab: $selectedTab)
+//}
 
 
 // Color 확장 추가 (Hex 코드를 처리하는 기능)
