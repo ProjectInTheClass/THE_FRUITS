@@ -108,14 +108,14 @@ struct ServiceSection : View {
                    .frame(maxWidth: .infinity,alignment: .leading)
                    .padding(.top,10)
                    .padding(.bottom, 10)
-                   NavigationButton(
-                       icon: "info.circle",
-                       title: "약관 및 정책",
-                       destination: CustomerLegalNotice()
-                   )
-                   .frame(maxWidth: .infinity,alignment: .leading)
-                   .padding(.top,10)
-                   .padding(.bottom, 10)
+//                   NavigationButton(
+//                       icon: "info.circle",
+//                       title: "약관 및 정책",
+//                       destination: CustomerLegalNotice()
+//                   )
+//                   .frame(maxWidth: .infinity,alignment: .leading)
+//                   .padding(.top,10)
+//                   .padding(.bottom, 10)
                }
                 
             
