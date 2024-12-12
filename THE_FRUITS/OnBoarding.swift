@@ -39,6 +39,7 @@ struct OnBoarding: View {
 
                     Text("TheFruits")
                         .font(.custom("Magnolia Script", size: 63))
+                        
                         .foregroundStyle(.white)
                         .padding(.bottom, 8)
 
