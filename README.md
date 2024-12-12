@@ -31,6 +31,12 @@
 ** CusomterCart: 장바구니에성 원하는 조합을 구매할 수 있습니다.
 
 ** <판매자 버전>
+** SellerHome: 자신의 브랜드를 한눈에 볼 수 있으며 사업자등록 튜토리얼과 함께 브랜드를 추가할 수 있습니다.
+  *** BrandMainPage: 브랜드 정보를 수정하고 상품을 추가 및 수정할 수 있습니다.
+
+** Order: 자신의 브랜드의 주문서를 한눈에 볼 수 있으며 주문상황 및 배송상태를 업데이트 할 수 있습니다.
+
+** MyPage: 자신의 개인정보 및 비밀번호 변경을 할 수 있습니다.
 
 
 
@@ -71,19 +77,19 @@
     </tr>
      <tr>
         <th>Frontend</th>
-        <td colspan="3"> React (build : vite / version : 18.3.1 / port :5173)</td>
+        <td colspan="3"> SwiftUI </td>
+    </tr>
+    <tr>
+        <th>Backend</th>
+        <td colspan="3"> Firebase (Firestore Database, Storage, Authentication) </td>
     </tr>
     <tr>
         <th>IDE</th>
-        <td colspan="3">VSCode</td>
-    </tr>
-    <tr>
-        <th>Language</th>
-        <td colspan="3">Swift</td>
+        <td colspan="3">Xcode</td>
     </tr>
      <tr>
         <th>형상관리</th>
-        <td colspan="3">Git (Notion,Gira을 통한 문서화 /대면회의)</td>
+        <td colspan="3">Git (Notion을 통한 문서화 /대면회의)</td>
     </tr>
 </table>
 
@@ -91,7 +97,7 @@
 
 ## 🪛 사용한 API 
 
-해당 프로젝트에서 API :  
+해당 프로젝트에서 사용한 API :  
 - HomeTax Open Api: 사업자 등록번호 진위 확인
 </br></br>
 
