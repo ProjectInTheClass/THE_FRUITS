@@ -50,7 +50,7 @@
 
 ## 🔗 소개 웹사이트 바로가기
 
-> 
+> https://thefruits.my.canva.site/app-download-website-in-light-blue-simple-light-style
 
 </br></br>
 
