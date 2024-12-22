@@ -31,3 +31,4 @@ final class THE_FRUITSUITestsLaunchTests: XCTestCase {
         add(attachment)
     }
 }
+

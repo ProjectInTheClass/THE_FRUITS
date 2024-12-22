@@ -24,7 +24,7 @@ xcuserdata/
 *.moved-aside
 *.xccheckout
 *.xcuserstate
-*.xcworkspace
+#*.xcworkspace
 
 ## Obj-C/Swift specific
 *.hmap
