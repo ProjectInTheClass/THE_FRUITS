@@ -14,7 +14,7 @@ struct CustomerWishList: View {
                 if isLoading {
                     ProgressView("로딩 중...")
                 } else if brandDetails.isEmpty {
-                    Text("위시리스트가 비어 있습니다.")
+                    Text("찜한 브랜드가 비어 있습니다.")
                         .font(.title3)
                         .foregroundColor(.gray)
                 } else {
