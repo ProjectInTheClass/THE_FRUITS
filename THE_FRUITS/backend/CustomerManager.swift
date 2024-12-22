@@ -28,8 +28,8 @@ extension FireStoreManager{
             throw error // 에러를 상위로 전달
         }
     }
-
-
+    
+    
     func fetchCart() async {
         do {
             let cartDocuments = try await db.collection("customer").document(self.customerid).collection("cart").getDocuments()
@@ -57,7 +57,7 @@ extension FireStoreManager{
             print("Invalid brandId: Empty string")
             return nil
         }
-
+        
         let document = try await db.collection("brand").document(brandId).getDocument()
         if document.exists {
             return try document.data(as: BrandModel.self)
@@ -66,7 +66,7 @@ extension FireStoreManager{
             return nil
         }
     }
-
+    
     
     
     func getCartBrand() async -> BrandModel? {
@@ -262,7 +262,7 @@ extension FireStoreManager{
         ])
         
         do {
-                try await deleteCartBrandIfOrderProdIsEmpty()
+            try await deleteCartBrandIfOrderProdIsEmpty()
         } catch {
             print("Error clearing brandid: \(error.localizedDescription)")
         }
@@ -323,10 +323,10 @@ extension FireStoreManager{
         //try await addOrderToFirestore(order: order)
         
         // 각 orderprodid에 대해 deleteOrderProd 호출
-//        for orderprodId in selectedOrderProdIds {
-//            try await deleteOrderProd(orderprodId: orderprodId)
-//        }
-//        print("All selected OrderProd IDs have been deleted.")
+        //        for orderprodId in selectedOrderProdIds {
+        //            try await deleteOrderProd(orderprodId: orderprodId)
+        //        }
+        //        print("All selected OrderProd IDs have been deleted.")
         
         // cart 에서만 삭제되도록
         let cartSnapshot = try await cartCollection
@@ -346,7 +346,7 @@ extension FireStoreManager{
         
         // cart 가 비어있다면, brandid 삭제
         do {
-                try await deleteCartBrandIfOrderProdIsEmpty()
+            try await deleteCartBrandIfOrderProdIsEmpty()
         } catch {
             print("Error clearing brandid: \(error.localizedDescription)")
         }
@@ -400,7 +400,7 @@ extension FireStoreManager{
     }
     
     func saveOrderToFirestore(order: OrderModel) async {
-
+        
         do {
             // 1. Firestore에 Order 저장
             try await addOrderToFirestore(order: order)
@@ -419,14 +419,14 @@ extension FireStoreManager{
                     "orderprodid": FieldValue.arrayRemove([orderprodId]) // 배열에서 삭제
                 ])
             }
-
+            
             // 3. Cart가 비어있다면 brandid 삭제        // cart 가 비어있다면, brandid 삭제
             do {
-                    try await deleteCartBrandIfOrderProdIsEmpty()
+                try await deleteCartBrandIfOrderProdIsEmpty()
             } catch {
                 print("Error clearing brandid: \(error.localizedDescription)")
             }
-
+            
             // 4. Customer의 Orders 배열에 Order ID 추가
             if let customerId = self.customer?.customerid {
                 let customerRef = db.collection("customer").document(customerId)
@@ -434,16 +434,16 @@ extension FireStoreManager{
                     "orders": FieldValue.arrayUnion([order.orderid])
                 ])
             }
-
+            
             
         } catch {
             
         }
         
     }
-
-
-
+    
+    
+    
     
     // make order in cart
     func addOrderToFirestore(order: OrderModel) async throws {
@@ -467,7 +467,7 @@ extension FireStoreManager{
         dateFormatter.locale = Locale(identifier: "en_US") // 영어 형식으로 설정
         return dateFormatter.string(from: date)
     }
-
+    
     func fetchOrder(orderId: String) async throws -> (OrderModel, [OrderSummary], BrandModel) {
         let orderRef = db.collection("order").document(orderId)
         let orderDocument = try await orderRef.getDocument()
@@ -481,10 +481,10 @@ extension FireStoreManager{
         
         
         for orderprodId in order.products {
-        
+            
             let orderProd = try await fetchOrderProd(orderprodId: orderprodId)
             
-        
+            
             var productDetails: [ProductDetail] = []
             for products in orderProd.products {
                 let product = try await fetchProduct(productId: products.productid)
@@ -529,7 +529,7 @@ extension FireStoreManager{
             throw error
         }
     }
-
+    
     func updateOrderInfo(orderId: String, newName: String, newPhone: String) async throws {
         
         let orderRef = db.collection("order").document(orderId)
@@ -599,7 +599,7 @@ extension FireStoreManager{
         }
     }
     
-   
+    
     func updateCustomerInfo(customerId: String, name: String, phone: String, password: String) async throws {
         let db = Firestore.firestore()
         let customerRef = db.collection("customer").document(customerId)
@@ -628,6 +628,55 @@ extension FireStoreManager{
             throw error
         }
         self.fetchCustomer()
+    }
+    
+    func deleteCustomerDocument(userId: String, completion: @escaping (Bool) -> Void) {
+        let db = Firestore.firestore()
+        let customerDocRef = db.collection("customer").document(userId)
+        
+        // Fetch and delete all documents in the `cart` subcollection
+        customerDocRef.collection("cart").getDocuments { snapshot, error in
+            if let error = error {
+                print("Firestore `cart` 문서 가져오기 실패: \(error.localizedDescription)")
+                completion(false)
+                return
+            }
+            
+            guard let documents = snapshot?.documents else {
+                print("`cart` 서브컬렉션이 비어 있습니다.")
+                self.deleteParentDocument(customerDocRef: customerDocRef, completion: completion)
+                return
+            }
+            
+            let batch = db.batch()
+            for document in documents {
+                batch.deleteDocument(document.reference)
+            }
+            
+            batch.commit { error in
+                if let error = error {
+                    print("`cart` 서브컬렉션 삭제 실패: \(error.localizedDescription)")
+                    completion(false)
+                    return
+                }
+                
+                print("`cart` 서브컬렉션 삭제 성공")
+                self.deleteParentDocument(customerDocRef: customerDocRef, completion: completion)
+            }
+        }
+    }
+    
+    // Helper function to delete the parent document
+    private func deleteParentDocument(customerDocRef: DocumentReference, completion: @escaping (Bool) -> Void) {
+        customerDocRef.delete { error in
+            if let error = error {
+                print("Firestore 문서 삭제 실패: \(error.localizedDescription)")
+                completion(false)
+            } else {
+                print("Firestore 문서 삭제 성공")
+                completion(true)
+            }
+        }
     }
 }
 

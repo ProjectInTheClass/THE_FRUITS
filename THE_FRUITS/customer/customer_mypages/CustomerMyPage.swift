@@ -180,6 +180,9 @@ struct CustomerMyPage: View {
                         isLoggedIn = false // 로그아웃 후 상태 업데이트
                     }
                     .padding(.top, 25)
+                    CustomerAccountDeletionButton {
+                        isLoggedIn = false // 계정 삭제 후 상태 업데이트
+                    }.padding(.top, 10)
                     Spacer()
                 }
             } else {
@@ -188,6 +191,101 @@ struct CustomerMyPage: View {
         }
     }
 }
+
+
+struct CustomerAccountDeletionButton: View {
+    var onAccountDeleted: () -> Void
+    @State private var showAlert: Bool = false
+    @State private var showConfirmationDialog: Bool = false
+    @State private var confirmationInput: String = ""
+    @EnvironmentObject var firestoreManager: FireStoreManager
+    
+    var body: some View {
+        Button(action: {
+            showAlert = true
+        }) {
+            Text("회원탈퇴")
+                .foregroundColor(.white)
+                .font(.system(size: 16, weight: .bold))
+                .padding(.vertical, 10)
+                .padding(.horizontal, 20)
+                .background(Color.gray)
+                .cornerRadius(25)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .alert(isPresented: $showAlert) {
+            Alert(
+                title: Text("회원탈퇴"),
+                message: Text("정말로 계정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없으며 모든 데이터와 활동 기록이 삭제됩니다."),
+                primaryButton: .destructive(Text("삭제")) {
+                    showConfirmationDialog = true
+                },
+                secondaryButton: .cancel(Text("취소"))
+            )
+        }
+        .sheet(isPresented: $showConfirmationDialog) {
+            VStack(spacing: 20) {
+                Text("계정 삭제 확인")
+                    .font(.headline)
+                Text("계속하려면 아래 입력란에 '회원탈퇴'를 입력하세요.")
+                    .multilineTextAlignment(.center)
+                
+                TextField("회원탈퇴", text: $confirmationInput)
+                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                    .padding()
+                
+                Button(action: {
+                    if confirmationInput == "회원탈퇴" {
+                        deleteAccount()
+                        showConfirmationDialog = false
+                    }
+                }) {
+                    Text("확인")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(confirmationInput == "회원탈퇴" ? Color.red : Color.gray)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                }
+                .disabled(confirmationInput != "회원탈퇴")
+                
+                Button(action: {
+                    showConfirmationDialog = false
+                }) {
+                    Text("취소")
+                        .foregroundColor(.blue)
+                }
+            }
+            .padding()
+        }
+    }
+    
+    private func deleteAccount() {
+        guard let user = Auth.auth().currentUser else {
+            print("사용자가 인증되지 않았습니다.")
+            return
+        }
+        
+        // Delete user document from Firestore
+        let userId = user.uid
+        firestoreManager.deleteCustomerDocument(userId: userId) { success in
+            if success {
+                // Proceed to delete user from Firebase Authentication
+                user.delete { error in
+                    if let error = error {
+                        print("Firebase Auth 계정 삭제 실패: \(error.localizedDescription)")
+                    } else {
+                        print("계정이 삭제되었습니다.")
+                        onAccountDeleted()
+                    }
+                }
+            } else {
+                print("Firestore 문서 삭제 실패")
+            }
+        }
+    }
+}
+
 
 #Preview {
     CustomerMyPage()

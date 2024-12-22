@@ -257,4 +257,17 @@ extension FireStoreManager{
             return (orderSummaries)
         }
 
+    
+    func deleteSellerDocument(userId: String, completion: @escaping (Bool) -> Void) {
+        let db = Firestore.firestore()
+        db.collection("seller").document(userId).delete { error in
+            if let error = error {
+                print("Firestore 문서 삭제 실패: \(error.localizedDescription)")
+                completion(false)
+            } else {
+                print("Firestore 문서 삭제 성공")
+                completion(true)
+            }
+        }
+    }
 }
